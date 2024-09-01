@@ -23,7 +23,7 @@ on:
 env:
   BUILD_TYPE: Release
   PICO_SDK_REL_CHECKOUT_PATH: pico-sdk
-  PICO_SDK_PATH: ${{github.workspace}}/pico-sdk
+  PICO_SDK_PATH: ${{runner.temp}}/pico-sdk
 
 jobs:
   cmake-build:
@@ -46,9 +46,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
-
-      #- name: "repository: checkout submodule"
-      #  run: src/scripts/git-submodule-init.sh
 
       - name: "build prerequisites"
         run: src/scripts/install-prerequisites-ubuntu.sh
