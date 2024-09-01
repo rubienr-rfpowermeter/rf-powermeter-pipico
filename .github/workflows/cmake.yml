@@ -37,7 +37,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{env.PICO_SDK_PATH}}
-          key: ${{ runner.os }}-picosdk-${{ hashFiles( env.PICO_SDK_PATH ) }}
+          key: ${{ runner.os }}-picosdk-${{ format('{0}/**', env.PICO_SDK_PATH) }}
           restore-keys: |
             ${{ runner.os }}-picosdk-
 
@@ -49,7 +49,7 @@ jobs:
           path: ${{env.PICO_SDK_PATH}}
 
       - name: "submodule: checkout"
-        working-directory: ${{github.workspace}}/pico-sdk
+        # working-directory: ${{github.workspace}}/pico-sdk
         run: src/scripts/git-submodule-init.sh
 
       - name: "repository: checkout"
