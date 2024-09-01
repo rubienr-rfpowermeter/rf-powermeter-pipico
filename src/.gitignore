@@ -1,0 +1,13 @@
+# IDE
+.idea
+.swp
+
+# pico-sdk
+
+# libs
+components/*
+
+# build artifacts
+build
+generated
+
