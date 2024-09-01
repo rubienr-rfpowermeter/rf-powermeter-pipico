@@ -25,7 +25,7 @@ RF-Powermeter with "Pico Breakboard Kit" and 3.5" TFT Capacitive Touch Screen.
 4. Build Projects
    ```bash
    cd pico-meter
-   scripts/cmake-build.sh
+   scripts/cmake-make.sh
    ```
 
 5. Upload firmware to Pico
@@ -38,14 +38,13 @@ RF-Powermeter with "Pico Breakboard Kit" and 3.5" TFT Capacitive Touch Screen.
        ```
     2. picoprobe
        ```bash
-       scripts/build-upload-openocd.sh
-       picicom /dev/ttyACM0 -m 115200
+       scripts/make-upload-openocd.sh
        ```
 
 * Serial monitor (picoprobe)
 
 ```bash
-scripts/monitor.sh
+scripts/serial-monitor.sh
 ```
 
 ## TFT Features

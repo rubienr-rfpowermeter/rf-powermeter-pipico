@@ -60,5 +60,5 @@ jobs:
         working-directory: ${{env.REPO_PATH}}
 
       - name: "build: make"
-        run: src/scripts/cmake.sh
+        run: src/scripts/make.sh
         working-directory: ${{env.REPO_PATH}}
