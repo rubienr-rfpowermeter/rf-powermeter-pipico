@@ -43,7 +43,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{env.PICO_SDK_PATH}}
-          key: ${{ runner.os }}-picosdk-${{env.PICO_SDK_VERSION}}
+          key: pico-sdk-${{env.PICO_SDK_VERSION}}
 
       - name: "pico-sdk: checkout"
         uses: actions/checkout@v4
@@ -58,7 +58,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: ${{env.PICO_SDK_PATH}}
-          key: ${{ steps.cache-picosdk-restore.outputs.cache-primary-key }}
+          key: ${{steps.cache-picosdk-restore.outputs.cache-primary-key}}
 
       - name: "repository: checkout"
         uses: actions/checkout@v4
@@ -67,8 +67,11 @@ jobs:
           path: ${{env.REPO_REL_CHECKOUT_PATH}}
 
       - name: "build prerequisites"
-        working-directory: ${{env.REPO_PATH}}
-        run: src/scripts/install-prerequisites-ubuntu.sh
+        # working-directory: ${{env.REPO_PATH}}
+        # run: src/scripts/install-prerequisites-ubuntu.sh
+        uses: tecolicom/actions-use-apt-tools@v1
+        with:
+          tools: "cmake gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib"
 
       - name: "build: create build env + CMake"
         working-directory: ${{env.REPO_PATH}}
