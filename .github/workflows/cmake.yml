@@ -22,10 +22,11 @@ on:
 
 env:
   BUILD_TYPE: Release
-  PICO_SDK_REL_PATH: pico-sdk
-  PICO_SDK_ABS_PATH: ${{github.workspace}}/pico-sdk
-  REPO_REL_PATH: xrepo
-  REPO_ABS_PATH: ${{github.workspace}}/xrepo
+  PICO_SDK_REL_CHECKOUT_PATH: pico-sdk
+  PICO_SDK_PATH: ${{github.workspace}}/pico-sdk
+
+  REPO_REL_CHECKOUT_PATH: xrepo
+  REPO_PATH: ${{github.workspace}}/xrepo
 
 jobs:
   cmake-build:
@@ -42,22 +43,22 @@ jobs:
           repository: raspberrypi/pico-sdk
           ref: 2.0.0
           submodules: true
-          path: ${{env.PICO_REL_PATH}}
+          path: ${{env.PICO_SDK_REL_CHECKOUT_PATH}}
 
       - name: "repository: checkout"
         uses: actions/checkout@v4
         with:
           submodules: true
-          path: ${{env.REPO_REL_PATH}}
+          path: ${{env.REPO_REL_CHECKOUT_PATH}}
 
       - name: "build prerequisites"
         run: src/scripts/install-prerequisites-ubuntu.sh
-        working-directory: ${{env.REPO_ABS_PATH}}
+        working-directory: ${{env.REPO_PATH}}
 
       - name: "build: create build env + CMake"
         run: src/scripts/cmake.sh
-        working-directory: ${{env.REPO_ABS_PATH}}
+        working-directory: ${{env.REPO_PATH}}
 
       - name: "build: make"
         run: src/scripts/cmake.sh
-        working-directory: ${{env.REPO_ABS_PATH}}
+        working-directory: ${{env.REPO_PATH}}
