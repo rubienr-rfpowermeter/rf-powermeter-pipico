@@ -34,7 +34,7 @@ jobs:
         os: [ ubuntu-latest ]
     
     steps:
-      - name: "pico-sdk: checkout"
+      - name: "pico-sdk: checkoutx"
         uses: actions/checkout@v4
         with:
           repository: raspberrypi/pico-sdk
