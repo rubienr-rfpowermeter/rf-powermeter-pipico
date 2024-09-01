@@ -33,11 +33,11 @@ jobs:
         os: [ ubuntu-latest ]
     
     steps:
-      - name: "pico-sdk: cache"
-        uses: actions/cache@v3
+      - name: "pico-sdk: cache restore"
+        uses: actions/cache/restore@v4
         with:
           path: ${{env.PICO_SDK_PATH}}
-          key: ${{ runner.os }}-picosdk-${{ hashFiles('${{github.workspace}}/pico-sdk/**') }}
+          key: ${{ runner.os }}-picosdk-${{ hashFiles( env.PICO_SDK_PATH ) }}
           restore-keys: |
             ${{ runner.os }}-picosdk-
 
@@ -50,12 +50,10 @@ jobs:
 
       - name: "submodule: checkout"
         working-directory: ${{github.workspace}}/pico-sdk
-        run: |
-          src/scripts/git-submodule-init.sh
-          git submodule status
+        run: src/scripts/git-submodule-init.sh
 
       - name: "repository: checkout"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: "repository: checkout submodule"
         run: src/scripts/git-submodule-init.sh
