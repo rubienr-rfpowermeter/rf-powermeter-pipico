@@ -27,12 +27,12 @@ include_directories(./)
 add_subdirectory(./gitmodules/lvgl)
 include_directories(./gitmodules/lvgl)
 add_definitions(-DLV_LVGL_H_INCLUDE_SIMPLE=1)
-file(GLOB_RECURSE DEMO_SOURCES ./gitmodules/lvgl/demos/*.c)
+# file(GLOB_RECURSE DEMO_SOURCES ./gitmodules/lvgl/demos/*.c)
 
 # add executable
 add_executable(rf_probe
-        ${DEMO_SOURCES}
-        #gitmodules/lvgl/demos/keypad_encoder/lv_demo_keypad_encoder.c
+        # ${DEMO_SOURCES}
+        # gitmodules/lvgl/demos/keypad_encoder/lv_demo_keypad_encoder.c
         img.c
         lv_port_disp.c
         lv_port_indev.c
@@ -66,7 +66,7 @@ target_link_libraries(rf_probe
 # add the standard include files to the build
 target_include_directories(rf_probe PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
-        ${CMAKE_CURRENT_LIST_DIR}/..
+        # ${CMAKE_CURRENT_LIST_DIR}/..
 )
 
 target_compile_definitions(rf_probe PRIVATE

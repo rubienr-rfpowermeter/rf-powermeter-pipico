@@ -15,6 +15,12 @@ lv_obj_t *led1 = NULL;
 lv_obj_t *led2 = NULL;
 lv_obj_t *jy_label = NULL;
 
+const uint8_t gpio_user_led_1 = {16};
+const uint8_t gpio_user_led_2 = {17};
+const uint8_t gpio_buzzer = {13};
+const uint8_t gpio_user_button_1 = {15};
+const uint8_t gpio_user_button_2 = {14};
+
 volatile uint32_t systemTicksMs = {0};
 bool ms_tick_timer_cb(__unused struct repeating_timer *t)
 {
@@ -31,7 +37,6 @@ static void keypad_handler(lv_event_t *e)
     {
         lv_obj_del(img1);
         lv_obj_clean(lv_scr_act());
-        // vTaskDelay(100 / portTICK_PERIOD_MS);
         busy_wait_ms(100);
 
         lv_demo_keypad_encoder();
@@ -41,8 +46,7 @@ static void keypad_handler(lv_event_t *e)
 static void beep_handler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-
-    if(code == LV_EVENT_VALUE_CHANGED) { gpio_xor_mask(0x2000); }
+    if(code == LV_EVENT_VALUE_CHANGED) { gpio_xor_mask(1 << gpio_buzzer); }
 }
 
 static void slider_event_cb(lv_event_t *e)
@@ -67,11 +71,11 @@ void gpio_callback(uint gpio, uint32_t __unused events)
 {
     switch(gpio)
     {
-    case 15:
+    case gpio_user_button_1:
         lv_led_toggle(led1);
         gpio_xor_mask(1ul << 16);
         break;
-    case 14:
+    case gpio_user_button_2:
         lv_led_toggle(led2);
         gpio_xor_mask(1ul << 17);
         break;
@@ -80,6 +84,34 @@ void gpio_callback(uint gpio, uint32_t __unused events)
     }
 }
 
+static void user_leds_init(void)
+{
+    bi_decl_if_func_used(bi_program_feature("USER LEDs (2x)"))
+    bi_decl_if_func_used(bi_1pin_with_name(gpio_user_led_1, "LED1 (blue)"))
+    bi_decl_if_func_used(bi_1pin_with_name(gpio_user_led_2, "LED2 (blue)"))
+
+    gpio_init(gpio_user_led_1);
+    gpio_init(gpio_user_led_2);
+    gpio_set_dir(gpio_user_led_1, GPIO_OUT);
+    gpio_set_dir(gpio_user_led_2, GPIO_OUT);
+
+    gpio_put(gpio_user_led_1, 0);
+    gpio_put(gpio_user_led_2, 0);
+}
+
+static void buzzer_init(void)
+{
+    bi_decl_if_func_used(bi_program_feature("Buzzer")) bi_decl_if_func_used(bi_1pin_with_name(gpio_buzzer, "Buzzer")) gpio_init(gpio_buzzer);
+    gpio_set_dir(gpio_buzzer, GPIO_OUT);
+}
+
+static void user_buttons_init()
+{
+    bi_decl_if_func_used(bi_program_feature("User Buttons"))
+    bi_decl_if_func_used(bi_2pins_with_names(gpio_user_button_1, "Button 1", gpio_user_button_2, "Button 2"))
+    gpio_set_irq_enabled_with_callback(gpio_user_button_1, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
+    gpio_set_irq_enabled_with_callback(gpio_user_button_2, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
+}
 static void hw_handler(lv_event_t *e)
 {
     lv_obj_t *label;
@@ -90,11 +122,9 @@ static void hw_handler(lv_event_t *e)
     {
         lv_obj_del(img1);
         lv_obj_clean(lv_scr_act());
-        // vTaskDelay(100 / portTICK_PERIOD_MS);
         busy_wait_ms(100);
 
-        gpio_init(13);
-        gpio_set_dir(13, GPIO_OUT);
+        buzzer_init();
 
         lv_obj_t *beep_btn = lv_btn_create(lv_scr_act());
         lv_obj_add_event_cb(beep_btn, beep_handler, LV_EVENT_ALL, NULL);
@@ -126,9 +156,8 @@ static void hw_handler(lv_event_t *e)
         lv_obj_add_event_cb(lv_colorwheel, slider_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
 
         rgbw_init();
+        user_buttons_init();
 
-        gpio_set_irq_enabled_with_callback(14, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
-        gpio_set_irq_enabled_with_callback(15, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
         gpio_set_irq_enabled_with_callback(22, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
 
         led1 = lv_led_create(lv_scr_act());
@@ -143,14 +172,7 @@ static void hw_handler(lv_event_t *e)
 
         lv_led_off(led2);
 
-        gpio_init(16);
-        gpio_init(17);
-
-        gpio_set_dir(16, GPIO_OUT);
-        gpio_set_dir(17, GPIO_OUT);
-
-        gpio_put(16, 0);
-        gpio_put(17, 0);
+        user_leds_init();
 
         jy_label = lv_label_create(lv_scr_act());
         lv_label_set_text(jy_label, "X = 0 Y = 0");
@@ -194,8 +216,6 @@ void task0(void)
     busy_wait_ms(100);
 
     img1 = lv_img_create(lv_scr_act());
-    // LV_IMG_DECLARE(ai);
-    // extern const lv_img_dsc_t ai;
     lv_img_set_src(img1, &ai);
     lv_obj_align(img1, LV_ALIGN_DEFAULT, 0, 0);
     lv_example_btn_1();
@@ -204,30 +224,9 @@ void task0(void)
 [[noreturn]]
 int main()
 {
-    bi_decl_if_func_used(bi_program_feature("TFT 480x320 (SPI0)"));
-    bi_decl_if_func_used(bi_4pins_with_func(2, 3, 4, 5, GPIO_FUNC_SPI));
-    bi_decl_if_func_used(bi_4pins_with_names(2, "TFT (SCLK)", 3, "TFT (MOSI)", 4, "TFT (MISO)", 5, "TFT (CS)"));
-    bi_decl_if_func_used(bi_2pins_with_names(6, "TFT (DC)", 7, "TFT (RST)"));
-
-    bi_decl_if_func_used(bi_program_feature("Joystick 2-axis (ADC0, ADC1)"));
-    bi_decl_if_func_used(bi_1pin_with_name(26, "X-axis (ADC0)"));
-    bi_decl_if_func_used(bi_1pin_with_name(27, "Y-axis (ADC1)"));
-
-    bi_decl_if_func_used(bi_program_feature("Capacitive Touch (I2C0)"));
-    bi_decl_if_func_used(bi_2pins_with_func(8, 9, GPIO_FUNC_I2C));
-    bi_decl_if_func_used(bi_2pins_with_names(8, "Touch", 9, "Touch"));
-    bi_decl_if_func_used(bi_2pins_with_names(10, "TPRST", 11, "TPINT"));
-
-    bi_decl_if_func_used(bi_program_feature("RGB LED 1x (WS2012, PIO0)"));
-    bi_decl_if_func_used(bi_1pin_with_func(12, GPIO_FUNC_PIO0));
-    bi_decl_if_func_used(bi_1pin_with_name(12, "RGB LED"));
-
-    bi_decl_if_func_used(bi_program_feature("USER LEDs (2x)"));
-    bi_decl_if_func_used(bi_1pin_with_name(16, "LED1 (blue)"));
-    bi_decl_if_func_used(bi_1pin_with_name(17, "LED2 (blue)"));
-
-    bi_decl_if_func_used(bi_program_feature("Buzzer"));
-    bi_decl_if_func_used(bi_1pin_with_name(13, "Buzzer"));
+    bi_decl_if_func_used(bi_program_feature("Joystick 2-axis (ADC0, ADC1)"))
+    bi_decl_if_func_used(bi_1pin_with_name(26, "X-axis (ADC0)"))
+    bi_decl_if_func_used(bi_1pin_with_name(27, "Y-axis (ADC1)"))
 
     stdio_init_all();
     setup_default_uart();

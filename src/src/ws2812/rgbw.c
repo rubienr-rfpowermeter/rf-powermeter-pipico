@@ -19,10 +19,6 @@ void rgbw_init(void)
     bi_decl_if_func_used(bi_program_feature("RGB LED 1x (WS2012, PIO0)"));
     bi_decl_if_func_used(bi_1pin_with_func(rgb_gpio, GPIO_FUNC_PIO0));
     bi_decl_if_func_used(bi_1pin_with_name(rgb_gpio, "RGB LED"));
-    ws2812_program_init(rgbw_pio, rgbw_sm, rgbw_offset, rgb_gpio, 800000, true);
-
-    bi_decl_if_func_used(bi_program_feature("RGBW LED 1x (WS2012, PIO0)"))
-    bi_decl_if_func_used(bi_1pin_with_func(rgb_gpio, GPIO_FUNC_PIO0)) bi_decl_if_func_used(bi_1pin_with_name(rgb_gpio, "RGB LED"))
 
     rgbw_offset = pio_add_program(rgbw_pio, &ws2812_program);
     ws2812_program_init(rgbw_pio, rgbw_sm, rgbw_offset, rgb_gpio, 800000, true);

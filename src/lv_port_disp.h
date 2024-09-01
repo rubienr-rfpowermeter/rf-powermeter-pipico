@@ -4,24 +4,23 @@
  */
 
 /*Copy this file as "lv_port_disp.h" and set this value to "1" to enable content*/
-#if 1
 
-    #ifndef LV_PORT_DISP_TEMPL_H
-        #define LV_PORT_DISP_TEMPL_H
 
-        #ifdef __cplusplus
+#pragma once
+
+#ifdef __cplusplus
 extern "C"
 {
-        #endif
+#endif
 
-        /*********************
-         *      INCLUDES
-         *********************/
-        #if defined(LV_LVGL_H_INCLUDE_SIMPLE)
-            #include "lvgl.h"
-        #else
-            #include "lvgl/lvgl.h"
-        #endif
+/*********************
+ *      INCLUDES
+ *********************/
+#if defined(LV_LVGL_H_INCLUDE_SIMPLE)
+    #include "lvgl.h"
+#else
+    #include "lvgl/lvgl.h"
+#endif
 
     /**********************
      *      TYPEDEFS
@@ -41,14 +40,10 @@ extern "C"
      */
     void disp_disable_update(void);
 
-        /**********************
-         *      MACROS
-         **********************/
+    /**********************
+     *      MACROS
+     **********************/
 
-        #ifdef __cplusplus
+#ifdef __cplusplus
 } /*extern "C"*/
-        #endif
-
-    #endif /*LV_PORT_DISP_TEMPL_H*/
-
-#endif /*Disable/Enable content*/
+#endif

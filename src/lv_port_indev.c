@@ -15,6 +15,7 @@
     #include "hardware/gpio.h"
     #include "hardware/i2c.h"
 
+    #include <pico/binary_info/code.h>
     #include <stdio.h>
 
 /*********************
@@ -38,10 +39,10 @@ static void touchpad_get_xy(lv_coord_t *x, lv_coord_t *y);
  *  STATIC VARIABLES
  **********************/
 lv_indev_t *indev_touchpad;
-lv_indev_t *indev_mouse;
-lv_indev_t *indev_keypad;
-lv_indev_t *indev_encoder;
-lv_indev_t *indev_button;
+// lv_indev_t *indev_mouse;
+// lv_indev_t *indev_keypad;
+// lv_indev_t *indev_encoder;
+// lv_indev_t *indev_button;
 
 static int32_t encoder_diff;
 static lv_indev_state_t encoder_state;
@@ -107,11 +108,19 @@ static void touchpad_init(void)
         gt911_status.i2c_dev_addr = GT911_I2C_SLAVE_ADDR;
         uint8_t data_buf;
 
+        const uint8_t sda = {8};
+        const uint8_t scl = {9};
+
+        bi_decl_if_func_used(bi_program_feature("Capacitive Touch (I2C0)"));
+        bi_decl_if_func_used(bi_2pins_with_func(sda, scl, GPIO_FUNC_I2C));
+        bi_decl_if_func_used(bi_2pins_with_names(sda, "Touch", scl, "Touch"));
+        bi_decl_if_func_used(bi_2pins_with_names(10, "TPRST", 11, "TPINT"));
+
         i2c_init(i2c0, 100 * 1000);
-        gpio_set_function(8 /* SDA */, GPIO_FUNC_I2C);
-        gpio_set_function(9 /* SCL */, GPIO_FUNC_I2C);
-        gpio_pull_up(8);
-        gpio_pull_up(9);
+        gpio_set_function(sda /* SDA */, GPIO_FUNC_I2C);
+        gpio_set_function(scl /* SCL */, GPIO_FUNC_I2C);
+        gpio_pull_up(sda);
+        gpio_pull_up(scl);
 
         if(gt911_i2c_read(gt911_status.i2c_dev_addr, GT911_PRODUCT_ID1, &data_buf, 1) == PICO_ERROR_GENERIC) { return; }
 
