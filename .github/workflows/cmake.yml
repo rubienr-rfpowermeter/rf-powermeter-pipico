@@ -42,7 +42,7 @@ jobs:
         id: cache-picosdk-restore
         uses: actions/cache/restore@v4
         with:
-          path: ${{PICO_SDK_PATH}}
+          path: ${{env.PICO_SDK_PATH}}
           key: ${{ runner.os }}-picosdk-${{env.PICO_SDK_VERSION}}
 
       - name: "pico-sdk: checkout"
@@ -57,7 +57,7 @@ jobs:
         id: cache-picosdk-save
         uses: actions/cache/save@v4
         with:
-          path: ${{PICO_SDK_PATH}}
+          path: ${{env.PICO_SDK_PATH}}
           key: ${{ steps.cache-picosdk-restore.outputs.cache-primary-key }}
 
       - name: "repository: checkout"
