@@ -1,58 +1,72 @@
-name: Build
+name: CMake Build
 on:
   push:
     branches:
-      - "*"
+    paths:
+      - "**"
+      - "!**.md"
+      - "!**license"
+      - "!**.gitignore"
+      - "!**.clang-format"
+      - "!.github/workflows/**.yaml"
+      - ".github/workflows/cmake.yaml"
   pull_request:
-    branches:
-      - "main"
+    paths:
+      - "**"
+      - "!**.md"
+      - "!**license"
+      - "!**.gitignore"
+      - "!**.clang-format"
+      - "!.github/workflows/**.yaml"
+      - ".github/workflows/cmake.yml.yaml"
 
 env:
   BUILD_TYPE: Release
+  PICO_SDK_PATH: ${{github.workspace}}/pico-sdk
 
 jobs:
-  
-  build:
-    name: CMake Build
-    runs-on: [ubuntu-latest]
+  cmake-build:
+    name: Native unit tests on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest ]
     
     steps:
+      - name: "pico-sdk: cache"
+        uses: actions/cache@v3
+        with:
+          path: ${{env.PICO_SDK_PATH}}
+          key: ${{ runner.os }}-picosdk-${{ hashFiles('${{github.workspace}}/pico-sdk/**') }}
+          restore-keys: |
+            ${{ runner.os }}-picosdk-
 
-    - name: pico-sdk: cache
-      uses: actions/cache@v3
-      with:
-        path: ${{github.workspace}}/pico-sdk
-        key: ${{ runner.os }}-picosdk-${{ hashFiles('${{github.workspace}}/pico-sdk/**') }}
-        restore-keys: |
-          ${{ runner.os }}-picosdk-
-
-     - name: pico-sdk: checkout
-        working-directory: ${{github.workspace}}
+      - name: pico-sdk-checkout
+        # working-directory:
         uses: actions/checkout@v4
         with:
           repository: raspberrypi/pico-sdk
           ref: 2.0.0
-          path: pico-sdk
+          path: ${{env.PICO_SDK_PATH}}
 
-    - name: submodules: checkout
-       working-directory: ${{github.workspace}}/pico-sdk
-       run: |
-         git submodule update --init --recursive --recommend-shallow --single-branch --verbose
-         git submodules status
-         echo "PICO_SDK_PATH=${{github.workspace}}/pico-sdk" >> $GITHUB_ENV
-        
-    - name: build prerequisites
+      - name: "submodules: checkout"
+        working-directory: ${{github.workspace}}/pico-sdk
+        run: |
+          git submodule update --init --recursive --recommend-shallow --single-branch --verbose
+          git submodules status
+
+      - name: "build prerequisites"
         run: |
           sudo apt install cmake gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib
-        
-    - name: checkout repository
-      uses: actions/checkout@v3
 
-    - name: checkout submodules
-      run: src/scripts/git-submodules-init.sh
+      - name: "checkout repository"
+        uses: actions/checkout@v3
 
-    - name: create build environment and run CMake
-      run: src/scripts/cmake.sh
+      - name: "checkout submodules"
+        run: src/scripts/git-submodules-init.sh
 
-    - name: build
-      run: src/scripts/cmake.sh
+      - name: "create build environment and run CMake"
+        run: src/scripts/cmake.sh
+
+      - name: "build"
+        run: src/scripts/cmake.sh
