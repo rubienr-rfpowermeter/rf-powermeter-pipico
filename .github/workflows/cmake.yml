@@ -71,7 +71,7 @@ jobs:
         # run: src/scripts/install-prerequisites-ubuntu.sh
         uses: tecolicom/actions-use-apt-tools@v1
         with:
-          tools: "cmake gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib"
+          tools: cmake gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib
 
       - name: "build: create build env + CMake"
         working-directory: ${{env.REPO_PATH}}
