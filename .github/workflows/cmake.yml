@@ -21,6 +21,7 @@ on:
       - ".github/workflows/cmake.yml.yaml"
 
 env:
+  PICO_SDK_VERSION: 2.0.0
   PICO_SDK_REL_CHECKOUT_PATH: pico-sdk
   PICO_SDK_PATH: ${{github.workspace}}/pico-sdk
 
@@ -36,11 +37,20 @@ jobs:
         os: [ ubuntu-latest ]
     
     steps:
+
+      - name: Restore cached Primes
+        id: cache-primes-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ${{PICO_SDK_PATH}}
+          key: ${{ runner.os }}-picosdk-${{PICO_SDK_VERSION}}
+
       - name: "pico-sdk: checkout"
         uses: actions/checkout@v4
         with:
           repository: raspberrypi/pico-sdk
-          ref: 2.0.0
+          ref: ${{PICO_SDK_VERSION}}
           submodules: true
           path: ${{env.PICO_SDK_REL_CHECKOUT_PATH}}
 
