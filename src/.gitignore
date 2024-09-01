@@ -5,7 +5,7 @@
 # pico-sdk
 
 # libs
-components/*
+# components/*
 
 # build artifacts
 build
