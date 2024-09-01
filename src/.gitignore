@@ -1,9 +1,6 @@
 # IDE
 .swp
 
-# libs
-# components/*
-
 # build artifacts
 build
 generated
