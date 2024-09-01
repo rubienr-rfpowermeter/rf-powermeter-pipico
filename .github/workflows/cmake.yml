@@ -23,6 +23,7 @@ on:
 env:
   BUILD_TYPE: Release
   PICO_SDK_PATH: ${{github.workspace}}/pico-sdk
+  PICO_SDK_PATH_CACHE_KEY: ${{github.workspace}}/pico-sdk/**
 
 jobs:
   cmake-build:
@@ -39,7 +40,7 @@ jobs:
         with:
           path: ${{env.PICO_SDK_PATH}}
           # key: ${{ runner.os }}-picosdk-${{ hashFiles(format('{0}/**', env.PICO_SDK_PATH)) }}
-          key: ${{ runner.os }}-picosdk-${{ hashFiles(format('{0}/**', env.PICO_SDK_PATH)) }}
+          key: ${{ runner.os }}-picosdk-${{ hashFiles('~/**/CMakeLists.txt') }}
 
       - name: "pico-sdk: checkout"
         uses: actions/checkout@v4
@@ -54,10 +55,6 @@ jobs:
         with:
           path: ${{env.PICO_SDK_PATH}}
           key: ${{ steps.cache-picosdk-restore.outputs.cache-primary-key }}
-
-      - name: "submodule: checkout"
-        # working-directory: ${{github.workspace}}/pico-sdk
-        run: src/scripts/git-submodule-init.sh
 
       - name: "repository: checkout"
         uses: actions/checkout@v4
