@@ -35,18 +35,25 @@ jobs:
     steps:
       - name: "pico-sdk: cache restore"
         uses: actions/cache/restore@v4
+        id: cache-picosdk-restore
         with:
           path: ${{env.PICO_SDK_PATH}}
-          key: ${{ runner.os }}-picosdk-${{ hashFiles(format('{0}/**', env.PICO_SDK_PATH)) }}
-          restore-keys: |
-            ${{ runner.os }}-picosdk-
+          # key: ${{ runner.os }}-picosdk-${{ hashFiles(format('{0}/**', env.PICO_SDK_PATH)) }}
+          key: ${{ runner.os }}-picosdk
 
-      - name: pico-sdk-checkout
+      - name: "pico-sdk: checkout"
         uses: actions/checkout@v4
         with:
           repository: raspberrypi/pico-sdk
           ref: 2.0.0
           path: ${{env.PICO_SDK_PATH}}
+
+      - name: "pico-sdk: cache save"
+        id: cache-picosdk-save
+        uses: actions/cache/save@v4
+        with:
+          path: ${{env.PICO_SDK_PATH}}
+          key: ${{ steps.cache-picosdk-restore.outputs.cache-primary-key }}
 
       - name: "submodule: checkout"
         # working-directory: ${{github.workspace}}/pico-sdk
