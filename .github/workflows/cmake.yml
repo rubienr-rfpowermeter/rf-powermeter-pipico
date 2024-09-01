@@ -23,7 +23,7 @@ on:
 env:
   BUILD_TYPE: Release
   PICO_SDK_REL_CHECKOUT_PATH: pico-sdk
-  PICO_SDK_PATH: ${{github.workspace}}/${{env.PICO_SDK_REL_CHECKOUT_PATH}}
+  PICO_SDK_PATH: ${{github.workspace}}/pico-sdk
 
 jobs:
   cmake-build:
@@ -34,7 +34,7 @@ jobs:
         os: [ ubuntu-latest ]
     
     steps:
-      - name: "pico-sdk: checkoutx"
+      - name: "pico-sdk: checkout"
         uses: actions/checkout@v4
         with:
           repository: raspberrypi/pico-sdk
