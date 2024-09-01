@@ -59,10 +59,10 @@ jobs:
       - name: "repository: checkout"
         uses: actions/checkout@v4
         with:
-          submodules: "false"
+          submodules: true
 
-      - name: "repository: checkout submodule"
-        run: src/scripts/git-submodule-init.sh
+      #- name: "repository: checkout submodule"
+      #  run: src/scripts/git-submodule-init.sh
 
       - name: "build prerequisites"
         run: src/scripts/install-prerequisites-ubuntu.sh
