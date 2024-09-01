@@ -1,14 +1,11 @@
 #include "demos/keypad_encoder/lv_demo_keypad_encoder.h"
 #include "hardware/adc.h"
-#include "hardware/clocks.h"
-#include "hardware/pio.h"
 #include "lv_port_disp.h"
 #include "lv_port_indev.h"
 #include "lvgl.h"
-#include "pico/multicore.h"
 #include "pico/sem.h"
 #include "pico/stdlib.h"
-#include "ws2812.pio.h"
+#include "src/ws2812/rgbw.h"
 #include <pico/binary_info.h>
 #include <stdio.h>
 
@@ -48,13 +45,6 @@ static void beep_handler(lv_event_t *e)
     if(code == LV_EVENT_VALUE_CHANGED) { gpio_xor_mask(0x2000); }
 }
 
-static inline void put_pixel(uint32_t pixel_grb) { pio_sm_put_blocking(pio0, 0, pixel_grb << 8u); }
-
-static inline uint32_t urgb_u32(uint8_t r, uint8_t g, uint8_t b)
-{
-    return ((uint32_t)(r) << 8) | ((uint32_t)(g) << 16) | (uint32_t)(b);
-}
-
 static void slider_event_cb(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
@@ -62,7 +52,7 @@ static void slider_event_cb(lv_event_t *e)
     if(code == LV_EVENT_VALUE_CHANGED)
     {
         lv_color_t color = lv_colorwheel_get_rgb(obj);
-        put_pixel(urgb_u32(color.ch.red << 5, ((color.ch.green_h << 2) + color.ch.green_h) << 2, (color.ch.blue << 3)));
+        rgbw_put_pixel(rgbw_to_u32(color.ch.red << 5, ((color.ch.green_h << 2) + color.ch.green_h) << 2, (color.ch.blue << 3)));
     }
 }
 
@@ -70,7 +60,7 @@ static void clr_rgb_handler(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
-    if(code == LV_EVENT_CLICKED) { put_pixel(urgb_u32(0, 0, 0)); }
+    if(code == LV_EVENT_CLICKED) { rgbw_put_pixel(rgbw_to_u32(0, 0, 0)); }
 }
 
 void gpio_callback(uint gpio, uint32_t __unused events)
@@ -135,13 +125,7 @@ static void hw_handler(lv_event_t *e)
         lv_obj_center(lv_colorwheel);
         lv_obj_add_event_cb(lv_colorwheel, slider_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
 
-        // todo get free sm
-        PIO pio = pio0;
-        int sm = 0;
-        uint offset = pio_add_program(pio, &ws2812_program);
-
-        ws2812_program_init(pio, sm, offset, 12, 800000, true);
-        put_pixel(urgb_u32(100, 100, 100));
+        rgbw_init();
 
         gpio_set_irq_enabled_with_callback(14, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
         gpio_set_irq_enabled_with_callback(15, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
@@ -251,6 +235,7 @@ int main()
     lv_init();
     lv_port_disp_init();
     lv_port_indev_init();
+    rgbw_init();
 
     struct repeating_timer timer;
     add_repeating_timer_ms(1, ms_tick_timer_cb, NULL, &timer);
