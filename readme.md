@@ -4,27 +4,44 @@
 
 RF-Powermeter with "Pico Breakboard Kit" and 3.5" TFT Capacitive Touch Screen.
 
+```
+                                             Pico Breadboard Kit
+               ╔═══════════════════════════════════════════════╗
+┌──────────┐   ║    ┌───────────┐       ┌────────────────────┐ ║
+│ RF Probe ├────────┤ Pi Pico   ├───────│     Periphery      │ ║
+│          │  I2C   │           │       │                    │ ║
+│          │   ║    │ 2040/2350 │       │                    │ ║
+└──────────┘   ║    └────┬──────┘       │  RGB LED           │ ║
+               ║     SPI │              │  LEDs              │ ║
+               ║  ┌──────┴────────┐     │  Joystick 2-Axis   │ ║
+               ║  │ Touch Display │     │  Buttons           │ ║
+               ║  │               │     │  Buzzer            │ ║              
+               ║  │ 480x320 3.5"  │     │                    │ ║
+               ║  │ capacitive    │     │                    │ ║
+               ║  └───────────────┘     └────────────────────┘ ║
+               ╚═══════════════════════════════════════════════╝
+```
 ## Getting Started
 
-1. Install prerequisites
+1. Download repository
+   ```bash
+   cd
+   git clone --recursive https://github.com/rubienr/pico-meter.git ./pico-meter
+   ``` 
+
+2. Install prerequisites
    ```bash 
-   sudo apt install cmake gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib
+   cd pico-meter/src
+   scripts/install-prerequisites-ubuntu.sh
    ```
 
-2. Set up your project to point to use the Raspberry Pi Pico SDK
+3. Set up your project to point to use the Raspberry Pi Pico SDK
     * Either by cloning the SDK locally (most common):
         1. Make sure the `pico-sdk` source is downloaded.
         2. Set `PICO_SDK_PATH` to the SDK location in your environment, or pass it (`-DPICO_SDK_PATH=`) to cmake later.
 
-3. Download repository
-   ```bash
-   cd
-   git clone --recursive https://github.com/rubienr/pico-meter.git ./pico-meter
-   ```
-
 4. Build Projects
    ```bash
-   cd pico-meter
    scripts/cmake-make.sh
    ```
 
@@ -34,7 +51,7 @@ RF-Powermeter with "Pico Breakboard Kit" and 3.5" TFT Capacitive Touch Screen.
        back to Raspberry Pi.
        Execute following command to copy the `*.uf2` file to Pico.
        ```bash
-       cp firmware.uf2 /media/pi/RPI-RP2/
+       cp build/rf_meter.uf2 /media/pi/RPI-RP2/
        ```
     2. picoprobe
        ```bash
