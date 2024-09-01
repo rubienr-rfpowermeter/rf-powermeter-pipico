@@ -38,21 +38,27 @@ jobs:
     
     steps:
 
-      - name: Restore cached Primes
-        id: cache-primes-restore
+      - name: "pico-sdk: cache restore"
+        id: cache-picosdk-restore
         uses: actions/cache/restore@v4
         with:
-          path: |
-            ${{PICO_SDK_PATH}}
-          key: ${{ runner.os }}-picosdk-${{PICO_SDK_VERSION}}
+          path: ${{PICO_SDK_PATH}}
+          key: ${{ runner.os }}-picosdk-${{env.PICO_SDK_VERSION}}
 
       - name: "pico-sdk: checkout"
         uses: actions/checkout@v4
         with:
           repository: raspberrypi/pico-sdk
-          ref: ${{PICO_SDK_VERSION}}
+          ref: ${{env.PICO_SDK_VERSION}}
           submodules: true
           path: ${{env.PICO_SDK_REL_CHECKOUT_PATH}}
+
+      - name: "pico-sdk: cache store"
+        id: cache-picosdk-save
+        uses: actions/cache/save@v4
+        with:
+          path: ${{PICO_SDK_PATH}}
+          key: ${{ steps.cache-picosdk-restore.outputs.cache-primary-key }}
 
       - name: "repository: checkout"
         uses: actions/checkout@v4
