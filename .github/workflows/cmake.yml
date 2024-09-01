@@ -58,6 +58,8 @@ jobs:
 
       - name: "repository: checkout"
         uses: actions/checkout@v4
+        with:
+          submodules: "false"
 
       - name: "repository: checkout submodule"
         run: src/scripts/git-submodule-init.sh
