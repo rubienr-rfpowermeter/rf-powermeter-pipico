@@ -1,0 +1,47 @@
+name: Build
+on:
+  push:
+    branches:
+      - "*"
+  pull_request:
+    branches:
+      - "main"
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  
+  build:
+    name: CMake Build
+    runs-on: [ubuntu-latest]
+    
+    steps:
+     - name: pico-sdk: checkout
+        uses: actions/checkout@v4
+        with:
+          repository: raspberrypi/pico-sdk
+          ref: 2.0.0
+          path: pico-sdk
+
+    - name: pico-sdk: submodules submodules
+       working-directory: ${{github.workspace}}/pico-sdk
+       run: |
+         git submodule update --init
+         echo "PICO_SDK_PATH=${{github.workspace}}/pico-sdk" >> $GITHUB_ENV
+        
+    - name: Build prerequisites
+        run: |
+          sudo apt install cmake gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib
+        
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Checkout submodules
+      run: src/scripts/git-submodules-init.sh
+
+    - name: Create build environment and run CMake
+      run: src/scripts/cmake.sh
+
+    - name: Build
+      run: src/scripts/cmake.sh
