@@ -52,15 +52,12 @@ jobs:
 
       - name: "build prerequisites"
         run: src/scripts/install-prerequisites-ubuntu.sh
-        with:
-          path: ${{env.REPO_ABS_PATH}}
+        working-directory: ${{env.REPO_ABS_PATH}}
 
       - name: "build: create build env + CMake"
         run: src/scripts/cmake.sh
-        with:
-          path: ${{env.REPO_ABS_PATH}}
+        working-directory: ${{env.REPO_ABS_PATH}}
 
       - name: "build: make"
         run: src/scripts/cmake.sh
-        with:
-          path: ${{env.REPO_ABS_PATH}}
+        working-directory: ${{env.REPO_ABS_PATH}}
