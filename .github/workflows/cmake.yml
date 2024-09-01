@@ -21,16 +21,15 @@ on:
       - ".github/workflows/cmake.yml.yaml"
 
 env:
-  BUILD_TYPE: Release
   PICO_SDK_REL_CHECKOUT_PATH: pico-sdk
   PICO_SDK_PATH: ${{github.workspace}}/pico-sdk
 
-  REPO_REL_CHECKOUT_PATH: xrepo
-  REPO_PATH: ${{github.workspace}}/xrepo
+  REPO_REL_CHECKOUT_PATH: target-repo
+  REPO_PATH: ${{github.workspace}}/target-repo
 
 jobs:
   cmake-build:
-    name: CMake Build on ${{ matrix.os }}
+    name: CMake build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -52,13 +51,15 @@ jobs:
           path: ${{env.REPO_REL_CHECKOUT_PATH}}
 
       - name: "build prerequisites"
-        run: src/scripts/install-prerequisites-ubuntu.sh
         working-directory: ${{env.REPO_PATH}}
+        run: src/scripts/install-prerequisites-ubuntu.sh
 
       - name: "build: create build env + CMake"
-        run: src/scripts/cmake.sh
         working-directory: ${{env.REPO_PATH}}
+        run: src/scripts/cmake.sh
 
       - name: "build: make"
-        run: src/scripts/make.sh
         working-directory: ${{env.REPO_PATH}}
+        run: |
+          src/scripts/make.sh
+          src/scripts/picotool-info.sh
