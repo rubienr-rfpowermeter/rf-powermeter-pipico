@@ -6,16 +6,16 @@
 /*Copy this file as "lv_port_indev.c" and set this value to "1" to enable content*/
 #if 1
 
-/*********************
- *      INCLUDES
- *********************/
-#include "lv_port_indev.h"
-#include "lvgl.h"
+    /*********************
+     *      INCLUDES
+     *********************/
+    #include "lv_port_indev.h"
+    #include "lvgl.h"
 
-#include "hardware/i2c.h"
-#include "hardware/gpio.h"
+    #include "hardware/gpio.h"
+    #include "hardware/i2c.h"
 
-#include <stdio.h>
+    #include <stdio.h>
 
 /*********************
  *      DEFINES
@@ -88,12 +88,11 @@ void lv_port_indev_init(void)
 /**********************
  *   STATIC FUNCTIONS
  **********************/
-int gt911_i2c_read(uint8_t slave_addr, uint16_t register_addr, uint8_t *data_buf, uint8_t len) {
-    uint8_t buf[2] = {register_addr >> 8,register_addr & 0xFF};
-    if (i2c_write_blocking(i2c0, slave_addr, buf, 2, true))
-        return i2c_read_blocking(i2c0, slave_addr, data_buf, len, false);
-    else
-        return PICO_ERROR_GENERIC;
+int gt911_i2c_read(uint8_t slave_addr, uint16_t register_addr, uint8_t *data_buf, uint8_t len)
+{
+    uint8_t buf[2] = {register_addr >> 8, register_addr & 0xFF};
+    if(i2c_write_blocking(i2c0, slave_addr, buf, 2, true)) return i2c_read_blocking(i2c0, slave_addr, data_buf, len, false);
+    else return PICO_ERROR_GENERIC;
 }
 
 /*------------------
@@ -103,7 +102,7 @@ int gt911_i2c_read(uint8_t slave_addr, uint16_t register_addr, uint8_t *data_buf
 /*Initialize your touchpad*/
 static void touchpad_init(void)
 {
-    if (!gt911_status.inited)
+    if(!gt911_status.inited)
     {
         gt911_status.i2c_dev_addr = GT911_I2C_SLAVE_ADDR;
         uint8_t data_buf;
@@ -114,13 +113,10 @@ static void touchpad_init(void)
         gpio_pull_up(8);
         gpio_pull_up(9);
 
-        if (gt911_i2c_read(gt911_status.i2c_dev_addr, GT911_PRODUCT_ID1, &data_buf, 1) == PICO_ERROR_GENERIC )
-        {
-            return;
-        }
+        if(gt911_i2c_read(gt911_status.i2c_dev_addr, GT911_PRODUCT_ID1, &data_buf, 1) == PICO_ERROR_GENERIC) { return; }
 
         // Read 4 bytes for Product ID in ASCII
-        for (int i = 0; i < GT911_PRODUCT_ID_LEN; i++)
+        for(int i = 0; i < GT911_PRODUCT_ID_LEN; i++)
         {
             gt911_i2c_read(gt911_status.i2c_dev_addr, (GT911_PRODUCT_ID1 + i), (uint8_t *)&(gt911_status.product_id[i]), 1);
         }
@@ -152,16 +148,16 @@ static void touchpad_read(lv_indev_drv_t *indev_drv, lv_indev_data_t *data)
     data->continue_reading = false;
 
     gt911_i2c_read(gt911_status.i2c_dev_addr, GT911_STATUS_REG, &status_reg, 1);
-    
+
     touch_pnt_cnt = status_reg & 0x0F;
-    if ((status_reg & 0x80) || (touch_pnt_cnt < 6))
+    if((status_reg & 0x80) || (touch_pnt_cnt < 6))
     {
         // Reset Status Reg Value
         // GT911_STATUS_REG => 0x814E
-         uint8_t ret = 0;
-         ret = i2c_write_blocking(i2c0, gt911_status.i2c_dev_addr, (uint8_t[]){ 0x81,0x4E,0x00 }, 3, true);
+        uint8_t ret = 0;
+        ret = i2c_write_blocking(i2c0, gt911_status.i2c_dev_addr, (uint8_t[]){0x81, 0x4E, 0x00}, 3, true);
     }
-    if (touch_pnt_cnt != 1)
+    if(touch_pnt_cnt != 1)
     { // ignore no touch & multi touch
         data->point.x = last_x;
         data->point.y = last_y;
@@ -182,17 +178,17 @@ static void touchpad_read(lv_indev_drv_t *indev_drv, lv_indev_data_t *data)
     gt911_i2c_read(gt911_status.i2c_dev_addr, GT911_PT1_Y_COORD_H, &data_buf, 1);
     last_y |= ((uint16_t)data_buf << 8);
 
-#if LV_GT911_INVERT_X
+    #if LV_GT911_INVERT_X
     last_x = gt911_status.max_x_coord - last_x;
-#endif
-#if LV_GT911_INVERT_Y
+    #endif
+    #if LV_GT911_INVERT_Y
     last_y = gt911_status.max_y_coord - last_y;
-#endif
-#if LV_GT911_SWAPXY
+    #endif
+    #if LV_GT911_SWAPXY
     int16_t swap_buf = last_x;
     last_x = last_y;
     last_y = swap_buf;
-#endif
+    #endif
     data->point.x = last_x;
     data->point.y = last_y;
     data->state = LV_INDEV_STATE_PR;
