@@ -22,7 +22,8 @@ on:
 
 env:
   BUILD_TYPE: Release
-  PICO_SDK_PATH: pico-sdk
+  PICO_SDK_REL_CHECKOUT_PATH: pico-sdk
+  PICO_SDK_PATH: ${{github.workspace}}/${{env.PICO_SDK_REL_CHECKOUT_PATH}}
 
 jobs:
   cmake-build:
