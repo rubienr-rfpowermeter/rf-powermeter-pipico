@@ -24,10 +24,10 @@ pico_sdk_init()
 
 # LVGL
 include_directories(./)
-add_subdirectory(./components/lvgl)
-include_directories(./components/lvgl)
+add_subdirectory(./gitmodules/lvgl)
+include_directories(./gitmodules/lvgl)
 add_definitions(-DLV_LVGL_H_INCLUDE_SIMPLE=1)
-file(GLOB_RECURSE DEMO_SOURCES ./components/lvgl/demos/*.c)
+file(GLOB_RECURSE DEMO_SOURCES ./gitmodules/lvgl/demos/*.c)
 
 # add executable
 add_executable(rf_probe
@@ -50,15 +50,14 @@ pico_enable_stdio_usb(rf_probe 0)
 
 # standard libraries
 target_link_libraries(rf_probe
-        pico_stdlib
-        hardware_spi
         hardware_adc
+        # hardware_dma
         hardware_i2c
         hardware_pio
-        hardware_dma
-        pico_multicore
+        hardware_spi
         lvgl
-        lvgl_demos
+        pico_multicore
+        pico_stdlib
 )
 
 # add the standard include files to the build
