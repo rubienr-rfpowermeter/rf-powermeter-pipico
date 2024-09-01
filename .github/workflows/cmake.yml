@@ -40,7 +40,7 @@ jobs:
           repository: raspberrypi/pico-sdk
           ref: 2.0.0
           submodules: true
-          path: ${{env.PICO_SDK_PATH}}
+          path: ${{env.PICO_SDK_REL_CHECKOUT_PATH}}
 
       - name: "repository: checkout"
         uses: actions/checkout@v4
