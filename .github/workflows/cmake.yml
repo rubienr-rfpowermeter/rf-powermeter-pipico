@@ -37,7 +37,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{env.PICO_SDK_PATH}}
-          key: ${{ runner.os }}-picosdk-${{ format('{0}/**', env.PICO_SDK_PATH) }}
+          key: ${{ runner.os }}-picosdk-${{ hashFiles(format('{0}/**', env.PICO_SDK_PATH)) }}
           restore-keys: |
             ${{ runner.os }}-picosdk-
 
