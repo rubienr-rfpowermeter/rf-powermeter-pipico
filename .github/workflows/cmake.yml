@@ -39,7 +39,7 @@ jobs:
         with:
           path: ${{env.PICO_SDK_PATH}}
           # key: ${{ runner.os }}-picosdk-${{ hashFiles(format('{0}/**', env.PICO_SDK_PATH)) }}
-          key: ${{ runner.os }}-picosdk
+          key: ${{ runner.os }}-picosdk-${{ hashFiles(format('{0}/**', env.PICO_SDK_PATH)) }}
 
       - name: "pico-sdk: checkout"
         uses: actions/checkout@v4
