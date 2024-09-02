@@ -1,7 +1,7 @@
 #include "demos/keypad_encoder/lv_demo_keypad_encoder.h"
+#include "lvgl.h"
 #include "modules/lvgl/lv_port_disp.h"
 #include "modules/lvgl/lv_port_indev.h"
-#include "lvgl.h"
 #include "modules/periphery/buttons.h"
 #include "modules/periphery/buzzer.h"
 #include "modules/periphery/leds.h"
@@ -9,6 +9,7 @@
 #include "pico/sem.h"
 #include "pico/stdlib.h"
 #include <pico/binary_info.h>
+#include <pico/multicore.h>
 #include <stdio.h>
 
 extern lv_img_dsc_t ai;
@@ -26,7 +27,13 @@ bool ms_tick_timer_cb(struct repeating_timer *__unused t)
     return true;
 }
 
-static void keypad_handler(lv_event_t *e)
+static void handle_buzzer(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    if(code == LV_EVENT_VALUE_CHANGED) { buzzer_beep(); }
+}
+
+static void handle_keypad(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
@@ -40,10 +47,11 @@ static void keypad_handler(lv_event_t *e)
     }
 }
 
-static void beep_handler(lv_event_t *e)
+static void handle_clr_rgb(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
-    if(code == LV_EVENT_VALUE_CHANGED) { buzzer_beep(); }
+
+    if(code == LV_EVENT_CLICKED) { rgbw_put_pixel(rgbw_to_u32(0, 0, 0)); }
 }
 
 static void slider_event_cb(lv_event_t *e)
@@ -57,14 +65,7 @@ static void slider_event_cb(lv_event_t *e)
     }
 }
 
-static void clr_rgb_handler(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if(code == LV_EVENT_CLICKED) { rgbw_put_pixel(rgbw_to_u32(0, 0, 0)); }
-}
-
-void gpio_callback(uint gpio, uint32_t __unused events)
+void gpio_buttons_callback(uint gpio, uint32_t __unused events)
 {
     switch(gpio)
     {
@@ -82,7 +83,7 @@ void gpio_callback(uint gpio, uint32_t __unused events)
 }
 
 
-static void hw_handler(lv_event_t *e)
+static void handle_hw(lv_event_t *e)
 {
     lv_obj_t *label;
 
@@ -97,7 +98,7 @@ static void hw_handler(lv_event_t *e)
         buzzer_init();
 
         lv_obj_t *beep_btn = lv_btn_create(lv_scr_act());
-        lv_obj_add_event_cb(beep_btn, beep_handler, LV_EVENT_ALL, NULL);
+        lv_obj_add_event_cb(beep_btn, handle_buzzer, LV_EVENT_ALL, NULL);
         lv_obj_align(beep_btn, LV_ALIGN_TOP_MID, 0, 40);
         lv_obj_add_flag(beep_btn, LV_OBJ_FLAG_CHECKABLE);
         lv_obj_set_height(beep_btn, LV_SIZE_CONTENT);
@@ -107,7 +108,7 @@ static void hw_handler(lv_event_t *e)
         lv_obj_center(label);
 
         lv_obj_t *clr_rgb_btn = lv_btn_create(lv_scr_act());
-        lv_obj_add_event_cb(clr_rgb_btn, clr_rgb_handler, LV_EVENT_ALL, NULL);
+        lv_obj_add_event_cb(clr_rgb_btn, handle_clr_rgb, LV_EVENT_ALL, NULL);
         lv_obj_align(clr_rgb_btn, LV_ALIGN_TOP_MID, 0, 80);
         lv_obj_add_flag(clr_rgb_btn, LV_OBJ_FLAG_CHECKABLE);
 
@@ -127,9 +128,7 @@ static void hw_handler(lv_event_t *e)
 
         rgbw_init();
 
-        buttons_init(&gpio_callback);
-
-        gpio_set_irq_enabled_with_callback(22, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &gpio_callback);
+        buttons_init(&gpio_buttons_callback);
 
         led1 = lv_led_create(lv_scr_act());
         lv_obj_align(led1, LV_ALIGN_TOP_MID, -30, 400);
@@ -163,7 +162,7 @@ void lv_example_btn_1(void)
     lv_obj_t *label;
 
     lv_obj_t *btn1 = lv_btn_create(lv_scr_act());
-    lv_obj_add_event_cb(btn1, keypad_handler, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(btn1, handle_keypad, LV_EVENT_ALL, NULL);
     lv_obj_align(btn1, LV_ALIGN_TOP_MID, 0, 40);
 
     label = lv_label_create(btn1);
@@ -171,7 +170,7 @@ void lv_example_btn_1(void)
     lv_obj_center(label);
 
     lv_obj_t *btn2 = lv_btn_create(lv_scr_act());
-    lv_obj_add_event_cb(btn2, hw_handler, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(btn2, handle_hw, LV_EVENT_ALL, NULL);
     lv_obj_align(btn2, LV_ALIGN_TOP_MID, 0, 80);
 
     label = lv_label_create(btn2);
@@ -179,20 +178,32 @@ void lv_example_btn_1(void)
     lv_obj_center(label);
 }
 
-void task0(void)
+[[noreturn]]
+void main_core0(void)
 {
-
     lv_obj_clean(lv_scr_act());
-
     busy_wait_ms(100);
 
     img1 = lv_img_create(lv_scr_act());
     lv_img_set_src(img1, &ai);
     lv_obj_align(img1, LV_ALIGN_DEFAULT, 0, 0);
     lv_example_btn_1();
+
+    while(1)
+    {
+        if(0 == systemTicksMs % 5) lv_task_handler();
+    }
 }
 
 [[noreturn]]
+void main_core1(void)
+{
+    while(1)
+        ;
+}
+
+[[noreturn]]
+
 int main()
 {
     bi_decl_if_func_used(bi_program_feature("Joystick 2-axis (ADC0, ADC1)"))
@@ -209,9 +220,6 @@ int main()
     struct repeating_timer timer;
     add_repeating_timer_ms(1, ms_tick_timer_cb, NULL, &timer);
 
-    task0();
-    while(1)
-    {
-        if(0 == systemTicksMs % 5) lv_task_handler();
-    }
+    multicore_launch_core1(main_core1);
+    main_core0();
 }
