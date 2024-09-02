@@ -10,7 +10,6 @@
 #include "lvgl.h"
 
 #include "pico/stdlib.h"
-#include <stdio.h>
 
 extern lv_img_dsc_t ai;
 lv_obj_t *img1 = nullptr;
@@ -97,7 +96,7 @@ static void handle_hw(lv_event_t *e)
         buzzer_init();
 
         lv_obj_t *beep_btn = lv_btn_create(lv_scr_act());
-        lv_obj_add_event_cb(beep_btn, handle_buzzer, LV_EVENT_ALL, NULL);
+        lv_obj_add_event_cb(beep_btn, handle_buzzer, LV_EVENT_ALL, nullptr);
         lv_obj_align(beep_btn, LV_ALIGN_TOP_MID, 0, 40);
         lv_obj_add_flag(beep_btn, LV_OBJ_FLAG_CHECKABLE);
         lv_obj_set_height(beep_btn, LV_SIZE_CONTENT);
@@ -107,7 +106,7 @@ static void handle_hw(lv_event_t *e)
         lv_obj_center(label);
 
         lv_obj_t *clr_rgb_btn = lv_btn_create(lv_scr_act());
-        lv_obj_add_event_cb(clr_rgb_btn, handle_clr_rgb, LV_EVENT_ALL, NULL);
+        lv_obj_add_event_cb(clr_rgb_btn, handle_clr_rgb, LV_EVENT_ALL, nullptr);
         lv_obj_align(clr_rgb_btn, LV_ALIGN_TOP_MID, 0, 80);
         lv_obj_add_flag(clr_rgb_btn, LV_OBJ_FLAG_CHECKABLE);
 
@@ -123,7 +122,7 @@ static void handle_hw(lv_event_t *e)
         lv_obj_align(lv_colorwheel, LV_ALIGN_TOP_MID, 100, 0);
 
         lv_obj_center(lv_colorwheel);
-        lv_obj_add_event_cb(lv_colorwheel, slider_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
+        lv_obj_add_event_cb(lv_colorwheel, slider_event_cb, LV_EVENT_VALUE_CHANGED, nullptr);
 
         rgbw_init();
 
@@ -156,12 +155,12 @@ static void handle_hw(lv_event_t *e)
     }
 }
 
-void lv_example_btn_1(void)
+void lv_example_btn_1()
 {
     lv_obj_t *label;
 
     lv_obj_t *btn1 = lv_btn_create(lv_scr_act());
-    lv_obj_add_event_cb(btn1, handle_keypad, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(btn1, handle_keypad, LV_EVENT_ALL, nullptr);
     lv_obj_align(btn1, LV_ALIGN_TOP_MID, 0, 40);
 
     label = lv_label_create(btn1);
@@ -169,7 +168,7 @@ void lv_example_btn_1(void)
     lv_obj_center(label);
 
     lv_obj_t *btn2 = lv_btn_create(lv_scr_act());
-    lv_obj_add_event_cb(btn2, handle_hw, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(btn2, handle_hw, LV_EVENT_ALL, nullptr);
     lv_obj_align(btn2, LV_ALIGN_TOP_MID, 0, 80);
 
     label = lv_label_create(btn2);
@@ -177,10 +176,10 @@ void lv_example_btn_1(void)
     lv_obj_center(label);
 }
 
-void _unused_cb(uint __unused gpio, uint32_t __unused event_mask) {}
+static void unused_cb(uint __unused gpio, uint32_t __unused event_mask) {}
 
 [[noreturn]]
-void main_core0(void)
+void main_core0()
 {
     stdio_init_all();
     setup_default_uart();
@@ -190,10 +189,10 @@ void main_core0(void)
     lv_port_indev_init();
     rgbw_init();
 
-    joystick_init(_unused_cb);
+    joystick_init(unused_cb);
 
-    struct repeating_timer timer;
-    add_repeating_timer_ms(1, ms_tick_timer_cb, NULL, &timer);
+    repeating_timer_t timer;
+    add_repeating_timer_ms(1, ms_tick_timer_cb, nullptr, &timer);
 
     lv_obj_clean(lv_scr_act());
     busy_wait_ms(100);
