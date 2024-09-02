@@ -40,6 +40,8 @@ add_executable(rf_probe
         modules/periphery/buzzer.c
         modules/periphery/leds.c
         modules/periphery/ws2812/rgbw.c
+        modules/main_sampler/main.cpp
+        modules/main_ui/main.cpp
         main.cpp
 )
 
