@@ -3,13 +3,17 @@ cmake_minimum_required(VERSION 3.13)
 set(CMAKE_C_STANDARD 23)
 set(CMAKE_CXX_STANDARD 23)
 
-# initialise pico_sdk from installed location (note this can come from environment, CMake cache etc)
-#set(PICO_SDK_PATH "{$USER}/pico/pico-sdk")
+# pico-sdk fallback to $USER/pico/pico-sdk if environment PICO_SDK_PATH is not set
+if (DEFINED ENV{PICO_SDK_PATH})
+    set(PICO_SDK_PATH "$ENV{PICO_SDK_PATH}")
+else ()
+    set(PICO_SDK_PATH "$ENV{USER}/pico/pico-sdk")
+endif ()
 
 set(PICO_BOARD pico CACHE STRING "Pico Board Type")
 set(PICO_PLATFORM rp2040 CACHE STRING "Pico Platform")
 
-# Pull in Raspberry Pi Pico SDK (must be before project)
+# pull in Raspberry Pi Pico SDK
 include(pico_sdk_import.cmake)
 
 
@@ -27,12 +31,10 @@ include_directories(./)
 add_subdirectory(./gitmodules/lvgl)
 include_directories(./gitmodules/lvgl)
 add_definitions(-DLV_LVGL_H_INCLUDE_SIMPLE=1)
-# file(GLOB_RECURSE DEMO_SOURCES ./gitmodules/lvgl/demos/*.c)
 
 # add executable
 add_executable(rf_probe
-        # ${DEMO_SOURCES}
-        # gitmodules/lvgl/demos/keypad_encoder/lv_demo_keypad_encoder.c
+        gitmodules/lvgl/demos/keypad_encoder/lv_demo_keypad_encoder.c
         modules/lvgl/img.c
         modules/lvgl/lv_port_disp.c
         modules/lvgl/lv_port_indev.c
