@@ -36,12 +36,15 @@ add_executable(rf_probe
         img.c
         lv_port_disp.c
         lv_port_indev.c
-        modules/ws2812/rgbw.c
+        modules/periphery/buttons.c
+        modules/periphery/buzzer.c
+        modules/periphery/leds.c
+        modules/periphery/ws2812/rgbw.c
         main.c
 )
 
 pico_generate_pio_header(rf_probe
-        ${CMAKE_CURRENT_LIST_DIR}/modules/ws2812/ws2812.pio
+        ${CMAKE_CURRENT_LIST_DIR}/modules/periphery/ws2812/ws2812.pio
         OUTPUT_DIR ${CMAKE_CURRENT_LIST_DIR}/generated)
 
 pico_set_program_name(rf_probe "rf_probe")

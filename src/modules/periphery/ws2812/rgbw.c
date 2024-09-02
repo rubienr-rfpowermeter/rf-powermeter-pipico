@@ -4,9 +4,9 @@
 #include "ws2812.pio.h"
 #include <pico/binary_info.h>
 
-static PIO rgbw_pio = {pio0};
-static int rgbw_sm = {0};
-static int rgbw_offset = {0};
+PIO rgbw_pio = {pio0};
+int rgbw_sm = {0};
+int rgbw_offset = {0};
 
 void rgbw_put_pixel(uint32_t pixel_grb) { pio_sm_put_blocking(rgbw_pio, rgbw_sm, pixel_grb << 8u); }
 
