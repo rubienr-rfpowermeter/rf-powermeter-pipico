@@ -5,7 +5,7 @@
 #include "lvgl.h"
 #include "pico/sem.h"
 #include "pico/stdlib.h"
-#include "src/ws2812/rgbw.h"
+#include "modules/ws2812/rgbw.h"
 #include <pico/binary_info.h>
 #include <stdio.h>
 
