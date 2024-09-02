@@ -40,7 +40,7 @@ add_executable(rf_probe
         modules/periphery/buzzer.c
         modules/periphery/leds.c
         modules/periphery/ws2812/rgbw.c
-        main.c
+        main.cpp
 )
 
 pico_generate_pio_header(rf_probe

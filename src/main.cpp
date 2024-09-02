@@ -22,7 +22,7 @@ lv_obj_t *jy_label = nullptr;
 volatile uint32_t systemTicksMs = {0};
 bool ms_tick_timer_cb(struct repeating_timer *__unused t)
 {
-    systemTicksMs++;
+    systemTicksMs +=1;
     lv_tick_inc(1);
     return true;
 }

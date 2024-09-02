@@ -62,6 +62,7 @@ TabWidth: 4
 UseTab: Never
 IndentPPDirectives: BeforeHash
 AlignConsecutiveMacros:
-  Enabled: true
+  Enabled: false
   AcrossEmptyLines: true
   AcrossComments: true
+IndentExternBlock: NoIndent
