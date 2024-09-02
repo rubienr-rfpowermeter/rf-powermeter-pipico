@@ -33,9 +33,9 @@ add_definitions(-DLV_LVGL_H_INCLUDE_SIMPLE=1)
 add_executable(rf_probe
         # ${DEMO_SOURCES}
         # gitmodules/lvgl/demos/keypad_encoder/lv_demo_keypad_encoder.c
-        img.c
-        lv_port_disp.c
-        lv_port_indev.c
+        modules/lvgl/img.c
+        modules/lvgl/lv_port_disp.c
+        modules/lvgl/lv_port_indev.c
         modules/periphery/buttons.c
         modules/periphery/buzzer.c
         modules/periphery/leds.c

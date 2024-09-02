@@ -1,6 +1,6 @@
 #include "demos/keypad_encoder/lv_demo_keypad_encoder.h"
-#include "lv_port_disp.h"
-#include "lv_port_indev.h"
+#include "modules/lvgl/lv_port_disp.h"
+#include "modules/lvgl/lv_port_indev.h"
 #include "lvgl.h"
 #include "modules/periphery/buttons.h"
 #include "modules/periphery/buzzer.h"
