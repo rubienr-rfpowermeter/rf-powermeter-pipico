@@ -38,6 +38,7 @@ add_executable(rf_probe
         modules/lvgl/lv_port_indev.c
         modules/periphery/buttons.c
         modules/periphery/buzzer.c
+        modules/periphery/joystick.c
         modules/periphery/leds.c
         modules/periphery/ws2812/rgbw.c
         modules/main_sampler/main.cpp

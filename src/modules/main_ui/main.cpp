@@ -1,15 +1,15 @@
-#include "demos/keypad_encoder/lv_demo_keypad_encoder.h"
-#include "lvgl.h"
 #include "modules/lvgl/lv_port_disp.h"
 #include "modules/lvgl/lv_port_indev.h"
 #include "modules/periphery/buttons.h"
 #include "modules/periphery/buzzer.h"
+#include "modules/periphery/joystick.h"
 #include "modules/periphery/leds.h"
 #include "modules/periphery/ws2812/rgbw.h"
-#include "pico/sem.h"
+
+#include "demos/keypad_encoder/lv_demo_keypad_encoder.h"
+#include "lvgl.h"
+
 #include "pico/stdlib.h"
-#include <pico/binary_info.h>
-#include <pico/multicore.h>
 #include <stdio.h>
 
 extern lv_img_dsc_t ai;
@@ -18,11 +18,10 @@ lv_obj_t *led1 = nullptr;
 lv_obj_t *led2 = nullptr;
 lv_obj_t *jy_label = nullptr;
 
-
 volatile uint32_t systemTicksMs = {0};
 bool ms_tick_timer_cb(struct repeating_timer *__unused t)
 {
-    systemTicksMs +=1;
+    systemTicksMs += 1;
     lv_tick_inc(1);
     return true;
 }
@@ -178,13 +177,11 @@ void lv_example_btn_1(void)
     lv_obj_center(label);
 }
 
+void _unused_cb(uint __unused gpio, uint32_t __unused event_mask) {}
+
 [[noreturn]]
 void main_core0(void)
 {
-    bi_decl_if_func_used(bi_program_feature("Joystick 2-axis (ADC0, ADC1)"))
-    bi_decl_if_func_used(bi_1pin_with_name(26, "X-axis (ADC0)"))
-    bi_decl_if_func_used(bi_1pin_with_name(27, "Y-axis (ADC1)"))
-
     stdio_init_all();
     setup_default_uart();
 
@@ -193,9 +190,10 @@ void main_core0(void)
     lv_port_indev_init();
     rgbw_init();
 
+    joystick_init(_unused_cb);
+
     struct repeating_timer timer;
     add_repeating_timer_ms(1, ms_tick_timer_cb, NULL, &timer);
-
 
     lv_obj_clean(lv_scr_act());
     busy_wait_ms(100);
