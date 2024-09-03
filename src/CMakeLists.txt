@@ -85,4 +85,6 @@ target_compile_definitions(rf_probe PRIVATE
         PICO_STDIO_STACK_BUFFER_SIZE=64 # use a small printf on stack buffer
 )
 
+pico_set_program_url(${PROJECT_NAME} "https://github.com/rubienr-rfpowermeter/rf-powermeter-pipico")
+pico_set_program_description(${PROJECT_NAME} "Power Meter (sv1afn.com)")
 pico_add_extra_outputs(rf_probe)
