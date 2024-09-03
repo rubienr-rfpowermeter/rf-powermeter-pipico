@@ -3,24 +3,26 @@
  *
  */
 
-/*Copy this file as "lv_port_indev.c" and set this value to "1" to enable content*/
-#if 1
 
-    /*********************
-     *      INCLUDES
-     *********************/
-    #include "lv_port_indev.h"
-    #include "lvgl.h"
+/*********************
+ *      INCLUDES
+ *********************/
+#include "lv_port_indev.h"
+#include "lvgl.h"
 
-    #include "hardware/gpio.h"
-    #include "hardware/i2c.h"
+#include "hardware/gpio.h"
+#include "hardware/i2c.h"
+#include "modules/globals/cast.h"
+#include "modules/globals/globals.h"
 
-    #include <pico/binary_info/code.h>
-    #include <stdio.h>
+#include <pico/binary_info/code.h>
+#include <stdio.h>
 
 /*********************
  *      DEFINES
  *********************/
+#define LV_GT911_SWAPXY 1
+#define LV_GT911_INVERT_X 1
 
 /**********************
  *      TYPEDEFS
@@ -100,6 +102,35 @@ int gt911_i2c_read(uint8_t slave_addr, uint16_t register_addr, uint8_t *data_buf
  * Touchpad
  * -----------------*/
 
+static int touchpad_read_product_id(uint32_t *product_id)
+{
+    IntCast *buffer = {(IntCast *)(void *)product_id};
+    int success = {0};
+
+    int ret = {gt911_i2c_read(gt911_status.i2c_dev_addr, GT911_PRODUCT_ID1, &buffer->as_8bit.b0.uint8, 1)};
+    success |= ret;
+    if(ret != PICO_ERROR_NONE) printf("lv_port_indev: failed to read product id[0] error=%d\n", ret);
+
+    ret = gt911_i2c_read(gt911_status.i2c_dev_addr, GT911_PRODUCT_ID2, &buffer->as_8bit.b1.uint8, 1);
+    success |= ret;
+    if(ret != PICO_ERROR_NONE) printf("lv_port_indev: failed to read product id[1] error=%d\n", ret);
+
+    ret = gt911_i2c_read(gt911_status.i2c_dev_addr, GT911_PRODUCT_ID3, &buffer->as_8bit.b2.uint8, 1);
+    success |= ret;
+    if(ret != PICO_ERROR_NONE) printf("lv_port_indev: failed to read product id[2] error=%d\n", ret);
+
+    ret = gt911_i2c_read(gt911_status.i2c_dev_addr, GT911_PRODUCT_ID4, &buffer->as_8bit.b3.uint8, 1);
+    success |= ret;
+    if(ret != PICO_ERROR_NONE) printf("lv_port_indev: failed to read product id[3] error=%d\n", ret);
+
+    if(success != PICO_ERROR_NONE)
+    {
+        printf("lv_port_indev: failed to read product id\n");
+        return PICO_ERROR_GENERIC;
+    }
+    return PICO_ERROR_NONE;
+}
+
 /*Initialize your touchpad*/
 static void touchpad_init(void)
 {
@@ -111,14 +142,15 @@ static void touchpad_init(void)
         const uint8_t sda = {8};
         const uint8_t scl = {9};
 
-        bi_decl_if_func_used(bi_program_feature("Capacitive Touch (I2C0)"));
-        bi_decl_if_func_used(bi_2pins_with_func(sda, scl, GPIO_FUNC_I2C));
-        bi_decl_if_func_used(bi_2pins_with_names(sda, "Touch", scl, "Touch"));
-        bi_decl_if_func_used(bi_2pins_with_names(10, "TPRST", 11, "TPINT"));
+        bi_decl_if_func_used(bi_program_feature("Capacitive Touch (I2C0)"))   //
+        bi_decl_if_func_used(bi_2pins_with_func(sda, scl, GPIO_FUNC_I2C))     //
+        bi_decl_if_func_used(bi_2pins_with_names(sda, "Touch", scl, "Touch")) //
+        bi_decl_if_func_used(bi_2pins_with_names(10, "TPRST", 11, "TPINT"))   //
 
-        i2c_init(i2c0, 100 * 1000);
-        gpio_set_function(sda /* SDA */, GPIO_FUNC_I2C);
-        gpio_set_function(scl /* SCL */, GPIO_FUNC_I2C);
+        const uint baud_rate = {100 * 1000};
+        i2c_init(i2c0, baud_rate);
+        gpio_set_function(sda, GPIO_FUNC_I2C);
+        gpio_set_function(scl, GPIO_FUNC_I2C);
         gpio_pull_up(sda);
         gpio_pull_up(scl);
 
@@ -141,6 +173,21 @@ static void touchpad_init(void)
         gt911_status.max_y_coord = data_buf;
         gt911_i2c_read(gt911_status.i2c_dev_addr, GT911_Y_COORD_RES_H, &data_buf, 1);
         gt911_status.max_y_coord |= ((uint16_t)data_buf << 8);
+
+        IntCast *firmware_version = {(IntCast *)(void *)&globals.display.touch.firmware_version};
+        gt911_i2c_read(gt911_status.i2c_dev_addr, GT911_FIRMWARE_VER_L, &firmware_version->as_8bit.b0.uint8, 1);
+        gt911_i2c_read(gt911_status.i2c_dev_addr, GT911_FIRMWARE_VER_H, &firmware_version->as_8bit.b1.uint8, 1);
+
+        const IntCast *pid = {(IntCast *)(void *)&gt911_status.product_id};
+        globals.display.touch.i2c_address = gt911_status.i2c_dev_addr;
+        globals.display.touch.product_id = pid->as_32bit.uint32;
+        globals.display.touch.product_id = 0xff;
+        globals.display.touch.width_px = gt911_status.max_x_coord;
+        globals.display.touch.height_px = gt911_status.max_y_coord;
+        globals.display.touch.baud_rate = baud_rate;
+
+        printf("lv_port_indev: touch initialized\n");
+
         gt911_status.inited = true;
     }
 }
@@ -187,21 +234,22 @@ static void touchpad_read(lv_indev_drv_t *indev_drv, lv_indev_data_t *data)
     gt911_i2c_read(gt911_status.i2c_dev_addr, GT911_PT1_Y_COORD_H, &data_buf, 1);
     last_y |= ((uint16_t)data_buf << 8);
 
-    #if LV_GT911_INVERT_X
+#if LV_GT911_INVERT_X
     last_x = gt911_status.max_x_coord - last_x;
-    #endif
-    #if LV_GT911_INVERT_Y
+#endif
+#if LV_GT911_INVERT_Y
     last_y = gt911_status.max_y_coord - last_y;
-    #endif
-    #if LV_GT911_SWAPXY
+#endif
+#if LV_GT911_SWAPXY
     int16_t swap_buf = last_x;
     last_x = last_y;
     last_y = swap_buf;
-    #endif
+#endif
     data->point.x = last_x;
     data->point.y = last_y;
+
+    printf("xxx x=%d y=%d\n", data->point.x, data->point.y);
     data->state = LV_INDEV_STATE_PR;
-    return;
 }
 
 /*Return true is the touchpad is pressed*/
@@ -220,9 +268,3 @@ static void touchpad_get_xy(lv_coord_t *x, lv_coord_t *y)
     (*x) = 0;
     (*y) = 0;
 }
-
-#else /*Enable this file at the top*/
-
-/*This dummy typedef exists purely to silence -Wpedantic.*/
-typedef int keep_pedantic_happy;
-#endif

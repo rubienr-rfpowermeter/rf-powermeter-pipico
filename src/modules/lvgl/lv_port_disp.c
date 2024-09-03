@@ -19,8 +19,8 @@
     /*********************
      *      DEFINES
      *********************/
-    #define MY_DISP_HOR_RES 320
-    #define MY_DISP_VER_RES 480
+    #define MY_DISP_HOR_RES 480
+    #define MY_DISP_VER_RES 320
 
 /**********************
  *      TYPEDEFS
@@ -265,7 +265,7 @@ static void disp_init(void)
 
     // "PORTRAIT", "PORTRAIT_INVERTED", "LANDSCAPE", "LANDSCAPE_INVERTED"
     // 0x48, 0x88, 0x28, 0xE8
-    st7796s_set_orientation(0x48);
+    st7796s_set_orientation(0x28);
 
     st7796s_send_cmd(0x21);
 }
