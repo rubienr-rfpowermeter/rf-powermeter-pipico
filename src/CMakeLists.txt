@@ -35,6 +35,7 @@ add_definitions(-DLV_LVGL_H_INCLUDE_SIMPLE=1)
 # add executable
 add_executable(rf_probe
         gitmodules/lvgl/demos/keypad_encoder/lv_demo_keypad_encoder.c
+        modules/globals/globals.c
         modules/lvgl/img.c
         modules/lvgl/lv_port_disp.c
         modules/lvgl/lv_port_indev.c
@@ -47,6 +48,8 @@ add_executable(rf_probe
         modules/main_ui/main.cpp
         main.cpp
 )
+
+include_directories(./modules/globals)
 
 pico_generate_pio_header(rf_probe
         ${CMAKE_CURRENT_LIST_DIR}/modules/periphery/ws2812/ws2812.pio
