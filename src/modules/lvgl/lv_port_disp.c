@@ -1,26 +1,19 @@
-/**
- * @file lv_port_disp_templ.c
- *
- */
+/*********************
+ *      INCLUDES
+ *********************/
+#include "lv_port_disp.h"
+#include <pico/binary_info/code.h>
+#include <pico/printf.h>
 
-/*Copy this file as "lv_port_disp.c" and set this value to "1" to enable content*/
-#if 1
+#include "hardware/spi.h"
+#include "modules/globals/cast.h"
+#include "pico/stdlib.h"
 
-    /*********************
-     *      INCLUDES
-     *********************/
-    #include "lv_port_disp.h"
-    #include <pico/binary_info/code.h>
-    #include <stdbool.h>
-
-    #include "hardware/spi.h"
-    #include "pico/stdlib.h"
-
-    /*********************
-     *      DEFINES
-     *********************/
-    #define MY_DISP_HOR_RES 480
-    #define MY_DISP_VER_RES 320
+/*********************
+ *      DEFINES
+ *********************/
+#define MY_DISP_HOR_RES 480
+#define MY_DISP_VER_RES 320
 
 /**********************
  *      TYPEDEFS
@@ -29,7 +22,7 @@ typedef struct
 {
     uint8_t cmd;
     uint8_t data[16];
-    uint8_t databytes; // No of data in data; bit 7 = delay after set; 0xFF = end of cmds.
+    uint8_t databytes; //! Not part of in-data; bit 7 = delay after set; 0xFF = end of commands.
 } lcd_init_cmd_t;
 
 /**********************
@@ -122,7 +115,6 @@ void lv_port_disp_init(void)
     /*Required for Example 3)*/
     // disp_drv.full_refresh = 1;
 
-    // 内存过小,所以不全刷可能会花边.
     // disp_drv.full_refresh = 1;
 
     /* Fill a memory array with a color if you have GPU.
@@ -149,7 +141,7 @@ static void st7796s_send_cmd(uint8_t cmd)
     gpio_put(gpio_cs, 0);
     sleep_us(1);
 
-    spi_write_blocking(spi0, (uint8_t[]){cmd}, 1);
+    spi_write_blocking(spi0, (uint8_t *){&cmd}, 1);
 
     sleep_us(1);
     gpio_put(gpio_cs, 1);
@@ -187,49 +179,53 @@ static void st7796s_set_orientation(uint8_t orientation)
     gpio_put(gpio_cs, 0);
     sleep_us(1);
 
-    spi_write_blocking(spi0, (uint8_t[]){orientation}, 1);
+    spi_write_blocking(spi0, (uint8_t *){&orientation}, 1);
 
     sleep_us(1);
     gpio_put(gpio_cs, 1);
 }
 
-/*Initialize your display and the required peripherals.*/
+//! Initialize your display and the required peripherals.
 static void disp_init(void)
 {
     lcd_init_cmd_t init_cmds[] = {
-    {0xCF, {0x00, 0x83, 0X30}, 3},
-    {0xED, {0x64, 0x03, 0X12, 0X81}, 4},
-    {0xE8, {0x85, 0x01, 0x79}, 3},
-    {0xCB, {0x39, 0x2C, 0x00, 0x34, 0x02}, 5},
-    {0xF7, {0x20}, 1},
-    {0xEA, {0x00, 0x00}, 2},
-    {0xC0, {0x26}, 1},       /*Power control*/
-    {0xC1, {0x11}, 1},       /*Power control */
-    {0xC5, {0x35, 0x3E}, 2}, /*VCOM control*/
-    {0xC7, {0xBE}, 1},       /*VCOM control*/
-    {0x36, {0x28}, 1},       /*Memory Access Control*/
-    {0x3A, {0x05}, 1},       /*Pixel Format Set*/
-    {0xB1, {0x00, 0x1B}, 2},
-    {0xF2, {0x08}, 1},
-    {0x26, {0x01}, 1},
-    {0xE0, {0x1F, 0x1A, 0x18, 0x0A, 0x0F, 0x06, 0x45, 0X87, 0x32, 0x0A, 0x07, 0x02, 0x07, 0x05, 0x00}, 15},
-    {0XE1, {0x00, 0x25, 0x27, 0x05, 0x10, 0x09, 0x3A, 0x78, 0x4D, 0x05, 0x18, 0x0D, 0x38, 0x3A, 0x1F}, 15},
-    {0x2A, {0x00, 0x00, 0x00, 0xEF}, 4},
-    {0x2B, {0x00, 0x00, 0x01, 0x3f}, 4},
-    {0x2C, {0}, 0},
-    {0xB7, {0x07}, 1},
-    {0xB6, {0x0A, 0x82, 0x27, 0x00}, 4},
-    {0x11, {0}, 0x80},
-    {0x29, {0}, 0x80},
-    {0, {0}, 0xff},
+      // {0xCF, {0x00, 0x83, 0X30}, 3},    // ?
+      {0xED, {0x64, 0x03, 0X12, 0X81}, 4}, // DOCA: display output ctrl adjust
+      {0xE8, {0x85, 0x01, 0x79}, 3},       // DOCA: display output ctrl adjust
+      // {0xCB, {0x39, 0x2C, 0x00, 0x34, 0x02}, 5}, // ?
+      // {0xF7, {0x20}, 1},                // ?
+      {0xEA, {0x00, 0x00}, 2},             // DOCA: display output ctrl adjust
+      {0xC0, {0x26}, 1},                   // PWR1: power control 1
+      {0xC1, {0x11}, 1},                   // PWR1: power control 1
+      {0xC5, {0x35, 0x3E}, 2},             // VCMPCTL: vcom control
+      {0xC7, {0xBE}, 1},                   // VCM Offset: vcom offset register
+      {0x36, {0x28}, 1},                   // MADCTL: memory data access control
+      {0x3A, {0x05}, 1},                   // COLMOD: Interface pixel format
+      // {0xB1, {0x00, 0x1B}, 2},          // FRMCTR1: frame rate control
+      {0xB1, {0x00, 0x00}, 2},             // FRMCTR1: frame rate control
+      // {0xF2, {0x08}, 1},                // ?
+      // {0x26, {0x01}, 1},                // ?
+      {0xE0, {0x1F, 0x1A, 0x18, 0x0A, 0x0F, 0x06, 0x45, 0X87, 0x32, 0x0A, 0x07, 0x02, 0x07, 0x05, 0x00}, 15}, // PGC: positive gamma control
+      {0XE1, {0x00, 0x25, 0x27, 0x05, 0x10, 0x09, 0x3A, 0x78, 0x4D, 0x05, 0x18, 0x0D, 0x38, 0x3A, 0x1F}, 15}, // NGC: negative gamma control
+      {0x2A, {0x00, 0x00, 0x00, 0xEF}, 4}, // CASET: column address set
+      {0x2B, {0x00, 0x00, 0x01, 0x3f}, 4}, // RASET: row address set
+      {0x2C, {0}, 0},                      // RAMWR: memory write
+      {0xB7, {0x07}, 1},                   // EM: entry mode wet
+      {0xB6, {0x0A, 0x82, 0x27, 0x00}, 4}, // DFC: display function control
+      {0x11, {0}, 0x80},                   // SLP: sleep out
+      {0x29, {0}, 0x80},                   // DISPON: display on
+      {0, {0}, 0xff},                      // NOP: no operation
     };
 
-    bi_decl_if_func_used(bi_program_feature("TFT 480x320 (SPI0)"));
-    bi_decl_if_func_used(bi_3pins_with_func(gpio_clk, gpio_din, gpio_cs, GPIO_FUNC_SPI));
-    bi_decl_if_func_used(bi_4pins_with_names(gpio_clk, "TFT (SCLK)", gpio_din, "TFT (MOSI)", 4, "TFT (MISO)", gpio_cs, "TFT (CS)"));
-    bi_decl_if_func_used(bi_2pins_with_names(gpio_dc, "TFT (DC)", gpio_rst, "TFT (RST)"));
+    bi_decl_if_func_used(bi_program_feature("TFT 480x320 (SPI0)"))                       //
+    bi_decl_if_func_used(bi_3pins_with_func(gpio_clk, gpio_din, gpio_cs, GPIO_FUNC_SPI)) //
+    bi_decl_if_func_used(bi_4pins_with_names(gpio_clk, "TFT (SCLK)", gpio_din, "TFT (MOSI)", 4, "TFT (MISO)", gpio_cs, "TFT (CS)")) //
+    bi_decl_if_func_used(bi_2pins_with_names(gpio_dc, "TFT (DC)", gpio_rst, "TFT (RST)")) //
 
-    spi_init(spi0, 62.5 * 1000 * 1000);
+    constexpr uint target_baud_rate = {62500000};
+    const uint effective_baud_rate = {spi_init(spi0, target_baud_rate)};
+    printf("lv_port_disp: spi0 effective_clock_hz=%u requested_clock_hz=%u\n", effective_baud_rate, target_baud_rate);
+
     spi_set_format(spi0, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
 
     gpio_set_function(gpio_din, GPIO_FUNC_SPI);
@@ -272,24 +268,22 @@ static void disp_init(void)
 
 volatile bool disp_flush_enabled = true;
 
-/* Enable updating the screen (the flushing process) when disp_flush() is called by LVGL
- */
+//! Enable updating the screen (the flushing process) when disp_flush() is called by LVGL
 void disp_enable_update(void) { disp_flush_enabled = true; }
 
-/* Disable updating the screen (the flushing process) when disp_flush() is called by LVGL
- */
+//! Disable updating the screen (the flushing process) when disp_flush() is called by LVGL
 void disp_disable_update(void) { disp_flush_enabled = false; }
 
-/*Flush the content of the internal buffer the specific area on the display
- *You can use DMA or any hardware acceleration to do this operation in the background but
- *'lv_disp_flush_ready()' has to be called when finished.*/
+//! Flush the content of the internal buffer the specific area on the display
+//! You can use DMA or any hardware acceleration to do this operation in the background but
+//! 'lv_disp_flush_ready()' has to be called when finished.
 static void disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *color_p)
 {
     if(disp_flush_enabled)
     {
         uint8_t data[4];
 
-        /*Column addresses*/
+        // column addresses
         st7796s_send_cmd(0x2A);
         data[0] = (area->x1 >> 8) & 0xFF;
         data[1] = area->x1 & 0xFF;
@@ -297,7 +291,7 @@ static void disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_
         data[3] = area->x2 & 0xFF;
         st7796s_send_data(data, 4);
 
-        /*Page addresses*/
+        // page addresses
         st7796s_send_cmd(0x2B);
         data[0] = (area->y1 >> 8) & 0xFF;
         data[1] = area->y1 & 0xFF;
@@ -305,19 +299,12 @@ static void disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_
         data[3] = area->y2 & 0xFF;
         st7796s_send_data(data, 4);
 
-        /*Memory write*/
+        // memory write
         st7796s_send_cmd(0x2C);
 
         uint32_t size = lv_area_get_width(area) * lv_area_get_height(area);
-
         st7796s_send_color((void *)color_p, size * 2);
 
         lv_disp_flush_ready(disp_drv);
     }
 }
-
-#else /*Enable this file at the top*/
-
-/*This dummy typedef exists purely to silence -Wpedantic.*/
-typedef int keep_pedantic_happy;
-#endif
