@@ -1,8 +1,8 @@
 #include "main.h"
 
 [[noreturn]]
-void main_core1(void)
+void main_core1()
 {
-    while(1)
+    while(true)
         ;
 }
