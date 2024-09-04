@@ -2,8 +2,8 @@
 
 #include <pico/types.h>
 
-const constexpr uint leds_gpio_1 = {16};
-const constexpr uint leds_gpio_2 = {17};
+constexpr uint leds_gpio_1 = {16};
+constexpr uint leds_gpio_2 = {17};
 
 #ifdef __cplusplus
 extern "C"

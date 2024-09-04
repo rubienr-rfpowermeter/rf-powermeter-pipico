@@ -3,8 +3,8 @@
 #include <hardware/gpio.h>
 #include <pico/types.h>
 
-const constexpr uint buttons_gpio_1 = {15};
-const constexpr uint buttons_gpio_2 = {14};
+constexpr uint buttons_gpio_1 = {15};
+constexpr uint buttons_gpio_2 = {14};
 
 #ifdef __cplusplus
 extern "C"

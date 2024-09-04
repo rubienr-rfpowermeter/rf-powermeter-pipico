@@ -2,7 +2,7 @@
 
 #include <pico/types.h>
 
-const constexpr uint buzzer_gpio = {13};
+constexpr uint buzzer_gpio = {13};
 
 #ifdef __cplusplus
 extern "C"
