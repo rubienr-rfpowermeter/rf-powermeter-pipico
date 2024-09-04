@@ -190,21 +190,7 @@ void default_tab_view()
     lv_obj_t *tab3 = lv_tabview_add_tab(tabview, "Info");
 
     lv_obj_t *label = lv_label_create(tab1);
-    lv_label_set_text(label, "This the first tab\n\n"
-                             "If the content\n"
-                             "of a tab\n"
-                             "becomes too\n"
-                             "longer\n"
-                             "than the\n"
-                             "container\n"
-                             "then it\n"
-                             "automatically\n"
-                             "becomes\n"
-                             "scrollable.\n"
-                             "\n"
-                             "\n"
-                             "\n"
-                             "Can you see it\nx\nx\nx\nx\nx?");
+    lv_label_set_text(label, "First tab\n");
 
     label = lv_label_create(tab2);
     lv_label_set_text(label, "Second tab");
@@ -218,40 +204,46 @@ void default_tab_view()
     lv_obj_center(tab3);
     lv_obj_set_layout(tab3, LV_LAYOUT_GRID);
 
-    globals.display.touch.product_id = 0xabcdef0a;
-
     label = lv_label_create(tab3);
     char product_id[512] = {0};
 
-
+    const uint8_t rom_version = {rp2040_rom_version()};
     snprintf(product_id, sizeof(product_id),
-             "Display :\n"
-             " Product ID:  \t 0x%08" PRIx32 "\n"
-             " Resolution:  \t %" PRIu16 " x %" PRIu16 "\n"
-             " I2C Address: \t0x%" PRIx8 "\n"
-             " Baud Rate:   \t %" PRIu32 "\n"
-             " FW Version:  \t0x%08" PRIx16 "\n",
-             globals.display.touch.product_id, globals.display.touch.width_px, globals.display.touch.height_px,
-             globals.display.touch.i2c_address, globals.display.touch.baud_rate, globals.display.touch.firmware_version);
+             "Firmware \n"
+             " Version:      \t\t" PICO_PROGRAM_VERSION_STRING " \n"
+             " Build Date:  \t" __DATE__ " \n"
+             " Description:\t" PICO_PROGRAM_DESCRIPTION "\n"
+             " Binary:     \t\t\t" PICO_PROGRAM_NAME " \n"
+             " Build Type:  \t" PICO_CMAKE_BUILD_TYPE " \n"
+             " pico-sdk V.: \t" PICO_SDK_VERSION_STRING " \n"
+             " URL: " PICO_PROGRAM_URL "\n"
+             "MCU\n"
+             " Board:      \t\t\t" PICO_BOARD "\n"
+             " Rom V.:      \t\t%" PRIu8 "\n",
+             rom_version);
 
     lv_label_set_text(label, product_id);
     lv_obj_set_grid_cell(label, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
 
     lv_obj_scroll_to_view_recursive(label, LV_ANIM_ON);
 
-    const uint8_t rom_version = {rp2040_rom_version()};
+
     label = lv_label_create(tab3);
     snprintf(product_id, sizeof(product_id),
-             "Firmware: \n"
-             " Version:      \t\t" PICO_PROGRAM_VERSION_STRING " \n"
-             " Build Date:  \t" __DATE__ " \n"
-             " Description:\t" PICO_PROGRAM_DESCRIPTION "\n"
-             " Binary:     \t\t\t" PICO_PROGRAM_NAME " \n"
-             " Build Type:  \t" PICO_CMAKE_BUILD_TYPE " \n"
-             " Board:      \t\t\t" PICO_BOARD "\n"
-             " Rom V.:      \t\t%" PRIu8 "\n"
-             " pico-sdk V.: \t" PICO_SDK_VERSION_STRING " \n"
-             " URL: " PICO_PROGRAM_URL "\n", rom_version);
+             "Touch\n"
+             " Product ID:  \t 0x%08" PRIx32 "\n"
+             " Resolution:  \t %" PRIu16 " x %" PRIu16 "\n"
+             " I2C Address: \t0x%" PRIx8 "\n"
+             " Baud Rate:   \t %" PRIu32 "\n"
+             " FW Version:  \t0x%08" PRIx16 "\n"
+             " Vendor ID:  \t0x%02" PRIx8 "\n"
+             "Display\n"
+             " Resolution: \n"
+             " SPI Address: \n"
+             " Baud Rate: \n"
+             " FW Version\n",
+             globals.touch.product_id, globals.touch.width_px, globals.touch.height_px, globals.touch.i2c_address,
+             globals.touch.baud_rate, globals.touch.firmware_version, globals.touch.vendor_id);
     lv_label_set_text(label, product_id);
     lv_obj_set_grid_cell(label, LV_GRID_ALIGN_STRETCH, 1, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
 }
@@ -267,7 +259,7 @@ void example()
 static void init()
 {
     setup_default_uart();
-    printf("main_core0: init ...\n");
+    printf("\n**** RF Power Meter (Version " PICO_PROGRAM_VERSION_STRING " Built " __DATE__ ") ****\nmain_core0: init ...\n");
 
     stdio_init_all();
 
