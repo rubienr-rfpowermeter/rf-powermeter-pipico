@@ -21,13 +21,11 @@
 /*********************
  *      DEFINES
  *********************/
-//#define LV_GT911_SWAPXY
-//#define LV_GT911_INVERT_X
+#define LV_GT911_SWAPXY
+// #define LV_GT911_INVERT_X
 // #define LV_GT911_INVERT_Y
-//#define LV_GT911_RESOLUTION_X 480
-//#define LV_GT911_RESOLUTION_Y 320
-#define LV_GT911_RESOLUTION_X 320
-#define LV_GT911_RESOLUTION_Y 480
+#define LV_GT911_RESOLUTION_X 480
+#define LV_GT911_RESOLUTION_Y 320
 #define LV_GT911_USE_ALTERNATIVE_I2C_ADDRESS
 #define LV_GT911_MAX_TOUCH_SUPPORTED 5
 
@@ -147,15 +145,15 @@ static void send_config(void)
 {
   // clang-format off
   uint8_t default_gt911_config[186] = {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0x8047 - Config_Version, X_Output_Max_L, X_Output_Max_H, Y_Output_Max_L, Y_Output_Max_H, Touch_Number
-    0x00, 0x20, 0x01, 0x08, 0x28, 0x05, // 0x804D - Module_Switch1, Module_Switch2, Shake_Count, Filter, Large_Touch, Noise_Reduction
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x0A, // 0x8047 - Config_Version, X_Output_Max_L, X_Output_Max_H, Y_Output_Max_L, Y_Output_Max_H, Touch_Number
+    0x0C, 0x20, 0x01, 0x08, 0x28, 0x05, // 0x804D - Module_Switch1, Module_Switch2, Shake_Count, Filter, Large_Touch, Noise_Reduction
     0x50, 0x3C, 0x0F, 0x05, 0x00, 0x00, // 0x8053 - Screen_Touch_Level, Screen_Leave_Level, Low_Power_Control, Refresh_Rate, X_Threshold, Y_Threshold
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0x8059 - X_Speed_Limit, Y_Speed_Limit, Space, Mini_Filter, Stretch_R0
-    0x00, 0x00, 0x00, 0x89, 0x2A, 0x0B, // 0x805F - Stretch_R1, Stretch_R2, Stretch_RM, Drv_GroupA_Num, Drv_GroupB_Num, Sensor_Num,
-    0x2D, 0x2B, 0x0F, 0x0A, 0x00, 0x00, // 0x8065 - FreqA_Factor, FreqB_Factor,Panel_BitFreqL, Panel_BitFreqH, Panel_Sensor_TimeL (res.), Panel_Sensor_TimeH (res.)
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0x8059 - X_Speed_Limit, Y_Speed_Limit, Space, Space, Mini_Filter, Stretch_R0
+    0x00, 0x00, 0x00, 0x89, 0x2A, 0x0B, // 0x805F - Stretch_R1, Stretch_R2, Stretch_RM, Drv_GroupA_Num, Drv_GroupB_Num, Sensor_Num
+    0x2D, 0x2B, 0x0F, 0x0A, 0x00, 0x00, // 0x8065 - FreqA_Factor, FreqB_Factor, Panel_BitFreqL, Panel_BitFreqH, Panel_Sensor_TimeL (res.), Panel_Sensor_TimeH (res.)
     0x01, 0xA9, 0x03, 0x2D, 0x00, 0x01, // 0x806B - Panel_Tx_Gain, Panel_Rx_Gain, Panel_Dump_Shift, Drv_Frame_Control, Charging_Level_Up, Module_Switch3
     0x00, 0x00, 0x00, 0x03, 0x00, 0x00, // 0x8071 - Gesture_Dis, Gesture_Long_Press_Time, XY_Slope_Adjust, Gesture_Control, Gesture_Switch1, Gesture_Switch2
-    0x00, 0x00, 0x00, 0x21, 0x59, 0x94, // 0x8077 - Gesture_Refresh_Rate, Gesture_Touch_Level, New_Green_Wakeup_Level, Freq_Hopping_Start, Freq_Hopping_End,Noise_Detect_Times
+    0x00, 0x00, 0x00, 0x21, 0x59, 0x94, // 0x8077 - Gesture_Refresh_Rate, Gesture_Touch_Level, New_Green_Wakeup_Level, Freq_Hopping_Start, Freq_Hopping_End, Noise_Detect_Times
     0xC5, 0x02, 0x07, 0x00, 0x00, 0x04, // 0x807D - Hopping_Flag, Hopping_Threshold, Noise_Threshold (res.), NoiseMon_Threshold (res.), NC, Hopping_Sensor_Group
     0x93, 0x24, 0x00, 0x7D, 0x2C, 0x00, // 0x8083 - Hoping_seq1_Normalize, Hopping_seq1_Factor, Main_Clock_Adjust, Hoping_seq2_Normalize, Hopping_seq2_Factor, NC
     0x6B, 0x36, 0x00, 0x5D, 0x42, 0x00, // 0x8089 - Hoping_seq3_Normalize, Hopping_seq3_Factor, NC, Hoping_seq4_Normalize, Hopping_seq4_Factor, NC
@@ -171,10 +169,10 @@ static void send_config(void)
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0x80C5 - NC, NC, NC, NC, NC, NC
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0x80CB - NC, NC, NC, NC, NC, NC
     0x00, 0x00, 0x00, 0x00, 0x00, 0x02, // 0x80D1 - NC, NC, NC, NC, D5-EE Driver_CH0-Driver_CH25
-    0x04, 0x06, 0x08, 0x0A, 0x0F, 0x10, // 0x80D7 - D5-EE Driver_CH0-Driver_CH25
-    0x12, 0x16, 0x18, 0x1C, 0x1D, 0x1E, // 0x80DD - D5-EE Driver_CH0-Driver_CH25
-    0x1F, 0x20, 0x21, 0x22, 0x24, 0xFF, // 0x80E3 - D5-EE Driver_CH0-Driver_CH25
-    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, // 0x80E9 - D5-EE Driver_CH0-Driver_CH25
+    0x04, 0x06, 0x08, 0x0A, 0x0B, 0x0c, // 0x80D7 - D5-EE Driver_CH0-Driver_CH25
+    0x24, 0x22, 0x21, 0x20, 0x1f, 0x1e, // 0x80DD - D5-EE Driver_CH0-Driver_CH25
+    0x1d, 0xff, 0xff, 0xff, 0xff, 0xff, // 0x80E3 - D5-EE Driver_CH0-Driver_CH25
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, // 0x80E9 - D5-EE Driver_CH0-Driver_CH25
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0x80EF - NC, NC, NC, NC, NC, NC
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0x80F5 - NC, NC, NC, NC, NC, NC
     0x00, 0x00, 0x00, 0x00,             // 0x80FB - NC, NC, NC, NC, NC, NC
@@ -294,8 +292,8 @@ static void send_config(void)
     }
   }
 
-  // uint8_t reset = 0;
-  // gt911_i2c_write(gt911_status.i2c_dev_addr, GT911_COMMAND_REGISTER, &reset, 1);
+  uint8_t reset = 0;
+  gt911_i2c_write(gt911_status.i2c_dev_addr, GT911_COMMAND_REGISTER, &reset, 1);
 }
 
 static constexpr uint8_t gpio_sda = { 8 };
@@ -415,6 +413,8 @@ typedef union __packed
 
 } GT911_StatusRegister;
 
+static_assert(sizeof(GT911_StatusRegister) == 1);
+
 //! Will be called by the library to read the touchpad
 static void touchpad_read(lv_indev_drv_t __unused *indev_drv, lv_indev_data_t *data)
 {
@@ -435,24 +435,22 @@ static void touchpad_read(lv_indev_drv_t __unused *indev_drv, lv_indev_data_t *d
 
   if(!status_reg.is_buffer_ok) return;
 
-  printf(
-    "xxx rdy=%hhu lar=%hhu prx=%hhu kpr=%hhu pts=%hhu\n", status_reg.is_buffer_ok, status_reg.is_large_area_detected,
-    status_reg.is_proximity, status_reg.have_key, status_reg.touch_count);
-
   data->state = (status_reg.touch_count < 1) ? LV_INDEV_STATE_RELEASED : LV_INDEV_STATE_PRESSED;
 
   IntCast *x_in = { (IntCast *)&last_x };
-  gt911_i2c_read(gt911_status.i2c_dev_addr, GT911_PT1_X_COORD_L, &x_in->as_8bit.b0.uint8, 1);
-  gt911_i2c_read(gt911_status.i2c_dev_addr, GT911_PT1_X_COORD_H, &x_in->as_8bit.b1.uint8, 1);
+  gt911_i2c_read(gt911_status.i2c_dev_addr, GT911_PT1_X_COORD_L, &(x_in->as_8bit.b0.uint8), 1);
+  gt911_i2c_read(gt911_status.i2c_dev_addr, GT911_PT1_X_COORD_H, &(x_in->as_8bit.b1.uint8), 1);
 
   IntCast *y_in = { (IntCast *)&last_y };
-  gt911_i2c_read(gt911_status.i2c_dev_addr, GT911_PT1_Y_COORD_L, &y_in->as_8bit.b0.uint8, 1);
-  gt911_i2c_read(gt911_status.i2c_dev_addr, GT911_PT1_Y_COORD_H, &y_in->as_8bit.b1.uint8, 1);
+  gt911_i2c_read(gt911_status.i2c_dev_addr, GT911_PT1_Y_COORD_L, &(y_in->as_8bit.b0.uint8), 1);
+  gt911_i2c_read(gt911_status.i2c_dev_addr, GT911_PT1_Y_COORD_H, &(y_in->as_8bit.b1.uint8), 1);
 
   data->point.x = last_x;
   data->point.y = last_y;
 
-  printf("xxx x=%d y=%d\n", data->point.x, data->point.y);
+  printf(
+    "xxx x=%03hd y=%03hd | rdy=%hhu lar=%hhu prx=%hhu kpr=%hhu pts=%hhu\n", data->point.x, data->point.y, status_reg.is_buffer_ok,
+    status_reg.is_large_area_detected, status_reg.is_proximity, status_reg.have_key, status_reg.touch_count);
   data->state = LV_INDEV_STATE_PRESSED;
 }
 
