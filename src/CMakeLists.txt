@@ -23,7 +23,7 @@ endif ()
 
 project(rf_probe C CXX ASM)
 
-# initialise the Raspberry Pi Pico SDK
+# initialize the Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # LVGL
@@ -34,7 +34,6 @@ add_definitions(-DLV_LVGL_H_INCLUDE_SIMPLE=1)
 
 # add executable
 add_executable(rf_probe
-        gitmodules/lvgl/demos/keypad_encoder/lv_demo_keypad_encoder.c
         modules/globals/globals.c
         modules/lvgl/lv_port_disp.c
         modules/lvgl/lv_port_indev.c
