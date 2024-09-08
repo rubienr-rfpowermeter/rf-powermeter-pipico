@@ -229,24 +229,24 @@ void default_tab_view()
   lv_obj_scroll_to_view_recursive(label, LV_ANIM_ON);
 
 
-    label = lv_label_create(tab3);
-    snprintf(product_id, sizeof(product_id),
-             "Touch\n"
-             " Product ID:  \t 0x%08" PRIx32 "\n"
-             " Resolution:  \t %" PRIu16 " x %" PRIu16 "\n"
-             " I2C Address: \t0x%" PRIx8 "\n"
-             " Baud Rate:   \t %" PRIu32 "\n"
-             " FW Version:  \t0x%08" PRIx16 "\n"
-             " Vendor ID:  \t0x%02" PRIx8 "\n"
-             "Display\n"
-             " Resolution: \n"
-             " SPI Address: \n"
-             " Baud Rate: \n"
-             " FW Version\n",
-             globals.touch.product_id, globals.touch.width_px, globals.touch.height_px, globals.touch.i2c_address,
-             globals.touch.baud_rate, globals.touch.firmware_version, globals.touch.vendor_id);
-    lv_label_set_text(label, product_id);
-    lv_obj_set_grid_cell(label, LV_GRID_ALIGN_STRETCH, 1, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
+  label = lv_label_create(tab3);
+  snprintf(
+    product_id, sizeof(product_id),
+    "Touch\n"
+    " Product ID:  \t 0x%08" PRIx32 "\n"
+    " Resolution:  \t %" PRIu16 " x %" PRIu16 "\n"
+    " I2C Address: \t0x%" PRIx8 "\n"
+    " Baud Rate:   \t %" PRIu32 "\n"
+    " FW Version:  \t0x%08" PRIx16 "\n"
+    " Vendor ID:     \t0x%02" PRIx8 "\n"
+    "Display\n"
+    " Resolution:    \t%" PRIu16 " x %" PRIu16 "\n"
+    " Baud Rate:     \t%" PRIu32 "\n",
+    globals.touch.product_id, globals.touch.width_px, globals.touch.height_px, globals.touch.i2c_address, globals.touch.baud_rate,
+    globals.touch.firmware_version, globals.touch.vendor_id, globals.display.width_px, globals.display.height_px,
+    globals.display.baud_rate);
+  lv_label_set_text(label, product_id);
+  lv_obj_set_grid_cell(label, LV_GRID_ALIGN_STRETCH, 1, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
 }
 
 void example()

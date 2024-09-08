@@ -64,7 +64,7 @@ pico_enable_stdio_usb(rf_probe 0)
 # standard libraries
 target_link_libraries(rf_probe
         hardware_adc
-        # hardware_dma
+        hardware_dma
         hardware_i2c
         hardware_pio
         hardware_spi
