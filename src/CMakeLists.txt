@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.13)
 set(CMAKE_C_STANDARD 23)
 set(CMAKE_CXX_STANDARD 23)
 
+set(CMAKE_EXE_LINKER_FLAGS "-Wl,--print-memory-usage")
+
 # pico-sdk fallback to $USER/pico/pico-sdk if environment PICO_SDK_PATH is not set
 if (DEFINED ENV{PICO_SDK_PATH})
     set(PICO_SDK_PATH "$ENV{PICO_SDK_PATH}")
