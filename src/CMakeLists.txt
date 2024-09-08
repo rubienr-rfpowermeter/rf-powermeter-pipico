@@ -36,7 +36,6 @@ add_definitions(-DLV_LVGL_H_INCLUDE_SIMPLE=1)
 add_executable(rf_probe
         gitmodules/lvgl/demos/keypad_encoder/lv_demo_keypad_encoder.c
         modules/globals/globals.c
-        modules/lvgl/img.c
         modules/lvgl/lv_port_disp.c
         modules/lvgl/lv_port_indev.c
         modules/periphery/buttons.c
