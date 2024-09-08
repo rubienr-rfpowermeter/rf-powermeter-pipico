@@ -96,7 +96,7 @@ static void gt911_send_config(void)
 {
   // clang-format off
   uint8_t default_gt911_config[GT911_CFG_END_ADDRESS - GT911_CFG_BASE_ADDRESS + 1] = {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x0A, // 0x8047 - Config_Version, X_Output_Max_L, X_Output_Max_H, Y_Output_Max_L, Y_Output_Max_H, Touch_Number
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x05, // 0x8047 - Config_Version, X_Output_Max_L, X_Output_Max_H, Y_Output_Max_L, Y_Output_Max_H, Touch_Number
     0x0C, 0x20, 0x01, 0x08, 0x28, 0x05, // 0x804D - Module_Switch1, Module_Switch2, Shake_Count, Filter, Large_Touch, Noise_Reduction
     0x50, 0x3C, 0x0F, 0x05, 0x00, 0x00, // 0x8053 - Screen_Touch_Level, Screen_Leave_Level, Low_Power_Control, Refresh_Rate, X_Threshold, Y_Threshold
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0x8059 - X_Speed_Limit, Y_Speed_Limit, Space, Space, Mini_Filter, Stretch_R0
