@@ -1,12 +1,12 @@
 #include "lv_port_indev.h"
 #include "hardware/gpio.h"
 #include "hardware/i2c.h"
-#include "lvgl.h"
 #include "lib/types/cast.h"
+#include "lvgl.h"
 #include "modules/globals/globals.h"
 
 #include <pico/binary_info/code.h>
-#include <stdio.h>
+#include <stdint.h>
 
 constexpr static bool gt911_invert_x                  = { false };
 constexpr static bool gt911_invert_y                  = { false };
@@ -37,7 +37,7 @@ static void compute_config_checksum(const uint8_t *gt911_config, uint8_t len, ui
 
 static int gt911_i2c_read(uint8_t slave_addr, uint16_t register_address, uint8_t *data_buf, uint8_t len)
 {
-  uint8_t reg_addr[] = { (register_address & 0xFF00) >> 8, register_address & 0x00FF };
+  uint8_t reg_addr[] = { (uint8_t)((register_address & 0xFF00) >> 8), (uint8_t)(register_address & 0x00FF) };
   if(i2c_write_blocking(i2c0, slave_addr, reg_addr, 2, true)) return i2c_read_blocking(i2c0, slave_addr, data_buf, len, false);
   else return PICO_ERROR_GENERIC;
 }
@@ -46,7 +46,7 @@ static int gt911_i2c_write(uint16_t slave_addr, uint16_t register_address, const
 {
   // assume the largest buffer to write is the whole configuration of 186 byte
 
-  uint8_t buffer[186 + 2] = { [0] = (register_address & 0xFF00) >> 8, [1] = register_address & 0x00FF };
+  uint8_t buffer[186 + 2] = { [0] = (uint8_t)((register_address & 0xFF00) >> 8), [1] = (uint8_t)(register_address & 0x00FF) };
   if(len > sizeof(buffer) - 2) return PICO_ERROR_GENERIC;
   memcpy(&buffer[2], data_buf, len);
 
@@ -92,7 +92,7 @@ static void gt911_read_cb(lv_indev_drv_t __unused *indev_drv, lv_indev_data_t *d
   data->state = LV_INDEV_STATE_PRESSED;
 }
 
-static void gt911_send_config(void)
+static void gt911_send_config()
 {
   // clang-format off
   uint8_t default_gt911_config[GT911_CFG_END_ADDRESS - GT911_CFG_BASE_ADDRESS + 1] = {
@@ -250,19 +250,19 @@ static void gt911_restart_device(bool set_default_address)
 {
   // prepare INT line: input, pull down
   gpio_pull_down(gt911_gpio_int);
-  gpio_put(gt911_gpio_int, 0);
+  gpio_put(gt911_gpio_int, false);
   gpio_set_dir(gt911_gpio_int, GPIO_OUT);
 
   // reset: enable
-  gpio_put(gt911_gpio_rst, 0);
+  gpio_put(gt911_gpio_rst, false);
   busy_wait_ms(10); // min hold time: not documented
 
-  if(set_default_address) gpio_put(gt911_gpio_int, 0); // INT low: address 0x5D
-  else gpio_put(gt911_gpio_int, 1);                    // INT high: address 0x14
-  busy_wait_ms(10);                                    // min hold time: 100us
+  if(set_default_address) gpio_put(gt911_gpio_int, false); // INT low: address 0x5D
+  else gpio_put(gt911_gpio_int, true);                     // INT high: address 0x14
+  busy_wait_ms(10);                                        // min hold time: 100us
 
   // reset: disable
-  gpio_put(gt911_gpio_rst, 1);
+  gpio_put(gt911_gpio_rst, false);
   busy_wait_ms(20); // min hold time: 5ms
 
   // leave INT as floating input
@@ -271,7 +271,7 @@ static void gt911_restart_device(bool set_default_address)
 }
 
 //! Initialize your touchpad
-static void gt911_init(void)
+static void gt911_init()
 {
   // clang-format off
   bi_decl_if_func_used(bi_program_feature("Capacitive Touch (I2C0)"))

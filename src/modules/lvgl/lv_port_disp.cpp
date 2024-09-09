@@ -35,8 +35,8 @@ static int dma_tx;
 
 static void st7796s_send_cmd(uint8_t cmd)
 {
-  gpio_put(gpio_dc, 0);
-  gpio_put(gpio_cs, 0);
+  gpio_put(gpio_dc, false);
+  gpio_put(gpio_cs, false);
   sleep_us(1);
 
   // spi_write_blocking(spi0, (uint8_t *){ &cmd }, 1);
@@ -48,13 +48,13 @@ static void st7796s_send_cmd(uint8_t cmd)
   dma_channel_set_trans_count(dma_tx, 1, true);
 
   sleep_us(1);
-  gpio_put(gpio_cs, 1);
+  gpio_put(gpio_cs, true);
 }
 
 static void st7796s_send_data(void *data, uint16_t length)
 {
-  gpio_put(gpio_dc, 1);
-  gpio_put(gpio_cs, 0);
+  gpio_put(gpio_dc, true);
+  gpio_put(gpio_cs, false);
   sleep_us(1);
 
   if(dma_channel_is_busy(dma_tx)) { printf("lv_port_disp: warning dma_channel=%u busy\n", dma_tx); }
@@ -65,19 +65,19 @@ static void st7796s_send_data(void *data, uint16_t length)
   dma_channel_set_trans_count(dma_tx, length, true);
 
   sleep_us(1);
-  gpio_put(gpio_cs, 1);
+  gpio_put(gpio_cs, true);
 }
 
 static void st7796s_send_color(void *data, size_t length)
 {
-  gpio_put(gpio_dc, 1);
-  gpio_put(gpio_cs, 0);
+  gpio_put(gpio_dc, true);
+  gpio_put(gpio_cs, false);
   sleep_us(1);
 
-  spi_write_blocking(display_spi, data, length);
+  spi_write_blocking(display_spi, (uint8_t *)data, length);
 
   sleep_us(1);
-  gpio_put(gpio_cs, 1);
+  gpio_put(gpio_cs, true);
 }
 
 //! Flush the content of the internal buffer the specific area on the display
@@ -119,14 +119,14 @@ static void st7796s_set_orientation(uint8_t orientation)
 {
   st7796s_send_cmd(0x36);
 
-  gpio_put(gpio_dc, 1);
-  gpio_put(gpio_cs, 0);
+  gpio_put(gpio_dc, true);
+  gpio_put(gpio_cs, false);
   sleep_us(1);
 
   spi_write_blocking(display_spi, (uint8_t *){ &orientation }, 1);
 
   sleep_us(1);
-  gpio_put(gpio_cs, 1);
+  gpio_put(gpio_cs, true);
 }
 
 //! Initialize your display and the required peripherals.
@@ -184,14 +184,14 @@ static void disp_init(void)
   gpio_set_dir(gpio_dc, GPIO_OUT);
   gpio_set_dir(gpio_rst, GPIO_OUT);
 
-  gpio_put(gpio_cs, 1);
-  gpio_put(gpio_dc, 1);
+  gpio_put(gpio_cs, true);
+  gpio_put(gpio_dc, true);
 
-  gpio_put(gpio_rst, 1);
+  gpio_put(gpio_rst, true);
   sleep_ms(100);
-  gpio_put(gpio_rst, 0);
+  gpio_put(gpio_rst, false);
   sleep_ms(100);
-  gpio_put(gpio_rst, 1);
+  gpio_put(gpio_rst, true);
   sleep_ms(100);
 
   // Send all the commands

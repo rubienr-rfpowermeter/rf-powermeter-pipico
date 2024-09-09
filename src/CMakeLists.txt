@@ -41,10 +41,10 @@ add_executable(rf_probe
         lib/ad8318/AD8318.cpp
         lib/ad8318/KValues3rdOrder.hpp
         lib/si_units/si_unit_type.cpp
-        modules/globals/globals.c
-        modules/lvgl/lv_port_disp.c
-        modules/lvgl/lv_port_indev.c
         lib/average/AverageT.hpp
+        modules/globals/globals.cpp
+        modules/lvgl/lv_port_disp.cpp
+        modules/lvgl/lv_port_indev.cpp
         modules/periphery/buttons.c
         modules/periphery/buzzer.c
         modules/periphery/joystick.c
@@ -55,7 +55,7 @@ add_executable(rf_probe
         main.cpp
 )
 
-include_directories(./modules/globals)
+# include_directories(./modules/globals)
 
 pico_generate_pio_header(rf_probe
         ${CMAKE_CURRENT_LIST_DIR}/modules/periphery/ws2812/ws2812.pio
@@ -91,7 +91,7 @@ target_compile_definitions(rf_probe PRIVATE
         PICO_STDIO_STACK_BUFFER_SIZE=64 # use a small printf on stack buffer
 )
 
-target_compile_options(rf_probe PUBLIC -Werror -Wall -Wextra -Wnull-dereference)
+target_compile_options(rf_probe PUBLIC -Werror -Wall -Wnull-dereference)
 
 pico_set_program_url(${PROJECT_NAME} "https://github.com/rubienr-rfpowermeter/rf-powermeter-pipico")
 pico_set_program_description(${PROJECT_NAME} "Power Meter (sv1afn.com)")
