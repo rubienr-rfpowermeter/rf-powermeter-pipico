@@ -44,6 +44,7 @@ add_executable(rf_probe
         modules/globals/globals.c
         modules/lvgl/lv_port_disp.c
         modules/lvgl/lv_port_indev.c
+        lib/average/AverageT.hpp
         modules/periphery/buttons.c
         modules/periphery/buzzer.c
         modules/periphery/joystick.c
