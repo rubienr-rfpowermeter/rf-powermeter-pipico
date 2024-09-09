@@ -243,18 +243,9 @@ void default_tab_view()
     " Resolution:    \t%" PRIu16 " x %" PRIu16 "\n"
     " Baud Rate:     \t%" PRIu32 "\n",
     globals.touch.product_id, globals.touch.width_px, globals.touch.height_px, globals.touch.i2c_address, globals.touch.baud_rate,
-    globals.touch.firmware_version, globals.touch.vendor_id, globals.display.width_px, globals.display.height_px,
-    globals.display.baud_rate);
+    globals.touch.firmware_version, globals.touch.vendor_id, globals.display.width_px, globals.display.height_px, globals.display.baud_rate);
   lv_label_set_text(label, product_id);
   lv_obj_set_grid_cell(label, LV_GRID_ALIGN_STRETCH, 1, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
-}
-
-void example()
-{
-  img1 = lv_img_create(lv_scr_act());
-  lv_img_set_src(img1, &ai);
-  lv_obj_align(img1, LV_ALIGN_DEFAULT, 0, 0);
-  lv_example_btn_1();
 }
 
 static void init()
@@ -285,7 +276,6 @@ void main_core0()
   busy_wait_ms(100);
 
   default_tab_view();
-  // example();
 
   while(true)
   {
