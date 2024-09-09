@@ -1,10 +1,11 @@
 #pragma once
+
 #include <stdint.h>
 
 namespace ad7887
 {
 
-struct ControlRegister
+typedef struct __attribute__((packed))
 {
   /// Power Management Bits. These two bits decode the mode of operation of the AD7887.
   ///
@@ -66,17 +67,17 @@ struct ControlRegister
 
   /// DONTC - Don’t Care.
   /// The value written to this bit of the control register is a don’t care, that is,
-  /// it doesn't matter if the bitis 0 or 1.
+  /// it doesn't matter if the bit is 0 or 1.
   uint8_t dontCare : 1;
-} __attribute__((__packed__));
+} ControlRegister ;
 
-struct Uint16ControlRegister
+typedef struct __attribute__((packed))
 {
   ControlRegister controlRegister;
   uint8_t zero;
-} __attribute__((__packed__));
+} Uint16ControlRegister;
 
-union TransmissionData
+typedef union __attribute__((packed)) TransmissionData
 {
   TransmissionData();
   TransmissionData(const ControlRegister &other);
@@ -84,26 +85,25 @@ union TransmissionData
   Uint16ControlRegister asUint16ControlRegister;
   uint8_t asUint8;
   uint16_t asUint16;
-} __attribute__((__packed__));
+} TransmissionData;
 
 /// Bit/Reception order:
 /// - LSB of SampleRegister corresponds to MSB of reception from AT7887
 /// - MSB of SampleRegister corresponds to LSB of reception from AT7887
 /// - LSB of SampleRegister is received first, MSB last.
 
-struct SampleRegister
+typedef struct __attribute__((packed))
 {
   uint16_t raw12Bit : 12;
   uint16_t zero : 4;
-} __attribute__((__packed__));
+} SampleRegister;
 
-
-union ReceptionData
+typedef union __attribute__((packed)) ReceptionData
 {
   ReceptionData();
 
   SampleRegister asSampleRegister;
   uint16_t asUint16;
-} __attribute__((__packed__));
+} ReceptionData;
 
 } // namespace ad7887
