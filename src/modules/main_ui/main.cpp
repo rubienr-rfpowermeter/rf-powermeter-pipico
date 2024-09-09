@@ -20,7 +20,7 @@ lv_obj_t *led2     = nullptr;
 lv_obj_t *jy_label = nullptr;
 
 volatile uint32_t systemTicksMs = { 0 };
-bool ms_tick_timer_cb(struct repeating_timer *__unused t)
+bool ms_tick_timer_cb(__unused struct repeating_timer *t)
 {
   systemTicksMs += 1;
   lv_tick_inc(1);

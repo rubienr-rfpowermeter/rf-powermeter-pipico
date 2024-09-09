@@ -184,7 +184,7 @@ static void gt911_send_config(void)
   printf("lv_port_indev: config before update:\n");
 
   // demonstrate config
-  for(int idx_in = 1; idx_in <= sizeof(default_gt911_config); idx_in++)
+  for(size_t idx_in = 1; idx_in <= sizeof(default_gt911_config); idx_in++)
   {
     printf("%02hhX ", in_config[idx_in - 1]);
     if(0 == (idx_in % 6))
@@ -229,7 +229,7 @@ static void gt911_send_config(void)
   // demonstrate both configs
   int idx_in = 1;
   printf("lv_prot_indev:\ncfg sent to dev   | cfg stored on dev\n");
-  for(int idx_out = 1; idx_out <= sizeof(default_gt911_config); idx_out++)
+  for(size_t idx_out = 1; idx_out <= sizeof(default_gt911_config); idx_out++)
   {
     printf("%02hhX ", default_gt911_config[idx_out - 1]);
     if(0 == (idx_out % 6))
