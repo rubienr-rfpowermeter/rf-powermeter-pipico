@@ -2,7 +2,7 @@
 #include "hardware/gpio.h"
 #include "hardware/i2c.h"
 #include "lvgl.h"
-#include "modules/globals/cast.h"
+#include "lib/types/cast.h"
 #include "modules/globals/globals.h"
 
 #include <pico/binary_info/code.h>

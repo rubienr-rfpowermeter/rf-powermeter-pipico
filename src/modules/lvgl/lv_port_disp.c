@@ -3,7 +3,7 @@
 #include <pico/printf.h>
 
 #include "hardware/spi.h"
-#include "modules/globals/cast.h"
+#include "lib/types/cast.h"
 #include "modules/globals/globals.h"
 #include "pico/stdlib.h"
 
