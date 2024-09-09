@@ -64,5 +64,5 @@ extern "C"
 void lv_port_indev_init(void);
 
 #ifdef __cplusplus
-} /*extern "C"*/
+} // extern "C"
 #endif
