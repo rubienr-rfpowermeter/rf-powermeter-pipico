@@ -36,6 +36,11 @@ add_definitions(-DLV_LVGL_H_INCLUDE_SIMPLE=1)
 
 # add executable
 add_executable(rf_probe
+        lib/ad7887/AD7887.cpp
+        lib/ad7887/registers.cpp
+        lib/ad8318/AD8318.cpp
+        lib/ad8318/KValues3rdOrder.hpp
+        lib/si_units/si_unit_type.cpp
         modules/globals/globals.c
         modules/lvgl/lv_port_disp.c
         modules/lvgl/lv_port_indev.c
