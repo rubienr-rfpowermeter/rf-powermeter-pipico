@@ -16,11 +16,11 @@ typedef struct
   uint8_t databytes; //! Not part of in-data; bit 7 = delay after set; 0xFF = end of commands.
 } lcd_init_cmd_t;
 
-static const int gpio_clk = 2;
-static const int gpio_din = 3;
-static const int gpio_cs  = 5;
-static const int gpio_dc  = 6;
-static const int gpio_rst = 7;
+static const int gpio_spi_sck = 2;
+static const int gpio_spi_tx  = 3;
+static const int gpio_spi_csn = 5;
+static const int gpio_dc      = 6;
+static const int gpio_rst     = 7;
 
 constexpr uint16_t display_horizontal_px = { 480 };
 constexpr uint16_t display_vertical_px   = { 320 };
@@ -36,7 +36,7 @@ static int dma_tx;
 static void st7796s_send_cmd(uint8_t cmd)
 {
   gpio_put(gpio_dc, false);
-  gpio_put(gpio_cs, false);
+  gpio_put(gpio_spi_csn, false);
   sleep_us(1);
 
   // spi_write_blocking(spi0, (uint8_t *){ &cmd }, 1);
@@ -48,13 +48,13 @@ static void st7796s_send_cmd(uint8_t cmd)
   dma_channel_set_trans_count(dma_tx, 1, true);
 
   sleep_us(1);
-  gpio_put(gpio_cs, true);
+  gpio_put(gpio_spi_csn, true);
 }
 
 static void st7796s_send_data(void *data, uint16_t length)
 {
   gpio_put(gpio_dc, true);
-  gpio_put(gpio_cs, false);
+  gpio_put(gpio_spi_csn, false);
   sleep_us(1);
 
   if(dma_channel_is_busy(dma_tx)) { printf("lv_port_disp: warning dma_channel=%u busy\n", dma_tx); }
@@ -65,19 +65,19 @@ static void st7796s_send_data(void *data, uint16_t length)
   dma_channel_set_trans_count(dma_tx, length, true);
 
   sleep_us(1);
-  gpio_put(gpio_cs, true);
+  gpio_put(gpio_spi_csn, true);
 }
 
 static void st7796s_send_color(void *data, size_t length)
 {
   gpio_put(gpio_dc, true);
-  gpio_put(gpio_cs, false);
+  gpio_put(gpio_spi_csn, false);
   sleep_us(1);
 
   spi_write_blocking(display_spi, (uint8_t *)data, length);
 
   sleep_us(1);
-  gpio_put(gpio_cs, true);
+  gpio_put(gpio_spi_csn, true);
 }
 
 //! Flush the content of the internal buffer the specific area on the display
@@ -120,17 +120,17 @@ static void st7796s_set_orientation(uint8_t orientation)
   st7796s_send_cmd(0x36);
 
   gpio_put(gpio_dc, true);
-  gpio_put(gpio_cs, false);
+  gpio_put(gpio_spi_csn, false);
   sleep_us(1);
 
   spi_write_blocking(display_spi, (uint8_t *){ &orientation }, 1);
 
   sleep_us(1);
-  gpio_put(gpio_cs, true);
+  gpio_put(gpio_spi_csn, true);
 }
 
 //! Initialize your display and the required peripherals.
-static void disp_init(void)
+static void disp_init()
 {
   lcd_init_cmd_t init_cmds[] = {
     // {0xCF, {0x00, 0x83, 0X30}, 3},    // ?
@@ -161,10 +161,12 @@ static void disp_init(void)
     {    0,                                                                                        { 0 }, 0xff }, // NOP: no operation
   };
 
-  bi_decl_if_func_used(bi_program_feature("TFT 480x320 (SPI0)"))                         //
-    bi_decl_if_func_used(bi_3pins_with_func(gpio_clk, gpio_din, gpio_cs, GPIO_FUNC_SPI)) //
-    bi_decl_if_func_used(bi_4pins_with_names(gpio_clk, "TFT (SCLK)", gpio_din, "TFT (MOSI)", 4, "TFT (MISO)", gpio_cs, "TFT (CS)")) //
-    bi_decl_if_func_used(bi_2pins_with_names(gpio_dc, "TFT (DC)", gpio_rst, "TFT (RST)")) //
+  // clang-format off
+  bi_decl_if_func_used(bi_program_feature("TFT 480x320 (SPI0)"))
+  bi_decl_if_func_used(bi_3pins_with_func(gpio_spi_sck, gpio_spi_tx, gpio_spi_csn, GPIO_FUNC_SPI))
+  bi_decl_if_func_used(bi_4pins_with_names(gpio_spi_sck, "TFT (SCLK)", gpio_spi_tx, "TFT (MOSI)", 4, "TFT (MISO)", gpio_spi_csn, "TFT (CS)"))
+  bi_decl_if_func_used(bi_2pins_with_names(gpio_dc, "TFT (DC)", gpio_rst, "TFT (RST)"))
+    // clang-format on
 
     constexpr uint target_baud_rate = { 62500000 };
   const uint effective_baud_rate    = { spi_init(spi0, target_baud_rate) };
@@ -173,18 +175,22 @@ static void disp_init(void)
 
   spi_set_format(spi0, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
 
-  gpio_set_function(gpio_din, GPIO_FUNC_SPI);
-  gpio_set_function(gpio_clk, GPIO_FUNC_SPI);
+  gpio_set_function(gpio_spi_tx, GPIO_FUNC_SPI);
+  gpio_set_function(gpio_spi_sck, GPIO_FUNC_SPI);
 
-  gpio_init(gpio_cs);
+  gpio_init(gpio_spi_csn);
   gpio_init(gpio_dc);
   gpio_init(gpio_rst);
 
-  gpio_set_dir(gpio_cs, GPIO_OUT);
+  gpio_set_drive_strength(gpio_spi_csn, GPIO_DRIVE_STRENGTH_2MA);
+  gpio_set_drive_strength(gpio_dc, GPIO_DRIVE_STRENGTH_2MA);
+  gpio_set_drive_strength(gpio_rst, GPIO_DRIVE_STRENGTH_2MA);
+
+  gpio_set_dir(gpio_spi_csn, GPIO_OUT);
   gpio_set_dir(gpio_dc, GPIO_OUT);
   gpio_set_dir(gpio_rst, GPIO_OUT);
 
-  gpio_put(gpio_cs, true);
+  gpio_put(gpio_spi_csn, true);
   gpio_put(gpio_dc, true);
 
   gpio_put(gpio_rst, true);
