@@ -32,52 +32,59 @@ constexpr uint8_t disp_orientation = { 0x28 };
 static volatile bool disp_flush_enabled = true;
 static spi_inst_t *display_spi          = { spi0 };
 static int dma_tx;
+static volatile lv_disp_drv_t *call_when_dma_finished = { nullptr };
 
 static void st7796s_send_cmd(uint8_t cmd)
 {
+  gpio_put(19, true); // todo rr - to be removed
+
+  if(dma_channel_is_busy(dma_tx)) { printf("lv_port_disp: warning dma_channel=%u busy\n", dma_tx); }
+  while(dma_channel_is_busy(dma_tx)) { }
+
   gpio_put(gpio_dc, false);
   gpio_put(gpio_spi_csn, false);
   sleep_us(1);
 
-  // spi_write_blocking(spi0, (uint8_t *){ &cmd }, 1);
-  if(dma_channel_is_busy(dma_tx)) { printf("lv_port_disp: warning dma_channel=%u busy\n", dma_tx); }
-  while(dma_channel_is_busy(dma_tx))
-    ;
-
   dma_channel_set_read_addr(dma_tx, &cmd, false);
   dma_channel_set_trans_count(dma_tx, 1, true);
 
-  sleep_us(1);
-  gpio_put(gpio_spi_csn, true);
+  // CSn is released by DMA ISR0 handler
+
+  gpio_put(19, false); // todo rr - to be removed
 }
 
 static void st7796s_send_data(void *data, uint16_t length)
 {
+  gpio_put(18, true); // todo rr - to be removed
+
+  if(dma_channel_is_busy(dma_tx)) { printf("lv_port_disp: warning dma_channel=%u busy\n", dma_tx); }
+  while(dma_channel_is_busy(dma_tx)) { }
+
   gpio_put(gpio_dc, true);
   gpio_put(gpio_spi_csn, false);
   sleep_us(1);
-
-  if(dma_channel_is_busy(dma_tx)) { printf("lv_port_disp: warning dma_channel=%u busy\n", dma_tx); }
-  while(dma_channel_is_busy(dma_tx))
-    ;
 
   dma_channel_set_read_addr(dma_tx, data, false);
   dma_channel_set_trans_count(dma_tx, length, true);
 
-  sleep_us(1);
-  gpio_put(gpio_spi_csn, true);
+  // CSn is released by DMA ISR0 handler
+
+  gpio_put(18, false); // todo rr - to be removed
 }
 
 static void st7796s_send_color(void *data, size_t length)
 {
+  if(dma_channel_is_busy(dma_tx)) { printf("lv_port_disp: warning dma_channel=%u busy\n", dma_tx); }
+  while(dma_channel_is_busy(dma_tx)) { }
+
   gpio_put(gpio_dc, true);
   gpio_put(gpio_spi_csn, false);
   sleep_us(1);
 
-  spi_write_blocking(display_spi, (uint8_t *)data, length);
+  dma_channel_set_read_addr(dma_tx, data, false);
+  dma_channel_set_trans_count(dma_tx, length, true);
 
-  sleep_us(1);
-  gpio_put(gpio_spi_csn, true);
+  // CSn is released by DMA ISR0 handler
 }
 
 //! Flush the content of the internal buffer the specific area on the display
@@ -111,7 +118,24 @@ static void disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_
     uint32_t size = lv_area_get_width(area) * lv_area_get_height(area);
     st7796s_send_color((void *)color_p, size * 2);
 
-    lv_disp_flush_ready(disp_drv);
+    // todo rr - clarify if:
+    //  - the call is expected in this context or can be in ISR context
+    while(call_when_dma_finished != nullptr) { }
+    call_when_dma_finished = disp_drv;
+    // lv_disp_flush_ready(disp_drv);
+  }
+}
+
+void dma_irq0_handler()
+{
+  dma_hw->ints0 = 1u << dma_tx;
+  busy_wait_us(1);
+  gpio_put(gpio_spi_csn, true);
+
+  if(nullptr != call_when_dma_finished)
+  {
+    lv_disp_flush_ready((lv_disp_drv_t *)call_when_dma_finished);
+    call_when_dma_finished = nullptr;
   }
 }
 
@@ -175,12 +199,14 @@ static void disp_init()
 
   spi_set_format(spi0, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
 
-  gpio_set_function(gpio_spi_tx, GPIO_FUNC_SPI);
-  gpio_set_function(gpio_spi_sck, GPIO_FUNC_SPI);
-
+  gpio_init(gpio_spi_tx);
+  gpio_init(gpio_spi_sck);
   gpio_init(gpio_spi_csn);
   gpio_init(gpio_dc);
   gpio_init(gpio_rst);
+
+  gpio_set_function(gpio_spi_tx, GPIO_FUNC_SPI);
+  gpio_set_function(gpio_spi_sck, GPIO_FUNC_SPI);
 
   gpio_set_drive_strength(gpio_spi_csn, GPIO_DRIVE_STRENGTH_2MA);
   gpio_set_drive_strength(gpio_dc, GPIO_DRIVE_STRENGTH_2MA);
@@ -213,6 +239,19 @@ static void disp_init()
   st7796s_set_orientation(disp_orientation);
 
   st7796s_send_cmd(0x21);
+
+  // todo rr - to be removed
+  gpio_init(18);
+  gpio_put(18, false);
+  gpio_disable_pulls(18);
+  gpio_set_drive_strength(18, GPIO_DRIVE_STRENGTH_2MA);
+  gpio_set_dir(18, GPIO_OUT);
+
+  gpio_init(19);
+  gpio_put(19, false);
+  gpio_disable_pulls(19);
+  gpio_set_drive_strength(19, GPIO_DRIVE_STRENGTH_2MA);
+  gpio_set_dir(19, GPIO_OUT);
 }
 
 void lv_port_disp_init(void)
@@ -230,13 +269,17 @@ void lv_port_disp_init(void)
     0,                            // length
     false);                       // don't start
 
+  // triggers clearing of CSn-line after DMA has finished writing its block
+  dma_channel_set_irq0_enabled(dma_tx, true);
+  irq_set_exclusive_handler(DMA_IRQ_0, dma_irq0_handler);
+  irq_set_enabled(DMA_IRQ_0, true);
+
   disp_init();
 
   static lv_disp_draw_buf_t draw_buf_dsc_1;
   static lv_color_t buffer_1[dizplay_buffer_items];
   static lv_color_t buffer_2[dizplay_buffer_items];
   lv_disp_draw_buf_init(&draw_buf_dsc_1, buffer_1, buffer_2, dizplay_buffer_items);
-
 
   static lv_disp_drv_t disp_drv;
   lv_disp_drv_init(&disp_drv);
