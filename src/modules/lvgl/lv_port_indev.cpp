@@ -280,7 +280,12 @@ static void gt911_init()
   bi_decl_if_func_used(bi_2pins_with_names(gpio_rst, "RST, Touch", gpio_int, "INT, Touch"))
     // clang-format on
 
-    gpio_set_dir(gpio_i2c_sda, GPIO_IN);
+    gpio_init(gpio_i2c_sda);
+  gpio_init(gpio_i2c_scl);
+  gpio_init(gpio_rst);
+  gpio_init(gpio_int);
+
+  gpio_set_dir(gpio_i2c_sda, GPIO_IN);
   gpio_set_dir(gpio_i2c_scl, GPIO_IN);
   gpio_set_dir(gpio_rst, GPIO_IN);
   gpio_set_dir(gpio_int, GPIO_IN);
