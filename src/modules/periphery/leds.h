@@ -12,6 +12,8 @@ extern "C"
 
 void user_leds_init(void);
 
+void user_leds_set(uint leds_gpio, bool state);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif

@@ -1,3 +1,7 @@
+#include "main.h"
+
+#include "lvgl.h"
+#include "modules/globals/globals.h"
 #include "modules/lvgl/lv_port_disp.h"
 #include "modules/lvgl/lv_port_indev.h"
 #include "modules/periphery/buttons.h"
@@ -6,12 +10,9 @@
 #include "modules/periphery/leds.h"
 #include "modules/periphery/ws2812/rgbw.h"
 
-#include "demos/keypad_encoder/lv_demo_keypad_encoder.h"
-#include "lvgl.h"
-#include "modules/globals/globals.h"
-#include "pico/stdlib.h"
-
 #include <cstdio>
+#include <hardware/watchdog.h>
+#include <pico/stdlib.h>
 
 extern lv_img_dsc_t ai;
 lv_obj_t *img1     = nullptr;
@@ -43,7 +44,7 @@ static void handle_keypad(lv_event_t *e)
     lv_obj_clean(lv_scr_act());
     busy_wait_ms(100);
 
-    lv_demo_keypad_encoder();
+    // lv_demo_keypad_encoder();
   }
 }
 
@@ -279,6 +280,19 @@ void main_core0()
 
   while(true)
   {
+    user_leds_set(leds_gpio_1, buttons_is_pressed(buttons_gpio_1));
+    user_leds_set(leds_gpio_2, buttons_is_pressed(buttons_gpio_2));
+
     if(0 == systemTicksMs % 5) lv_task_handler();
+
+    // reboot on btn 1 released
+    if(buttons_is_pressed(buttons_gpio_1))
+    {
+      user_leds_set(leds_gpio_1, buttons_is_pressed(buttons_gpio_1));
+      printf("main resetting, bye ...\n");
+      while(buttons_is_pressed(buttons_gpio_1)) { }
+      watchdog_enable(1, false);
+      while(true) { }
+    }
   }
 }

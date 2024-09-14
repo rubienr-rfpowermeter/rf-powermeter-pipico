@@ -13,6 +13,8 @@ extern "C"
 
 void buttons_init(gpio_irq_callback_t callback);
 
+bool buttons_is_pressed(uint button_gpio);
+
 #ifdef __cplusplus
 } // extern "C"
 #endif
