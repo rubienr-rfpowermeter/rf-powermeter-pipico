@@ -16,13 +16,13 @@ constexpr static bool gt911_enable_sw_noise_reduction = { true };
 
 static constexpr uint16_t gt911_resolution_x            = { 480 };
 static constexpr uint16_t gt911_resolution_y            = { 320 };
-static constexpr bool gt911_use_alternative_i2c_address = { false };
+static constexpr bool gt911_use_alternative_i2c_address = { true };
 static constexpr uint16_t gt911_max_touch_supported     = { 5 };
 
-static constexpr uint8_t gt911_gpio_sda = { 8 };
-static constexpr uint8_t gt911_gpio_scl = { 9 };
-static constexpr uint8_t gt911_gpio_rst = { 10 };
-static constexpr uint8_t gt911_gpio_int = { 11 };
+static constexpr uint8_t gpio_i2c_sda = { 8 };
+static constexpr uint8_t gpio_i2c_scl = { 9 };
+static constexpr uint8_t gpio_rst     = { 10 };
+static constexpr uint8_t gpio_int     = { 11 };
 
 lv_indev_t *indev_touchpad = { nullptr };
 static constexpr uint8_t gt911_i2c_dev_addr = { gt911_use_alternative_i2c_address ? GT911_I2C_SLAVE_ADDR_ALTERNATIVE : GT911_I2C_SLAVE_ADDR_DEFAULT };
@@ -248,26 +248,26 @@ static void gt911_send_config()
 
 static void gt911_restart_device(bool set_default_address)
 {
-  // prepare INT line: input, pull down
-  gpio_pull_down(gt911_gpio_int);
-  gpio_put(gt911_gpio_int, false);
-  gpio_set_dir(gt911_gpio_int, GPIO_OUT);
+  // prepare INT line: output, pull down
+  gpio_pull_down(gpio_int);
+  gpio_put(gpio_int, false);
+  gpio_set_dir(gpio_int, GPIO_OUT);
 
-  // reset: enable
-  gpio_put(gt911_gpio_rst, false);
+  // reset active: set line low
+  gpio_put(gpio_rst, false);
   busy_wait_ms(10); // min hold time: not documented
 
-  if(set_default_address) gpio_put(gt911_gpio_int, false); // INT low: address 0x5D
-  else gpio_put(gt911_gpio_int, true);                     // INT high: address 0x14
-  busy_wait_ms(10);                                        // min hold time: 100us
+  if(set_default_address) gpio_put(gpio_int, false); // INT low: address 0x5D
+  else gpio_put(gpio_int, true);                     // INT high: address 0x14
+  busy_wait_ms(10);                                  // min hold time: 100us
 
-  // reset: disable
-  gpio_put(gt911_gpio_rst, false);
+  // reset disabled: set line high
+  gpio_put(gpio_rst, true);
   busy_wait_ms(20); // min hold time: 5ms
 
   // leave INT as floating input
-  gpio_disable_pulls(gt911_gpio_int);
-  gpio_set_dir(gt911_gpio_int, GPIO_IN);
+  gpio_disable_pulls(gpio_int);
+  gpio_set_dir(gpio_int, GPIO_IN);
 }
 
 //! Initialize your touchpad
@@ -275,31 +275,51 @@ static void gt911_init()
 {
   // clang-format off
   bi_decl_if_func_used(bi_program_feature("Capacitive Touch (I2C0)"))
-  bi_decl_if_func_used(bi_2pins_with_func(gt911_gpio_sda, gt911_gpio_scl, GPIO_FUNC_I2C))
-  bi_decl_if_func_used(bi_2pins_with_names(gt911_gpio_sda, "Touch", gt911_gpio_scl, "Touch"))
-  bi_decl_if_func_used(bi_2pins_with_names(gt911_gpio_rst, "RST, Touch", gt911_gpio_int, "INT, Touch"))
+  bi_decl_if_func_used(bi_2pins_with_func(gpio_i2c_sda, gpio_i2c_scl, GPIO_FUNC_I2C))
+  bi_decl_if_func_used(bi_2pins_with_names(gpio_i2c_sda, "Touch", gpio_i2c_scl, "Touch"))
+  bi_decl_if_func_used(bi_2pins_with_names(gpio_rst, "RST, Touch", gpio_int, "INT, Touch"))
     // clang-format on
 
-    constexpr uint target_baud_rate = { 400 * 1000 };
-  const uint effective_baud_rate    = { i2c_init(i2c0, target_baud_rate) };
+    gpio_set_dir(gpio_i2c_sda, GPIO_IN);
+  gpio_set_dir(gpio_i2c_scl, GPIO_IN);
+  gpio_set_dir(gpio_rst, GPIO_IN);
+  gpio_set_dir(gpio_int, GPIO_IN);
+
+  constexpr uint target_baud_rate = { 400 * 1000 };
+  const uint effective_baud_rate  = { i2c_init(i2c0, target_baud_rate) };
   printf("lv_port_indev: i2c0 effective_clock_hz=%u requested_clock_hz=%u\n", effective_baud_rate, target_baud_rate);
 
-  gpio_set_function(gt911_gpio_sda, GPIO_FUNC_I2C);
-  gpio_set_function(gt911_gpio_scl, GPIO_FUNC_I2C);
-  gpio_set_function(gt911_gpio_int, GPIO_FUNC_SIO);
-  gpio_set_function(gt911_gpio_rst, GPIO_FUNC_SIO);
-  gpio_set_dir(gt911_gpio_rst, GPIO_OUT);
-  gpio_set_dir(gt911_gpio_int, GPIO_IN);
+  gpio_set_function(gpio_i2c_sda, GPIO_FUNC_I2C);
+  gpio_set_function(gpio_i2c_scl, GPIO_FUNC_I2C);
+  gpio_set_function(gpio_int, GPIO_FUNC_SIO);
+  gpio_set_function(gpio_rst, GPIO_FUNC_SIO);
 
-  gpio_pull_up(gt911_gpio_sda);
-  gpio_pull_up(gt911_gpio_scl);
-  gpio_disable_pulls(gt911_gpio_rst);
-  gpio_disable_pulls(gt911_gpio_int);
+  gpio_set_drive_strength(gpio_i2c_sda, GPIO_DRIVE_STRENGTH_2MA);
+  gpio_set_drive_strength(gpio_i2c_scl, GPIO_DRIVE_STRENGTH_2MA);
+  gpio_set_drive_strength(gpio_rst, GPIO_DRIVE_STRENGTH_2MA);
+  gpio_set_drive_strength(gpio_int, GPIO_DRIVE_STRENGTH_2MA);
 
+  gpio_set_slew_rate(gpio_i2c_sda, GPIO_SLEW_RATE_SLOW);
+  gpio_set_slew_rate(gpio_i2c_scl, GPIO_SLEW_RATE_SLOW);
+  gpio_set_slew_rate(gpio_rst, GPIO_SLEW_RATE_SLOW);
+  gpio_set_slew_rate(gpio_int, GPIO_SLEW_RATE_SLOW);
+
+  gpio_disable_pulls(gpio_i2c_sda);
+  gpio_disable_pulls(gpio_i2c_scl);
+  gpio_disable_pulls(gpio_rst);
+  gpio_disable_pulls(gpio_int);
+
+  gpio_set_dir(gpio_rst, GPIO_OUT);
+  gpio_put(gpio_rst, false);
   gt911_restart_device(!gt911_use_alternative_i2c_address);
 
   uint8_t dont_care;
-  if(gt911_i2c_read(gt911_i2c_dev_addr, GT911_PRODUCT_ID1, &dont_care, 1) == PICO_ERROR_GENERIC) return;
+  if(gt911_i2c_read(gt911_i2c_dev_addr, GT911_PRODUCT_ID1, &dont_care, 1) == PICO_ERROR_GENERIC)
+  {
+    printf("lv_port_indev failed to initialize input device\n");
+
+    return;
+  }
 
   gt911_send_config();
 
