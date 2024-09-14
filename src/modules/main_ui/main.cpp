@@ -31,7 +31,7 @@ bool ms_tick_timer_cb(__unused struct repeating_timer *t)
 static void handle_buzzer(lv_event_t *e)
 {
   lv_event_code_t code = lv_event_get_code(e);
-  if(code == LV_EVENT_VALUE_CHANGED) { buzzer_beep(); }
+  if(code == LV_EVENT_VALUE_CHANGED) { buzzer_toggle_beep(); }
 }
 
 static void handle_keypad(lv_event_t *e)
@@ -96,8 +96,6 @@ static void handle_hw(lv_event_t *e)
     lv_obj_clean(lv_scr_act());
     busy_wait_ms(100);
 
-    buzzer_init();
-
     lv_obj_t *beep_btn = lv_btn_create(lv_scr_act());
     lv_obj_add_event_cb(beep_btn, handle_buzzer, LV_EVENT_ALL, nullptr);
     lv_obj_align(beep_btn, LV_ALIGN_TOP_MID, 0, 40);
@@ -129,7 +127,7 @@ static void handle_hw(lv_event_t *e)
 
     rgbw_init();
 
-    buttons_init(&gpio_buttons_callback);
+    // buttons_init(/*&gpio_buttons_callback*/);
 
     led1 = lv_led_create(lv_scr_act());
     lv_obj_align(led1, LV_ALIGN_TOP_MID, -30, 400);
@@ -249,7 +247,8 @@ void default_tab_view()
   lv_obj_set_grid_cell(label, LV_GRID_ALIGN_STRETCH, 1, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
 }
 
-static void uart_post_init() {
+static void uart_post_init()
+{
   constexpr uint8_t gpio_uart_tx = { PICO_DEFAULT_UART_TX_PIN };
   constexpr uint8_t gpio_uart_rx = { PICO_DEFAULT_UART_RX_PIN };
   gpio_disable_pulls(gpio_uart_tx);
@@ -265,12 +264,14 @@ static void init()
   printf("\n**** RF Power Meter (Version " PICO_PROGRAM_VERSION_STRING " Built " __DATE__ ") ****\nmain_core0: init ...\n");
 
   user_leds_init();
+  buzzer_init();
+  rgbw_init();
 
   lv_init();
   lv_port_disp_init();
   lv_port_indev_init();
 
-  rgbw_init();
+  buttons_init();
 
   joystick_init(unused_cb);
   printf("main_core0: init done\n");
@@ -293,6 +294,7 @@ void main_core0()
   {
     user_leds_set(leds_gpio_1, buttons_is_pressed(buttons_gpio_1));
     user_leds_set(leds_gpio_2, buttons_is_pressed(buttons_gpio_2));
+    buzzer_beep(buttons_is_pressed(buttons_gpio_2));
 
     if(0 == systemTicksMs % 5) lv_task_handler();
 

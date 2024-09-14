@@ -9,8 +9,9 @@ extern "C"
 {
 #endif
 
-void buzzer_init(void);
-void buzzer_beep(void);
+void buzzer_init();
+void buzzer_toggle_beep();
+void buzzer_beep(bool do_beep);
 
 #ifdef __cplusplus
 } // extern "C"
