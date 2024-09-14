@@ -249,16 +249,27 @@ void default_tab_view()
   lv_obj_set_grid_cell(label, LV_GRID_ALIGN_STRETCH, 1, 1, LV_GRID_ALIGN_STRETCH, 0, 1);
 }
 
+static void uart_post_init() {
+  constexpr uint8_t gpio_uart_tx = { PICO_DEFAULT_UART_TX_PIN };
+  constexpr uint8_t gpio_uart_rx = { PICO_DEFAULT_UART_RX_PIN };
+  gpio_disable_pulls(gpio_uart_tx);
+  gpio_disable_pulls(gpio_uart_rx);
+  gpio_set_drive_strength(gpio_uart_tx, GPIO_DRIVE_STRENGTH_2MA);
+  gpio_set_slew_rate(gpio_uart_tx, GPIO_SLEW_RATE_SLOW);
+}
+
 static void init()
 {
-  setup_default_uart();
+  stdio_init_all();
+  uart_post_init();
   printf("\n**** RF Power Meter (Version " PICO_PROGRAM_VERSION_STRING " Built " __DATE__ ") ****\nmain_core0: init ...\n");
 
-  stdio_init_all();
+  user_leds_init();
 
   lv_init();
   lv_port_disp_init();
   lv_port_indev_init();
+
   rgbw_init();
 
   joystick_init(unused_cb);
