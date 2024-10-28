@@ -12,8 +12,8 @@ else ()
     set(PICO_SDK_PATH "$ENV{USER}/pico/pico-sdk")
 endif ()
 
-set(PICO_BOARD pico CACHE STRING "Pico Board Type")
-set(PICO_PLATFORM rp2040 CACHE STRING "Pico Platform")
+set(PICO_BOARD pico2 CACHE STRING "Pico Board Type")
+set(PICO_PLATFORM rp2350-arm-s CACHE STRING "Pico Platform")
 
 # pull in Raspberry Pi Pico SDK
 include(pico_sdk_import.cmake)
@@ -89,7 +89,7 @@ target_include_directories(rf_probe PRIVATE
 )
 
 target_compile_definitions(rf_probe PRIVATE
-        PICO_STACK_SIZE=0x1000
+        # PICO_STACK_SIZE=0x1000
         PICO_STDIO_STACK_BUFFER_SIZE=64 # use a small printf on stack buffer
 )
 
