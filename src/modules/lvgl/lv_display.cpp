@@ -52,14 +52,14 @@ static void lvgl_deinit()
   lvgl_data.buffer_1 = nullptr;
 }
 
-void lvgl_init(DmaPeriphery &dma_periphery)
+void lvgl_init()
 {
   lv_init();
 
-  if(nullptr == lvgl_data.buffer_0) lvgl_data.buffer_0 = (lv_color_t *)malloc(DISPLAY_NUM_PIXELS / 2 * sizeof(lv_color_t));
-  if(nullptr == lvgl_data.buffer_1) lvgl_data.buffer_1 = (lv_color_t *)malloc(DISPLAY_NUM_PIXELS / 2 * sizeof(lv_color_t));
+  if(nullptr == lvgl_data.buffer_0) lvgl_data.buffer_0 = (lv_color_t *)malloc(DISPLAY_NUM_PIXELS * sizeof(lv_color_t));
+  if(nullptr == lvgl_data.buffer_1) lvgl_data.buffer_1 = (lv_color_t *)malloc(DISPLAY_NUM_PIXELS * sizeof(lv_color_t));
 
-  lv_disp_draw_buf_init(&lvgl_data.disp_buffer, lvgl_data.buffer_0, lvgl_data.buffer_1, DISPLAY_NUM_PIXELS / 2);
+  lv_disp_draw_buf_init(&lvgl_data.disp_buffer, lvgl_data.buffer_0, lvgl_data.buffer_1, DISPLAY_NUM_PIXELS);
   lv_disp_drv_init(&lvgl_data.disp_diver);
 
   lvgl_data.disp_diver.hor_res  = DISPLAY_WIDTH_PX;
@@ -75,7 +75,7 @@ void lvgl_init(DmaPeriphery &dma_periphery)
 void lv_display_init()
 {
   lvgl_data.dma_periphery = &display_get_dma_periphery();
-  lvgl_init(*lvgl_data.dma_periphery);
+  lvgl_init();
 }
 
 void lv_display_deinit() { lvgl_deinit(); }
