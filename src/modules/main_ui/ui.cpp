@@ -165,11 +165,11 @@ void handle_input_updates(const TrackedInputs &keys)
     if(keys.up.is_pressed and !keys.up.is_event) // joystick up active
       widgets_up(ui_data.cursor);
     else if(keys.down.is_pressed and !keys.down.is_event) // joystick down active
-      widgets_down(ui_data.cursor, LCD_HEIGHT_PX);
+      widgets_down(ui_data.cursor, DISPLAY_HEIGHT_PX);
     else if(keys.left.is_pressed and !keys.left.is_event) // joystick left active
       widgets_left(ui_data.cursor);
     else if(keys.right.is_pressed and !keys.right.is_event) // joystick right active
-      widgets_right(ui_data.cursor, LCD_WIDTH_PX);
+      widgets_right(ui_data.cursor, DISPLAY_WIDTH_PX);
     else if(keys.z.is_pressed and keys.z.is_event) // joystick z is active event
       lv_obj_set_pos(ui_data.cursor, 0, 0);
 

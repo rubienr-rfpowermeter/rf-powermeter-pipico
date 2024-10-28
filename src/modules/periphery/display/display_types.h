@@ -3,40 +3,35 @@
 #include "hardware/dma.h"
 #include <pico/types.h>
 
-#ifdef __cplusplus
-extern "C"
+enum DisplayColor : uint16_t
 {
-#endif
-
-enum LcdColor : uint16_t
-{
-  LcdColor_WHITE      = 0xFFFF,
-  LcdColor_BLACK      = 0x0000,
-  LcdColor_BLUE       = 0x001F,
-  LcdColor_BRED       = 0XF81F,
-  LcdColor_GRED       = 0XFFE0,
-  LcdColor_GBLUE      = 0X07FF,
-  LcdColor_RED        = 0xF800,
-  LcdColor_MAGENTA    = 0xF81F,
-  LcdColor_GREEN      = 0x07E0,
-  LcdColor_CYAN       = 0x7FFF,
-  LcdColor_YELLOW     = 0xFFE0,
-  LcdColor_BROWN      = 0XBC40,
-  LcdColor_BRRED      = 0XFC07,
-  LcdColor_GRAY       = 0X8430,
-  LcdColor_DARKBLUE   = 0X01CF,
-  LcdColor_LIGHTBLUE  = 0X7D7C,
-  LcdColor_GRAYBLUE   = 0X5458,
-  LcdColor_LIGHTGREEN = 0X841F,
-  LcdColor_LGRAY      = 0XC618,
-  LcdColor_LGRAYBLUE  = 0XA651,
-  LcdColor_LBBLUE     = 0X2B12,
+  DisplayColor_WHITE      = 0xFFFF,
+  DisplayColor_BLACK      = 0x0000,
+  DisplayColor_BLUE       = 0x001F,
+  DisplayColor_BRED       = 0XF81F,
+  DisplayColor_GRED       = 0XFFE0,
+  DisplayColor_GBLUE      = 0X07FF,
+  DisplayColor_RED        = 0xF800,
+  DisplayColor_MAGENTA    = 0xF81F,
+  DisplayColor_GREEN      = 0x07E0,
+  DisplayColor_CYAN       = 0x7FFF,
+  DisplayColor_YELLOW     = 0xFFE0,
+  DisplayColor_BROWN      = 0XBC40,
+  DisplayColor_BRRED      = 0XFC07,
+  DisplayColor_GRAY       = 0X8430,
+  DisplayColor_DARKBLUE   = 0X01CF,
+  DisplayColor_LIGHTBLUE  = 0X7D7C,
+  DisplayColor_GRAYBLUE   = 0X5458,
+  DisplayColor_LIGHTGREEN = 0X841F,
+  DisplayColor_LGRAY      = 0XC618,
+  DisplayColor_LGRAYBLUE  = 0XA651,
+  DisplayColor_LBBLUE     = 0X2B12,
 };
 
-enum LcdScanDirection : uint8_t
+enum DisplayScanDirection : uint8_t
 {
-  LcdScanDirection_0_DEG,
-  LcdScanDirection_90_DEG,
+  DisplayScanDirection_0_DEG,
+  DisplayScanDirection_90_DEG,
 };
 
 typedef struct
@@ -46,9 +41,5 @@ typedef struct
   dma_channel_config tx_dma_config;
 } DmaPeriphery;
 
-static_assert(sizeof(LcdColor) == 2);
-static_assert(sizeof(LcdScanDirection) == 1);
-
-#ifdef __cplusplus
-} // extern "C"
-#endif
+static_assert(sizeof(DisplayColor) == 2);
+static_assert(sizeof(DisplayScanDirection) == 1);

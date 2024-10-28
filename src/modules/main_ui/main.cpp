@@ -24,7 +24,6 @@ bool ms_tick_timer_cb(__unused struct repeating_timer *t)
   return true;
 }
 
-
 static void uart_post_init()
 {
   constexpr uint8_t gpio_uart_tx = { PICO_DEFAULT_UART_TX_PIN };
