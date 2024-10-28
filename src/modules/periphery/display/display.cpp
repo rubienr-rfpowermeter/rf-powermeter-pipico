@@ -102,7 +102,15 @@ static void display_send_data_1byte(uint8_t data)
 {
   gpio_put(DISPLAY_GPIO_DC, true);
   gpio_put(DISPLAY_GPIO_CS, false);
-  spi_write_blocking(DISPLAY_SPI_PORT, &data, sizeof(data));
+  spi_write_blocking(DISPLAY_SPI_PORT, &data, 1);
+  gpio_put(DISPLAY_GPIO_CS, true);
+}
+
+static void display_send_data_nbyte(const uint8_t *data, uint8_t length)
+{
+  gpio_put(DISPLAY_GPIO_DC, true);
+  gpio_put(DISPLAY_GPIO_CS, false);
+  spi_write_blocking(DISPLAY_SPI_PORT, data, length);
   gpio_put(DISPLAY_GPIO_CS, true);
 }
 
@@ -258,17 +266,19 @@ void display_set_window(uint16_t start_x, uint16_t start_y, uint16_t end_x, uint
 {
   // CASET, column address set (column line in frame memory), st7789vw V1.0, page 198, section 9.1.20
   display_send_command(0x2a);
-  display_send_data_1byte(0x00);      // XS[15:8]
-  display_send_data_1byte(start_x);   // XS[7:0]
-  display_send_data_1byte(0x00);      // XE[15:8]
-  display_send_data_1byte(end_x - 1); // XE[7:0]
+  const uint8_t x_data[] = { (uint8_t)((start_x & 0xff00) >> 8),     // XS[15:8]
+                             (uint8_t)(start_x & 0x00ff),            // XS[7:0]
+                             (uint8_t)(((end_x - 1) & 0xff00) >> 8), // XE[15:8]
+                             (uint8_t)((end_x - 1) & 0x00ff) };      // XE[7:0]
+  display_send_data_nbyte(x_data, sizeof(x_data));
 
   // RASET, row address set (page line in frame memory), st7789vw V1.0, page 200, section 9.1.21
   display_send_command(0x2b);
-  display_send_data_1byte(0x00);      // YS[15:8]
-  display_send_data_1byte(start_y);   // YS[7:0]
-  display_send_data_1byte(0x00);      // YE[15:8]
-  display_send_data_1byte(end_y - 1); // YE[7:0]
+  const uint8_t y_data[] = { (uint8_t)((start_y & 0xff00) >> 8),     // YS[15:8]
+                             (uint8_t)(start_y & 0x00ff),            // YS[7:0]
+                             (uint8_t)(((end_y - 1) & 0xff00) >> 8), // YE[15:8]
+                             (uint8_t)((end_y - 1) & 0x00ff) };      // YE[7:0]
+  display_send_data_nbyte(y_data, sizeof(y_data));
 
   // RAMWR, memory write, st7789vw V1.0, page 202, section 9.1.22
   display_send_command(0x2c);
