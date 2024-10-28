@@ -22,8 +22,8 @@ static DmaPeriphery dma_periphery = { 0 };
 
 static void display_gpio_init()
 {
-  constexpr uint8_t gpios[] = { DISPLAY_GPIO_RST, DISPLAY_GPIO_DC, DISPLAY_GPIO_CS,
-                                DISPLAY_GPIO_BL, DISPLAY_GPIO_CLK, DISPLAY_GPIO_MOSI };
+  constexpr uint8_t gpios[] = { DISPLAY_GPIO_RST, DISPLAY_GPIO_DC,  DISPLAY_GPIO_CS,
+                                DISPLAY_GPIO_BL,  DISPLAY_GPIO_CLK, DISPLAY_GPIO_MOSI };
 
   for(auto gpio : gpios)
   {
@@ -75,7 +75,8 @@ static void display_dma_init(DmaPeriphery &periphery)
 static void display_set_backlight(PwmPeriphery &periphery)
 {
   if(periphery.backlight_percent > 100) periphery.backlight_percent = 100;
-  else if(periphery.backlight_percent < DISPLAY_BACKLIGHT_MIN_PERCENT) periphery.backlight_percent = DISPLAY_BACKLIGHT_MIN_PERCENT;
+  else if(periphery.backlight_percent < DISPLAY_BACKLIGHT_MIN_PERCENT)
+    periphery.backlight_percent = DISPLAY_BACKLIGHT_MIN_PERCENT;
   pwm_set_chan_level(periphery.backlight_slice_nr, PWM_CHAN_B, periphery.backlight_percent);
 }
 
@@ -189,14 +190,14 @@ static void display_init_registers()
   // VDVVRHEN, VDV and VRH command enable, st7789vw V1.0, page 278, section 9.2.14
   display_send_command(0xC2);
   display_send_data_1byte(1 << 0); // d0, CMDEN,
-                               // 0: VDV and VRH register value comes from NVM,
-                               // 1: VDV and VRH register value comes from command write
+                                   // 0: VDV and VRH register value comes from NVM,
+                                   // 1: VDV and VRH register value comes from command write
 
   // VRHS, VRH set, st7789vw V1.0, st7789vw V1.0, page 279, section 9.2.15
   display_send_command(0xC3);
   display_send_data_1byte(0x12); // VRHS[5:0], 0x12:
-                             // VAP=(4.45V + (vcom + vcom_offset + vdv))
-                             // VAN=(-4.45V + (vcom + vcom_offset - vdv))
+                                 // VAP=(4.45V + (vcom + vcom_offset + vdv))
+                                 // VAN=(-4.45V + (vcom + vcom_offset - vdv))
 
   // VDVS, VRH set, st7789vw V1.0, page 281, section 9.2.16
   display_send_command(0xc4);
