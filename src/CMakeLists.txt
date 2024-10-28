@@ -48,7 +48,7 @@ add_executable(rf_probe
         modules/periphery/input/input.cpp
         modules/periphery/input/joystick.cpp
         modules/periphery/display/display.cpp
-        modules/periphery/led/user_led.c
+        modules/periphery/led/user_led.cpp
         modules/main_sampler/main.cpp
         modules/main_ui/image_data.c
         modules/main_ui/main.cpp

@@ -1,5 +1,6 @@
 #include "user_led.h"
 
+#include "user_led_hw_config.h"
 #include <hardware/gpio.h>
 #include <pico/binary_info.h>
 
