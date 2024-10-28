@@ -1,10 +1,11 @@
 #include "joystick.h"
 
-#include "stdio.h"
+#include "joystick_hw_config.h"
+#include "joystick_types.h"
 #include <hardware/gpio.h>
 #include <pico/binary_info.h>
 
-static uint8_t state;
+static volatile uint8_t state;
 
 static uint8_t mask_from_gpio(uint8_t gpio)
 {
@@ -30,17 +31,15 @@ bool joystick_on_edge_cb(uint gpio, uint32_t event_mask)
 {
   const uint8_t gpio_mask = { mask_from_gpio(gpio) };
 
-  if ( 0 == gpio_mask) return false;
+  if(0 == gpio_mask) return false;
 
-  else if(event_mask & GPIO_IRQ_EDGE_RISE)
+  else if(event_mask & GPIO_IRQ_EDGE_RISE) // on released
   {
-    // button is released
     state &= ~gpio_mask;
     return true;
   }
-  else if(event_mask & GPIO_IRQ_EDGE_FALL)
+  else if(event_mask & GPIO_IRQ_EDGE_FALL) // on active
   {
-    // button is pressed
     state |= gpio_mask;
     return true;
   }
@@ -59,12 +58,12 @@ void joystick_init()
   // clang-format off
   bi_decl_if_func_used(bi_program_feature("Joystick"))
   bi_decl_if_func_used(bi_3pins_with_names(
-    JOYSTICK_GPIO_UP,   "joystick up",
-    JOYSTICK_GPIO_DOWN, "joystick down",
-    JOYSTICK_GPIO_LEFT, "joystick left"))
+    JOYSTICK_GPIO_UP,   "joystick UP",
+    JOYSTICK_GPIO_DOWN, "joystick DOWN",
+    JOYSTICK_GPIO_LEFT, "joystick LEFT"))
   bi_decl_if_func_used(bi_2pins_with_names(
-    JOYSTICK_GPIO_RIGHT,"joystick right",
-    JOYSTICK_GPIO_Z,    "joystick z"))
+    JOYSTICK_GPIO_RIGHT,"joystick RIGHT",
+    JOYSTICK_GPIO_Z,    "joystick Z"))
     // clang-format on
 
     state = 0;
@@ -81,10 +80,4 @@ void joystick_init()
   gpio_set_irq_enabled(JOYSTICK_GPIO_Z, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true);
 }
 
-bool joystick_any_active(uint8_t mask) { return 0 != (state & mask); }
-bool joystick_all_active(uint8_t mask) { return mask == (state & mask); }
-
 uint8_t joystick_get_mask() { return state; }
-
-bool joystick_any_active_in_mask(uint8_t joystick_flags, uint8_t state_mask) { return 0 != (joystick_flags & state_mask); }
-bool joystick_all_active_in_mask(uint8_t joystick_flags, uint8_t state_mask) { return joystick_flags == (joystick_flags & state_mask); };

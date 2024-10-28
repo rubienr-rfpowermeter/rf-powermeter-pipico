@@ -44,8 +44,9 @@ add_executable(rf_probe
         lib/average/AverageT.hpp
         modules/globals/globals.cpp
         modules/lvgl/lv_display.cpp
-        modules/periphery/input/buttons.c
-        modules/periphery/input/joystick.c
+        modules/periphery/input/buttons.cpp
+        modules/periphery/input/input.cpp
+        modules/periphery/input/joystick.cpp
         modules/periphery/display/display.cpp
         modules/periphery/led/user_led.c
         modules/main_sampler/main.cpp

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "modules/periphery/input/input.h"
 #ifdef __cplusplus
 extern "C"
 {
@@ -12,7 +13,7 @@ extern "C"
 #endif
 
 void ui_init();
-void ui_update_from_peripherals();
+void ui_update_from_peripherals(const TrackedInputs &keys);
 
 #ifdef __cplusplus
 } // extern "C"

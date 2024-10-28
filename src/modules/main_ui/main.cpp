@@ -1,9 +1,12 @@
 #include "main.h"
+
 #include "lvgl.h"
 #include "modules/globals/globals.h"
 #include "modules/lvgl/lv_display.h"
 #include "modules/periphery/display/display.h"
 #include "modules/periphery/input/buttons.h"
+#include "modules/periphery/input/buttons_types.h"
+#include "modules/periphery/input/input.h"
 #include "modules/periphery/input/joystick.h"
 #include "modules/periphery/led/user_led.h"
 #include "ui.h"
@@ -50,7 +53,8 @@ static void init()
   user_led_init();
   buttons_init();
   joystick_init();
-  irq_set_enabled(IO_IRQ_BANK0, true);
+  input_init();
+
 
   display_init();
   lv_display_init();
@@ -64,6 +68,7 @@ void main_core0()
 {
   init();
 
+  TrackedInputs input_keys;
   repeating_timer_t timer;
   add_repeating_timer_ms(1, ms_tick_timer_cb, nullptr, &timer);
 
@@ -72,18 +77,21 @@ void main_core0()
 
   while(true)
   {
-    user_led_set(buttons_any_pressed(BUTTONS_MASK_ALL) || joystick_any_active(JOYSTICK_MASK_ALL));
+    const uint8_t buttons_mask  = { buttons_get_mask() };
+    const uint8_t joystick_mask = { joystick_get_mask() };
+    user_led_set(buttons_mask || joystick_mask);
 
-    if(0 == system_ticks_ms % 5) {
-      ui_update_from_peripherals();
+    if(0 == system_ticks_ms % 5)
+    {
+      input_keys.update(buttons_mask, joystick_mask);
+      ui_update_from_peripherals(input_keys);
       lv_task_handler();
     }
 
-    if(buttons_all_pressed(BUTTONS_MASK_Y))
+    if(input_any_active(BUTTONS_MASK_Y, buttons_mask))
     {
-      user_led_set(buttons_any_pressed(BUTTONS_MASK_ALL));
       printf("main resetting, bye ...\n");
-      while(buttons_all_pressed(BUTTONS_MASK_Y)) { }
+      while(input_any_active(BUTTONS_MASK_Y, buttons_get_mask())) { }
       watchdog_enable(1, false);
       while(true) { }
     }

@@ -6,89 +6,19 @@
 #include <cinttypes>
 #include <string>
 
-enum Update : uint8_t
-{
-  Update_PRESSED_NO_UPDATE = 0,
-  Update_RELEASED_NO_UPDATE,
-  Update_PRESS_EVENT,
-  Update_RELEASE_EVENT,
-  Update_NO_UPDATE
-};
-
-constexpr const char *
-  update_to_str[] = { [Update_PRESSED_NO_UPDATE] = "1 ", [Update_RELEASED_NO_UPDATE] = "0 ", [Update_PRESS_EVENT] = "1+", [Update_RELEASE_EVENT] = "0+", [Update_NO_UPDATE] = "??" };
-
 typedef struct
 {
-  uint8_t a;
-  uint8_t b;
-  uint8_t x;
-  uint8_t y;
-} ButtonsHistory;
+  lv_obj_t *screen[4]; // screens
+  lv_obj_t *cursor;    // cursor
+  lv_obj_t *button;    // button
+  lv_obj_t *label;     // label
+  lv_obj_t *sw_1;      // switch 1
+  lv_obj_t *sw_2;      // switch 2
+  uint16_t click_num;  // number of button clicks
 
-typedef struct
-{
-  enum Update a;
-  enum Update b;
-  enum Update x;
-  enum Update y;
-} ButtonsState;
-
-typedef struct
-{
-  uint8_t right;
-  uint8_t left;
-  uint8_t up;
-  uint8_t down;
-  uint8_t z;
-} JoystickHistory;
-
-typedef struct
-{
-  enum Update right;
-  enum Update left;
-  enum Update up;
-  enum Update down;
-  enum Update z;
-} JoystickState;
-
-typedef struct
-{
-  lv_obj_t *screen[4]; // Used to store different screens
-  lv_obj_t *cursor;    // Cursor
-  lv_obj_t *button;    // Button
-  lv_obj_t *label;     // Label
-  lv_obj_t *sw_1;      // Switch 1
-  lv_obj_t *sw_2;      // Switch 2
-  uint16_t click_num;  // Number of button clicks
-
-  ButtonsHistory buttons_previous;
-  ButtonsHistory buttons_current;
-  JoystickHistory joystick_current;
-  JoystickHistory joystick_previous;
-
-  ButtonsState buttons;
-  JoystickState joystick;
 } UiData;
 
-static UiData ui_data = { 0 };
-
-static void advance_counter(uint8_t &counter, bool plus)
-{
-  if(plus && (counter < 5)) counter++;
-  else if(!plus && counter > 0) counter--;
-}
-
-static enum Update compute_update(uint8_t prev_counter, uint8_t curr_counter)
-{
-  constexpr uint8_t threshold = { 3 };
-
-  if(prev_counter > threshold and curr_counter <= threshold) return Update_RELEASE_EVENT;
-  else if(prev_counter < threshold and curr_counter >= threshold) return Update_PRESS_EVENT;
-  else if(prev_counter < threshold and curr_counter < threshold) return Update_RELEASED_NO_UPDATE;
-  else if(prev_counter > threshold and curr_counter > threshold) return Update_PRESSED_NO_UPDATE;
-  else return Update_NO_UPDATE;
-}
+static UiData ui_data;
 
 extern const lv_img_dsc_t LCD_1inch3;
 
@@ -173,53 +103,47 @@ void switch_to_next_screen(UiData &data)
 
 static void widgets_up(lv_obj_t *widgets)
 {
-  int y = lv_obj_get_y(widgets); // Get the y coordinate of widgets
-  y -= 1;                        // The y coordinate is minus 1
-  if(y < 0) y = 0;               // Limit the y coordinate of widgets so that they do not exceed the top of the screen
-  lv_obj_set_y(widgets, y);      // Set the y coordinate of widgets
+  int16_t y = lv_obj_get_y(widgets);
+  y         = (y <= 0) ? 0 : y - 1;
+  lv_obj_set_y(widgets, y);
 }
 
-static void widgets_down(lv_obj_t *widgets, uint16_t DISP_VER_RES)
+static void widgets_down(lv_obj_t *widgets, uint16_t display_v_res_px)
 {
-  int y = lv_obj_get_y(widgets);      // Get the y coordinate of widgets
-  int h = lv_obj_get_height(widgets); // Get the height of widgets
-  y += 1;                             // Add 1 to the y coordinate
-  if(y > LCD_HEIGHT_PX - h)
-    y = LCD_HEIGHT_PX - h;  // Control the y coordinate of widgets so that their bottom cannot exceed the bottom of the screen
-  lv_obj_set_y(widgets, y); // Set the y coordinate of widgets
+  int16_t y       = lv_obj_get_y(widgets) + 1;
+  const int16_t h = lv_obj_get_height(widgets);
+  if(y > display_v_res_px - h) y = display_v_res_px - h;
+  lv_obj_set_y(widgets, y);
 }
 
 static void widgets_left(lv_obj_t *widgets)
 {
-  int x = lv_obj_get_x(widgets); // Get the x coordinate of widgets
-  x -= 1;                        // The x coordinate is minus 1
-  if(x < 0) x = 0;               // Limit the x coordinate of widgets so that they do not exceed the left of the screen
-  lv_obj_set_x(widgets, x);      // Set the x coordinate of widgets
+  int16_t x = lv_obj_get_x(widgets);
+  x         = (x <= 0) ? 0 : x - 1;
+  lv_obj_set_x(widgets, x);
 }
 
-static void widgets_right(lv_obj_t *widgets, uint16_t DISP_HOR_RES)
+static void widgets_right(lv_obj_t *widgets, uint16_t display_h_res_px)
 {
-  int x = lv_obj_get_x(widgets);     // Get the x coordinate of widgets
-  int w = lv_obj_get_width(widgets); // Get the width of widgets
-  x += 1;                            // Add 1 to the x coordinate
-  if(x > LCD_WIDTH_PX - w)
-    x = LCD_WIDTH_PX - w; // Control the x coordinate of widgets so that their right side cannot exceed the right side of the screen
-  lv_obj_set_x(widgets, x); // Set the y coordinate of widgets
+  int16_t x       = lv_obj_get_x(widgets) + 1;
+  const int16_t w = lv_obj_get_width(widgets);
+  if(x > display_h_res_px - w) x = display_h_res_px - w;
+  lv_obj_set_x(widgets, x);
 }
 
 static bool click_valid(lv_obj_t *cur, lv_obj_t *widgets)
 {
   /*Get the coordinates and size of cursor*/
-  int x1 = lv_obj_get_x(cur);
-  int y1 = lv_obj_get_y(cur);
-  int w1 = lv_obj_get_width(cur);
+  lv_coord_t x1 = lv_obj_get_x(cur);
+  lv_coord_t y1 = lv_obj_get_y(cur);
+  lv_coord_t w1 = lv_obj_get_width(cur);
   // int h1 = lv_obj_get_height(cur);
 
   /*Get the coordinates and size of widgets*/
-  int x2 = lv_obj_get_x(widgets);
-  int y2 = lv_obj_get_y(widgets);
-  int w2 = lv_obj_get_width(widgets);
-  int h2 = lv_obj_get_height(widgets);
+  lv_coord_t x2 = lv_obj_get_x(widgets);
+  lv_coord_t y2 = lv_obj_get_y(widgets);
+  lv_coord_t w2 = lv_obj_get_width(widgets);
+  lv_coord_t h2 = lv_obj_get_height(widgets);
 
   /*Determine whether the right border of cursor is within the range of widget*/
   if(x1 + w1 >= x2 && x1 + w1 <= x2 + w2 && y1 >= y2 && y1 <= y2 + h2) { return true; }
@@ -227,42 +151,32 @@ static bool click_valid(lv_obj_t *cur, lv_obj_t *widgets)
   return false;
 }
 
-void handle_input_updates()
+void handle_input_updates(const TrackedInputs &keys)
 {
-  /*If KEY_B is currently pressed and its previous state is released*/
-  if(Update_PRESS_EVENT == ui_data.buttons.b)
+  // key b pressed event
+  if(keys.b.is_pressed && keys.b.is_event)
   {
     switch_to_next_screen(ui_data); // Switch to the next screen
   }
 
-  /*If the active screen is the second*/
+  // if 2nd screen is active
   if(lv_scr_act() == ui_data.screen[1])
   {
-    if(Update_PRESSED_NO_UPDATE == ui_data.joystick.up) // Joystick up
-    {
-      widgets_up(ui_data.cursor); // Move the pointer up
-    }
-    else if(Update_PRESSED_NO_UPDATE == ui_data.joystick.down) // Joystick down
-    {
-      widgets_down(ui_data.cursor, LCD_HEIGHT_PX); // Move the pointer down
-    }
-    else if(Update_PRESSED_NO_UPDATE == ui_data.joystick.left) // Joystick left
-    {
-      widgets_left(ui_data.cursor); // Move the pointer left
-    }
-    else if(Update_PRESSED_NO_UPDATE == ui_data.joystick.right) // Joystick right
-    {
-      widgets_right(ui_data.cursor, LCD_WIDTH_PX); // Move the pointer right
-    }
-    else if(Update_PRESS_EVENT == ui_data.joystick.z) // Joystick press down
-    {
-      lv_obj_set_pos(ui_data.cursor, 0, 0); // Set the pointer coordinates to 0, 0
-    }
+    if(keys.up.is_pressed and !keys.up.is_event) // joystick up active
+      widgets_up(ui_data.cursor);
+    else if(keys.down.is_pressed and !keys.down.is_event) // joystick down active
+      widgets_down(ui_data.cursor, LCD_HEIGHT_PX);
+    else if(keys.left.is_pressed and !keys.left.is_event) // joystick left active
+      widgets_left(ui_data.cursor);
+    else if(keys.right.is_pressed and !keys.right.is_event) // joystick right active
+      widgets_right(ui_data.cursor, LCD_WIDTH_PX);
+    else if(keys.z.is_pressed and keys.z.is_event) // joystick z is active event
+      lv_obj_set_pos(ui_data.cursor, 0, 0);
 
-    /*If KEY_A is currently pressed and its previous state is released*/
-    if(Update_PRESS_EVENT == ui_data.buttons.a)
+
+    if(keys.a.is_pressed and keys.a.is_event) // key a pressed event
     {
-      /*Determine whether the click is valid*/
+      // determine whether the click is valid
       if(click_valid(ui_data.cursor, ui_data.button))
       {
         char label_text[64];
@@ -272,26 +186,21 @@ void handle_input_updates()
         lv_obj_add_state(ui_data.button, LV_STATE_PRESSED); // Set the button state to pressed
       }
     }
-    /*If KEY_A is currently released*/
-    else if(Update_RELEASE_EVENT == ui_data.buttons.a)
-    {
+    else if(keys.a.is_released and keys.a.is_event)         // key a released event
       lv_obj_clear_state(ui_data.button, LV_STATE_PRESSED); // Set the button state to released
-    }
   }
 
-  /*If the active screen is the third*/
+  // if 3rd screen is active
   else if(lv_scr_act() == ui_data.screen[2])
   {
-    /*If KEY_X is currently pressed and its previous state is released*/
-    if(Update_RELEASE_EVENT == ui_data.buttons.x)
+    if(keys.x.is_pressed and keys.x.is_event) // key x pressed event
     {
       if(lv_obj_has_state(ui_data.sw_1, LV_STATE_CHECKED))   // If SW_1 is currently selected
         lv_obj_clear_state(ui_data.sw_1, LV_STATE_CHECKED);  // Clear the selected state of SW_1
       else lv_obj_add_state(ui_data.sw_1, LV_STATE_CHECKED); // Set SW_1 to selected state
     }
 
-    /*If KEY_Y is currently pressed and its previous state is released*/
-    if(Update_RELEASE_EVENT == ui_data.buttons.y)
+    if(keys.y.is_pressed and keys.y.is_event) // key y pressed event
     {
       if(lv_obj_has_state(ui_data.sw_2, LV_STATE_CHECKED))   // If SW_2 is currently selected
         lv_obj_clear_state(ui_data.sw_2, LV_STATE_CHECKED);  // Clear the selected state of SW_2
@@ -387,68 +296,10 @@ void ui_init()
   widgets_init(ui_data);
 }
 
-static void print_info()
+static void print_info(const TrackedInputs &keys) { keys.print(); }
+
+void ui_update_from_peripherals(const TrackedInputs &keys)
 {
-  /*
-  printf(
-    "a=%" PRIu8 "/%" PRIu8 " b=%" PRIu8 "/%" PRIu8 " x=%" PRIu8 "/%" PRIu8 " y=%" PRIu8 "/%" PRIu8 "\n",
-    ui_data.buttons_previous.a, ui_data.buttons_current.a, ui_data.buttons_previous.b, ui_data.buttons_current.b,
-    ui_data.buttons_previous.x, ui_data.buttons_current.x, ui_data.buttons_previous.y, ui_data.buttons_current.y);
-    */
-  printf(
-    "a=%s b=%s x=%s y=%s | ", update_to_str[ui_data.buttons.a], update_to_str[ui_data.buttons.b],
-    update_to_str[ui_data.buttons.x], update_to_str[ui_data.buttons.y]);
-
-  printf(
-    "u=%s d=%s l=%s r=%s z=%s\n", update_to_str[ui_data.joystick.up], update_to_str[ui_data.joystick.down],
-    update_to_str[ui_data.joystick.left], update_to_str[ui_data.joystick.right], update_to_str[ui_data.joystick.z]);
-}
-
-void ui_update_from_peripherals()
-{
-  { // track button updates
-    const uint8_t mask = { buttons_get_mask() };
-    advance_counter(ui_data.buttons_current.a, buttons_any_pressed_in_mask(BUTTONS_MASK_A, mask));
-    advance_counter(ui_data.buttons_current.b, buttons_any_pressed_in_mask(BUTTONS_MASK_B, mask));
-    advance_counter(ui_data.buttons_current.x, buttons_any_pressed_in_mask(BUTTONS_MASK_X, mask));
-    advance_counter(ui_data.buttons_current.y, buttons_any_pressed_in_mask(BUTTONS_MASK_Y, mask));
-
-    ui_data.buttons.a = compute_update(ui_data.buttons_previous.a, ui_data.buttons_current.a);
-    ui_data.buttons.b = compute_update(ui_data.buttons_previous.b, ui_data.buttons_current.b);
-    ui_data.buttons.x = compute_update(ui_data.buttons_previous.x, ui_data.buttons_current.x);
-    ui_data.buttons.y = compute_update(ui_data.buttons_previous.y, ui_data.buttons_current.y);
-  }
-
-  { // track joystick updates
-    const uint8_t mask = { joystick_get_mask() };
-    advance_counter(ui_data.joystick_current.up, joystick_any_active_in_mask(JOYSTICK_MASK_UP, mask));
-    advance_counter(ui_data.joystick_current.down, joystick_any_active_in_mask(JOYSTICK_MASK_DOWN, mask));
-    advance_counter(ui_data.joystick_current.left, joystick_any_active_in_mask(JOYSTICK_MASK_LEFT, mask));
-    advance_counter(ui_data.joystick_current.right, joystick_any_active_in_mask(JOYSTICK_MASK_RIGHT, mask));
-    advance_counter(ui_data.joystick_current.z, joystick_any_active_in_mask(JOYSTICK_MASK_Z, mask));
-
-    ui_data.joystick.up    = compute_update(ui_data.joystick_previous.up, ui_data.joystick_current.up);
-    ui_data.joystick.down  = compute_update(ui_data.joystick_previous.down, ui_data.joystick_current.down);
-    ui_data.joystick.left  = compute_update(ui_data.joystick_previous.left, ui_data.joystick_current.left);
-    ui_data.joystick.right = compute_update(ui_data.joystick_previous.right, ui_data.joystick_current.right);
-    ui_data.joystick.z     = compute_update(ui_data.joystick_previous.z, ui_data.joystick_current.z);
-  }
-
-  if(
-    Update_RELEASE_EVENT == ui_data.buttons.a || Update_PRESS_EVENT == ui_data.buttons.a ||
-    Update_RELEASE_EVENT == ui_data.buttons.b || Update_PRESS_EVENT == ui_data.buttons.b ||
-    Update_RELEASE_EVENT == ui_data.buttons.x || Update_PRESS_EVENT == ui_data.buttons.x ||
-    Update_RELEASE_EVENT == ui_data.buttons.y || Update_PRESS_EVENT == ui_data.buttons.y ||
-    Update_RELEASE_EVENT == ui_data.joystick.up || Update_PRESS_EVENT == ui_data.joystick.up ||
-    Update_RELEASE_EVENT == ui_data.joystick.down || Update_PRESS_EVENT == ui_data.joystick.down ||
-    Update_RELEASE_EVENT == ui_data.joystick.left || Update_PRESS_EVENT == ui_data.joystick.left ||
-    Update_RELEASE_EVENT == ui_data.joystick.right || Update_PRESS_EVENT == ui_data.joystick.right ||
-    Update_RELEASE_EVENT == ui_data.joystick.z || Update_PRESS_EVENT == ui_data.joystick.z)
-  {
-    print_info();
-    handle_input_updates();
-  }
-
-  ui_data.buttons_previous  = ui_data.buttons_current;
-  ui_data.joystick_previous = ui_data.joystick_current;
+  if(keys.button_event || keys.joystick_event) print_info(keys);
+  handle_input_updates(keys);
 }

@@ -1,10 +1,11 @@
 #include "buttons.h"
 
-#include "stdio.h"
+#include "buttons_hw_config.h"
+#include "buttons_types.h"
 #include <hardware/gpio.h>
 #include <pico/binary_info.h>
 
-static uint8_t state;
+static volatile uint8_t state;
 
 static uint8_t mask_from_gpio(uint8_t gpio)
 {
@@ -30,18 +31,17 @@ bool buttons_on_state_changed_cb(uint gpio, uint32_t event_mask)
 
   if(0 == gpio_mask) return false;
 
-  else if(event_mask & GPIO_IRQ_EDGE_RISE)
+  else if(event_mask & GPIO_IRQ_EDGE_RISE) // on released
   {
-    // button is released
     state &= ~gpio_mask;
     return true;
   }
-  else if(event_mask & GPIO_IRQ_EDGE_FALL)
+  else if(event_mask & GPIO_IRQ_EDGE_FALL) // on pressed
   {
-    // button is pressed
     state |= gpio_mask;
     return true;
   }
+
   return false;
 }
 
@@ -75,9 +75,4 @@ void buttons_init()
   gpio_set_irq_enabled(BUTTONS_GPIO_Y, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true);
 }
 
-bool buttons_all_pressed(uint8_t mask) { return mask == (state & mask); }
-bool buttons_any_pressed(uint8_t mask) { return 0 != (state & mask); }
 uint8_t buttons_get_mask() { return state; }
-
-bool buttons_all_pressed_in_mask(uint8_t button_flags, uint8_t state_mask) { return button_flags == (button_flags & state_mask); };
-bool buttons_any_pressed_in_mask(uint8_t button_flags, uint8_t state_mask) { return 0 != (button_flags & state_mask); }
