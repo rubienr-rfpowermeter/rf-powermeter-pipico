@@ -43,23 +43,23 @@ add_executable(rf_probe
         lib/si_units/si_unit_type.cpp
         lib/average/AverageT.hpp
         modules/globals/globals.cpp
-        modules/lvgl/lv_port_disp.cpp
-        modules/lvgl/lv_port_indev.cpp
-        modules/periphery/buttons.c
-        modules/periphery/buzzer.c
-        modules/periphery/joystick.c
-        modules/periphery/leds.c
-        modules/periphery/ws2812/rgbw.c
+        modules/lvgl/lv_display.cpp
+        modules/periphery/input/buttons.c
+        modules/periphery/input/joystick.c
+        modules/periphery/display/display.cpp
+        modules/periphery/led/user_led.c
         modules/main_sampler/main.cpp
+        modules/main_ui/image_data.c
         modules/main_ui/main.cpp
+        modules/main_ui/ui.cpp
         main.cpp
 )
 
 # include_directories(./modules/globals)
 
-pico_generate_pio_header(rf_probe
-        ${CMAKE_CURRENT_LIST_DIR}/modules/periphery/ws2812/ws2812.pio
-        OUTPUT_DIR ${CMAKE_CURRENT_LIST_DIR}/generated)
+#pico_generate_pio_header(rf_probe
+#        ${CMAKE_CURRENT_LIST_DIR}/modules/periphery/ws2812/ws2812.pio
+#        OUTPUT_DIR ${CMAKE_CURRENT_LIST_DIR}/generated)
 
 pico_set_program_name(rf_probe "rf_probe")
 pico_set_program_version(rf_probe "0.1")
@@ -73,6 +73,7 @@ target_link_libraries(rf_probe
         hardware_dma
         hardware_i2c
         hardware_pio
+        hardware_pwm
         hardware_spi
         lvgl
         lvgl_demos

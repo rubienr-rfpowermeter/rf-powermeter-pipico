@@ -2,16 +2,17 @@
 
 #include <pico/types.h>
 
-constexpr uint buzzer_gpio = {13};
+constexpr uint8_t USER_LED_GPIO = { 25 };
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-void buzzer_init();
-void buzzer_toggle_beep();
-void buzzer_beep(bool do_beep);
+
+void user_led_init();
+void user_led_set(bool on);
+void user_led_toggle();
 
 #ifdef __cplusplus
 } // extern "C"
