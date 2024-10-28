@@ -20,7 +20,7 @@ typedef struct LvglData
 static LvglData lvgl_data;
 
 
-static void dma_handler()
+static void on_dma_finished_handler()
 {
   if(dma_channel_get_irq0_status(lvgl_data.dma_periphery->tx_dma_channel))
   {
@@ -30,16 +30,18 @@ static void dma_handler()
   }
 }
 
-static void dispay_flush_cb(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
+static void dispay_flush_cb(__unused lv_disp_drv_t *display, const lv_area_t *area, lv_color_t *color_p)
 {
-  LV_UNUSED(disp);
   display_set_window(area->x1, area->y1, area->x2 + 1, area->y2 + 1);
+
   gpio_put(DISPLAY_GPIO_DC, true);
   gpio_put(DISPLAY_GPIO_CS, false);
-  dma_channel_configure(
-    lvgl_data.dma_periphery->tx_dma_channel, &lvgl_data.dma_periphery->tx_dma_config, &spi_get_hw(DISPLAY_SPI_PORT)->dr,
-    color_p, // read address
-    ((area->x2 + 1 - area->x1) * (area->y2 + 1 - area->y1)) * 2, true);
+
+  // set read address, no trigger
+  dma_channel_hw_addr(lvgl_data.dma_periphery->tx_dma_channel)->read_addr = (uintptr_t)color_p;
+  // set write count and trigger
+  const uint32_t tx_bytes_count = { ((area->x2 + 1 - area->x1) * (area->y2 + 1 - area->y1)) * 2u };
+  dma_channel_hw_addr(lvgl_data.dma_periphery->tx_dma_channel)->al1_transfer_count_trig = tx_bytes_count;
 }
 
 static void lvgl_deinit()
@@ -66,8 +68,7 @@ void lvgl_init(DmaPeriphery &dma_periphery)
   lvgl_data.disp_diver.draw_buf = &lvgl_data.disp_buffer;
   lv_disp_drv_register(&lvgl_data.disp_diver);
 
-  dma_channel_set_irq0_enabled(dma_periphery.tx_dma_channel, true);
-  irq_set_exclusive_handler(DMA_IRQ_0, dma_handler);
+  irq_set_exclusive_handler(DMA_IRQ_0, on_dma_finished_handler);
   irq_set_enabled(DMA_IRQ_0, true);
 }
 

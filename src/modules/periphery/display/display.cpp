@@ -9,6 +9,7 @@
 #include "hardware/spi.h"
 #include <cinttypes>
 #include <cstdio>
+#include <hardware/clocks.h>
 
 typedef struct
 {
@@ -55,7 +56,7 @@ static void display_spi_init()
 #if DEBUG_DISPLAY_SPI_INIT == 1
   const uint32_t spi_baud = { spi_init(DISPLAY_SPI_PORT, 1000 * 1000) };
 #else
-  const uint32_t spi_baud = { spi_init(DISPLAY_SPI_PORT, 62.5 * 1000 * 1000) };
+  const uint32_t spi_baud = { spi_init(DISPLAY_SPI_PORT, (clock_get_hz(clk_sys)) / 2 + 1) };
 #endif
   spi_set_format(DISPLAY_SPI_PORT, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
   printf("spi_baud=%" PRIu32 "\n", spi_baud);
@@ -70,6 +71,9 @@ static void display_dma_init(DmaPeriphery &periphery)
   periphery.tx_dma_config  = dma_channel_get_default_config(periphery.tx_dma_channel);
   channel_config_set_transfer_data_size(&periphery.tx_dma_config, DMA_SIZE_8);
   channel_config_set_dreq(&periphery.tx_dma_config, spi_get_dreq(DISPLAY_SPI_PORT, true));
+  dma_channel_set_write_addr(periphery.tx_dma_channel, &spi_get_hw(DISPLAY_SPI_PORT)->dr, false);
+  dma_channel_set_config(dma_periphery.tx_dma_channel, &dma_periphery.tx_dma_config, false);
+  dma_channel_set_irq0_enabled(dma_periphery.tx_dma_channel, true);
 }
 
 static void display_set_backlight(PwmPeriphery &periphery)
