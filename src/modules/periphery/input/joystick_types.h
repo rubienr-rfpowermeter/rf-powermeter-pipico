@@ -1,7 +1,5 @@
 #pragma once
 
-#include <pico/types.h>
-
 constexpr uint8_t JOYSTICK_MASK_UP    = { 1 << 0 };
 constexpr uint8_t JOYSTICK_MASK_DOWN  = { 1 << 1 };
 constexpr uint8_t JOYSTICK_MASK_LEFT  = { 1 << 2 };

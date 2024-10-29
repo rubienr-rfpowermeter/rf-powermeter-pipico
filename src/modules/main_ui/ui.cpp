@@ -1,8 +1,13 @@
 #include "ui.h"
 
+#if defined(LV_LVGL_H_INCLUDE_SIMPLE)
+  #include "lvgl.h"
+#else
+  #include "lvgl/lvgl.h"
+#endif
+
 #include "modules/periphery/display/display_config.h"
-#include "modules/periphery/input/buttons.h"
-#include "modules/periphery/input/joystick.h"
+#include "modules/periphery/input/input.h"
 #include <cinttypes>
 #include <string>
 

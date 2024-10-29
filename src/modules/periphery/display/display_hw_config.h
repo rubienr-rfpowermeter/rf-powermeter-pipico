@@ -1,7 +1,5 @@
 #pragma once
 
-#include "display_types.h"
-
 #define DISPLAY_SPI_PORT (spi1)
 
 constexpr uint8_t DISPLAY_GPIO_DC        = { 8 };   /// data/command select; high: data, low: command

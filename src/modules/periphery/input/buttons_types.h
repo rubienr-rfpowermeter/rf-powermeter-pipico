@@ -1,7 +1,5 @@
 #pragma once
 
-#include <pico/types.h>
-
 constexpr uint8_t BUTTONS_MASK_A   = { 1 << 0 };
 constexpr uint8_t BUTTONS_MASK_B   = { 1 << 1 };
 constexpr uint8_t BUTTONS_MASK_X   = { 1 << 2 };

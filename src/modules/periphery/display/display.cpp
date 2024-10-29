@@ -2,6 +2,7 @@
 
 #include "display_config.h"
 #include "display_hw_config.h"
+#include "display_types.h"
 #include "hardware/dma.h"
 #include "hardware/gpio.h"
 #include "hardware/i2c.h"

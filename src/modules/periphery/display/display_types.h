@@ -34,7 +34,7 @@ enum DisplayScanDirection : uint8_t
   DisplayScanDirection_90_DEG,
 };
 
-typedef struct
+typedef struct DmaPeriphery
 {
   uint32_t backlight_slice_nr;
   uint32_t tx_dma_channel;
