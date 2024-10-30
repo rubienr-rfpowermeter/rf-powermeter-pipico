@@ -1,8 +1,8 @@
 #include "main.h"
 
 #include "lvgl.h"
-#include "modules/globals/globals.h"
 #include "modules/lvgl/lv_display.h"
+#include "modules/lvgl/lv_input.h"
 #include "modules/periphery/display/display.h"
 #include "modules/periphery/input/buttons.h"
 // #include "modules/periphery/input/buttons_types.h"
@@ -40,7 +40,7 @@ void on_gpio_edge(uint gpio, uint32_t event_mask)
   if(joystick_on_edge_cb(gpio, event_mask)) return;
 }
 
-static void init()
+static void init(TrackedInputs &input_keys)
 {
   stdio_init_all();
   uart_post_init();
@@ -54,9 +54,9 @@ static void init()
   joystick_init();
   input_init();
 
-
   display_init();
   lv_display_init();
+  lv_input_init(input_keys);
   ui_init();
 
   printf("main_core0: init done\n");
@@ -65,14 +65,11 @@ static void init()
 [[noreturn]]
 void main_core0()
 {
-  init();
-
   TrackedInputs input_keys;
+  init(input_keys);
+
   repeating_timer_t timer;
   add_repeating_timer_ms(1, ms_tick_timer_cb, nullptr, &timer);
-
-  lv_obj_clean(lv_scr_act());
-  busy_wait_ms(100);
 
   while(true)
   {
@@ -80,12 +77,7 @@ void main_core0()
     const uint8_t joystick_mask = { joystick_get_mask() };
     user_led_set(buttons_mask || joystick_mask);
 
-    if(0 == system_ticks_ms % 5)
-    {
-      input_keys.update(buttons_mask, joystick_mask);
-      ui_update_from_peripherals(input_keys);
-      lv_task_handler();
-    }
+    if(0 == system_ticks_ms % 5) { lv_task_handler(); }
 
     /*
     if(input_any_active(BUTTONS_MASK_Y, buttons_mask))
