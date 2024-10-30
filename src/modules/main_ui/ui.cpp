@@ -6,6 +6,7 @@
   #include "lvgl/lvgl.h"
 #endif
 
+#include "modules/lvgl/lv_input.h"
 #include "modules/periphery/display/display_config.h"
 #include "modules/periphery/input/input.h"
 #include <cinttypes>
@@ -26,202 +27,6 @@ typedef struct
 static UiData ui_data;
 
 extern const lv_img_dsc_t LCD_1inch3;
-
-static void widgets_init(UiData &data)
-{
-  static lv_style_t style_label;
-  lv_style_init(&style_label);
-  lv_style_set_text_font(&style_label, &lv_font_montserrat_16);
-
-  // screen 1: a picture
-  data.screen[0] = lv_obj_create(nullptr);
-
-  lv_obj_t *image = lv_img_create(data.screen[0]);
-  lv_img_set_src(image, &LCD_1inch3);
-  lv_obj_align(image, LV_ALIGN_CENTER, 0, 0);
-
-  lv_scr_load(data.screen[0]);
-
-  // screen 2: User Interface 1
-  data.screen[1] = lv_obj_create(nullptr);
-  lv_obj_clear_flag(data.screen[1], LV_OBJ_FLAG_SCROLLABLE);
-
-  // Create a 110x35 pixel button and add it to the center of the second screen
-  data.button = lv_btn_create(data.screen[1]);
-  lv_obj_set_size(data.button, 120, 40);
-  lv_obj_align(data.button, LV_ALIGN_CENTER, 0, 0);
-
-  // Create a label on the button and set its initial text to "Click:0"
-  data.label = lv_label_create(data.button);
-  lv_label_set_text(data.label, "Click:0");
-  lv_obj_center(data.label);
-  lv_obj_add_style(data.label, &style_label, 0);
-
-  // Create an icon and add it to the second screen and set the image source of the icon to the GPS symbol
-  data.cursor = lv_img_create(data.screen[1]);
-  lv_img_set_src(data.cursor, LV_SYMBOL_GPS);
-
-  // screen 3: User Interface 2
-  data.screen[2] = lv_obj_create(nullptr);
-  lv_obj_clear_flag(data.screen[2], LV_OBJ_FLAG_SCROLLABLE);
-
-  // Create two switches and two labels in the third screen
-  data.sw_1 = lv_switch_create(data.screen[2]);
-  lv_obj_set_size(data.sw_1, 75, 40);
-  lv_obj_align(data.sw_1, LV_ALIGN_RIGHT_MID, -40, -40);
-  lv_obj_t *label_sw = lv_label_create(data.screen[2]);
-  lv_obj_align(label_sw, LV_ALIGN_LEFT_MID, 40, -40);
-  lv_label_set_text(label_sw, "KEY_X");
-
-  // Add style to the label and set the font size to 16
-  lv_obj_add_style(label_sw, &style_label, 0);
-
-  data.sw_2 = lv_switch_create(data.screen[2]);
-  lv_obj_set_size(data.sw_2, 75, 40);
-  lv_obj_align(data.sw_2, LV_ALIGN_RIGHT_MID, -40, 40);
-  label_sw = lv_label_create(data.screen[2]);
-  lv_obj_align(label_sw, LV_ALIGN_LEFT_MID, 40, 40);
-  lv_label_set_text(label_sw, "KEY_Y");
-  lv_obj_add_style(label_sw, &style_label, 0);
-}
-
-void switch_to_next_screen(UiData &data)
-{
-  constexpr uint8_t screens_count = { sizeof(data.screen) / sizeof(lv_obj_t *) - 1 };
-
-  const lv_obj_t *current_screen = { lv_scr_act() };
-  for(uint8_t i = 0; i < screens_count; i++)
-  {
-    if(current_screen == data.screen[i])
-    {
-      const uint8_t next_screen_idx = { (uint8_t)((i + 1) % screens_count) };
-      printf("next_screen=%" PRIu8 "\n", next_screen_idx);
-
-      // interface switching animation is fade-in and fade-out, which lasts for 500 milliseconds,
-      // which can effectively solve the jagged or ripple problems when switching interfaces
-      lv_scr_load_anim(data.screen[next_screen_idx], LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, false);
-
-      break;
-    }
-  }
-}
-
-static void widgets_up(lv_obj_t *widgets)
-{
-  int16_t y = lv_obj_get_y(widgets);
-  y         = (y <= 0) ? 0 : y - 1;
-  lv_obj_set_y(widgets, y);
-}
-
-static void widgets_down(lv_obj_t *widgets, uint16_t display_v_res_px)
-{
-  int16_t y       = lv_obj_get_y(widgets) + 1;
-  const int16_t h = lv_obj_get_height(widgets);
-  if(y > display_v_res_px - h) y = display_v_res_px - h;
-  lv_obj_set_y(widgets, y);
-}
-
-static void widgets_left(lv_obj_t *widgets)
-{
-  int16_t x = lv_obj_get_x(widgets);
-  x         = (x <= 0) ? 0 : x - 1;
-  lv_obj_set_x(widgets, x);
-}
-
-static void widgets_right(lv_obj_t *widgets, uint16_t display_h_res_px)
-{
-  int16_t x       = lv_obj_get_x(widgets) + 1;
-  const int16_t w = lv_obj_get_width(widgets);
-  if(x > display_h_res_px - w) x = display_h_res_px - w;
-  lv_obj_set_x(widgets, x);
-}
-
-static bool click_valid(lv_obj_t *cur, lv_obj_t *widgets)
-{
-  /*Get the coordinates and size of cursor*/
-  lv_coord_t x1 = lv_obj_get_x(cur);
-  lv_coord_t y1 = lv_obj_get_y(cur);
-  lv_coord_t w1 = lv_obj_get_width(cur);
-  // int h1 = lv_obj_get_height(cur);
-
-  /*Get the coordinates and size of widgets*/
-  lv_coord_t x2 = lv_obj_get_x(widgets);
-  lv_coord_t y2 = lv_obj_get_y(widgets);
-  lv_coord_t w2 = lv_obj_get_width(widgets);
-  lv_coord_t h2 = lv_obj_get_height(widgets);
-
-  /*Determine whether the right border of cursor is within the range of widget*/
-  if(x1 + w1 >= x2 && x1 + w1 <= x2 + w2 && y1 >= y2 && y1 <= y2 + h2) { return true; }
-
-  return false;
-}
-
-void handle_input_updates(const TrackedInputs &keys)
-{
-  // key b pressed event
-  if(keys.b.is_pressed && keys.b.is_event)
-  {
-    switch_to_next_screen(ui_data); // Switch to the next screen
-  }
-
-  // if 2nd screen is active
-  if(lv_scr_act() == ui_data.screen[1])
-  {
-    if(keys.up.is_pressed and !keys.up.is_event) // joystick up active
-      widgets_up(ui_data.cursor);
-    else if(keys.down.is_pressed and !keys.down.is_event) // joystick down active
-      widgets_down(ui_data.cursor, DISPLAY_HEIGHT_PX);
-    else if(keys.left.is_pressed and !keys.left.is_event) // joystick left active
-      widgets_left(ui_data.cursor);
-    else if(keys.right.is_pressed and !keys.right.is_event) // joystick right active
-      widgets_right(ui_data.cursor, DISPLAY_WIDTH_PX);
-    else if(keys.z.is_pressed and keys.z.is_event) // joystick z is active event
-      lv_obj_set_pos(ui_data.cursor, 0, 0);
-
-
-    if(keys.a.is_pressed and keys.a.is_event) // key a pressed event
-    {
-      // determine whether the click is valid
-      if(click_valid(ui_data.cursor, ui_data.button))
-      {
-        char label_text[64];
-        ui_data.click_num++; // Click count plus one
-        sprintf(label_text, "Click:%d", ui_data.click_num);
-        lv_label_set_text(ui_data.label, label_text);       // Update label
-        lv_obj_add_state(ui_data.button, LV_STATE_PRESSED); // Set the button state to pressed
-      }
-    }
-    else if(keys.a.is_released and keys.a.is_event)         // key a released event
-      lv_obj_clear_state(ui_data.button, LV_STATE_PRESSED); // Set the button state to released
-  }
-
-  // if 3rd screen is active
-  else if(lv_scr_act() == ui_data.screen[2])
-  {
-    if(keys.x.is_pressed and keys.x.is_event) // key x pressed event
-    {
-      if(lv_obj_has_state(ui_data.sw_1, LV_STATE_CHECKED))   // If SW_1 is currently selected
-        lv_obj_clear_state(ui_data.sw_1, LV_STATE_CHECKED);  // Clear the selected state of SW_1
-      else lv_obj_add_state(ui_data.sw_1, LV_STATE_CHECKED); // Set SW_1 to selected state
-    }
-
-    if(keys.y.is_pressed and keys.y.is_event) // key y pressed event
-    {
-      if(lv_obj_has_state(ui_data.sw_2, LV_STATE_CHECKED))   // If SW_2 is currently selected
-        lv_obj_clear_state(ui_data.sw_2, LV_STATE_CHECKED);  // Clear the selected state of SW_2
-      else lv_obj_add_state(ui_data.sw_2, LV_STATE_CHECKED); // Set SW_2 to selected state
-    }
-  }
-}
-
-
-/*
-extern lv_img_dsc_t ai;
-lv_obj_t *img1     = nullptr;
-lv_obj_t *led1     = nullptr;
-lv_obj_t *led2     = nullptr;
-lv_obj_t *jy_label = nullptr;
-*/
 
 /*
 void default_tab_view()
@@ -293,18 +98,50 @@ lv_obj_set_grid_cell(label, LV_GRID_ALIGN_STRETCH, 1, 1, LV_GRID_ALIGN_STRETCH, 
 }
 */
 
-void ui_init()
-{
-  memset(ui_data.screen, 0, sizeof(ui_data.screen));
-  ui_data.click_num = 0;
 
-  widgets_init(ui_data);
+static void widgets_init(__unused UiData &data)
+{
+  lv_obj_t *screen = lv_obj_create(nullptr);
+  lv_obj_clean(screen);
+
+  // Create a Tab view object
+  lv_obj_t *tabview;
+  tabview = lv_tabview_create(screen, LV_DIR_RIGHT, 30);
+  lv_group_add_obj(lv_input_get_keypad_group(), tabview);
+
+  lv_obj_set_style_bg_color(tabview, lv_palette_lighten(LV_PALETTE_RED, 2), 0);
+
+  lv_obj_t *tab_btns = lv_tabview_get_tab_btns(tabview);
+  lv_obj_set_style_bg_color(tab_btns, lv_palette_darken(LV_PALETTE_GREY, 3), 0);
+  lv_obj_set_style_text_color(tab_btns, lv_palette_lighten(LV_PALETTE_GREY, 5), 0);
+  lv_obj_set_style_border_side(tab_btns, LV_BORDER_SIDE_RIGHT, (uint32_t)LV_PART_ITEMS | (uint32_t)LV_STATE_CHECKED);
+
+  // Add 3 tabs (the tabs are page (lv_page) and can be scrolled
+  lv_obj_t *tab1 = lv_tabview_add_tab(tabview, LV_SYMBOL_HOME);
+  lv_obj_t *tab2 = lv_tabview_add_tab(tabview, LV_SYMBOL_PAUSE);
+  lv_obj_t *tab3 = lv_tabview_add_tab(tabview, LV_SYMBOL_SETTINGS);
+  lv_obj_t *tab4 = lv_tabview_add_tab(tabview, LV_SYMBOL_USB);
+
+
+  lv_obj_set_style_bg_color(tab1, lv_palette_lighten(LV_PALETTE_AMBER, 3), 0);
+  lv_obj_set_style_bg_opa(tab1, LV_OPA_COVER, 0);
+
+  // Add content to the tabs
+  lv_obj_t *label = lv_label_create(tab1);
+  lv_label_set_text(label, "ft");
+
+  label = lv_label_create(tab2);
+  lv_label_set_text(label, "st");
+
+  label = lv_label_create(tab3);
+  lv_label_set_text(label, "tt");
+
+  label = lv_label_create(tab4);
+  lv_label_set_text(label, "ft");
+
+  lv_obj_clear_flag(lv_tabview_get_content(tabview), LV_OBJ_FLAG_SCROLLABLE);
+
+  lv_scr_load(screen);
 }
 
-static void print_info(const TrackedInputs &keys) { keys.print(); }
-
-void ui_update_from_peripherals(const TrackedInputs &keys)
-{
-  if(keys.button_event || keys.joystick_event) print_info(keys);
-  handle_input_updates(keys);
-}
+void ui_init() { widgets_init(ui_data); }
