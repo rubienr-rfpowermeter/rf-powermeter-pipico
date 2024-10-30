@@ -72,7 +72,7 @@ static void display_spi_init()
   const uint32_t spi_baud = { spi_init(DISPLAY_SPI_PORT, (clock_get_hz(clk_sys)) / 2 + 1) };
 #endif
   spi_set_format(DISPLAY_SPI_PORT, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
-  printf("spi_baud=%" PRIu32 "\n", spi_baud);
+  printf("st7789 spi_baud=%" PRIu32 "\n", spi_baud);
 
   gpio_set_function(DISPLAY_GPIO_CLK, GPIO_FUNC_SPI);
   gpio_set_function(DISPLAY_GPIO_MOSI, GPIO_FUNC_SPI);

@@ -53,7 +53,7 @@ static void init(TransactionBuffer &buffer)
 {
   printf("\n**** RF Power Meter (Version " PICO_PROGRAM_VERSION_STRING " Built " __DATE__ ") ****\n");
   printf("c%" PRIu8 " init ...\n", get_core_num());
-  printf("clk_sys_hz=%" PRIu32 "\n", clock_get_hz(clk_sys));
+  printf("sys_clk_hz=%" PRIu32 "\n", clock_get_hz(clk_sys));
 
   gpio_set_irq_callback(&on_gpio_edge);
   user_led_init();
