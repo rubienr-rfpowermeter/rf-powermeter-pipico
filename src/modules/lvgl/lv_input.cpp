@@ -8,11 +8,11 @@
 #include <lvgl.h>
 #include <stdio.h>
 
-static lv_indev_t *indev_keypad       = { nullptr };
-static lv_group_t *indev_keypad_group = { nullptr };
-static lv_indev_t *indev_button       = { nullptr };
-static lv_group_t *indev_button_group = { nullptr };
-static TrackedInputs *input_keys      = { nullptr };
+static lv_indev_t    *indev_keypad       = { nullptr };
+static lv_group_t    *indev_keypad_group = { nullptr };
+static lv_indev_t    *indev_button       = { nullptr };
+static lv_group_t    *indev_button_group = { nullptr };
+static TrackedInputs *input_keys         = { nullptr };
 
 static void on_read_keys(lv_indev_t __unused *indev, lv_indev_data_t *data)
 {
@@ -20,7 +20,7 @@ static void on_read_keys(lv_indev_t __unused *indev, lv_indev_data_t *data)
   static uint8_t last_key = 0;
 
   data->state = input_keys->joystick_active ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
-  if(input_keys->next_active_axis) last_key = input_keys->next_active_axis->id;
+  if (input_keys->next_active_axis) last_key = input_keys->next_active_axis->id;
 
   data->key              = last_key;
   data->continue_reading = false;
@@ -32,7 +32,7 @@ static void on_read_buttons(lv_indev_t __unused *indev, lv_indev_data_t *data)
   static uint8_t last_button = { 0 };
 
   data->state = input_keys->button_active ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
-  if(nullptr != input_keys->next_active_button) last_button = input_keys->next_active_button->id;
+  if (nullptr != input_keys->next_active_button) last_button = input_keys->next_active_button->id;
 
   data->btn_id           = last_button;
   data->continue_reading = false;
@@ -50,7 +50,6 @@ void lv_input_init(TrackedInputs &keys)
     indev_keypad_group = lv_group_create();
     lv_indev_set_group(indev_keypad, indev_keypad_group);
   }
-
 
   {
     indev_button = lv_indev_create();

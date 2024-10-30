@@ -11,16 +11,15 @@
 #include <cstdio>
 #include <hardware/watchdog.h>
 
-typedef struct
+struct UiData
 {
-  ResultUint16 *sample  = { nullptr };
-  lv_obj_t *value_label = { nullptr };
-  lv_obj_t *avg_label   = { nullptr };
-  lv_obj_t *min_label   = { nullptr };
-  lv_obj_t *max_label   = { nullptr };
-  char text_buffer[32]  = { 0 };
-
-} UiData;
+  ResultUint16 *sample          = { nullptr };
+  lv_obj_t     *value_label     = { nullptr };
+  lv_obj_t     *avg_label       = { nullptr };
+  lv_obj_t     *min_label       = { nullptr };
+  lv_obj_t     *max_label       = { nullptr };
+  char          text_buffer[32] = { 0 };
+};
 
 static UiData ui_data{};
 

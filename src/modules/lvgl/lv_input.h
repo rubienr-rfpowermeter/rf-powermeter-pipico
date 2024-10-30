@@ -3,7 +3,6 @@
 #include <gitmodules/lvgl/src/misc/lv_types.h>
 
 struct TrackedInputs;
-typedef struct TrackedInputs TrackedInputs;
 
 void lv_input_init(TrackedInputs &keys);
 void lv_input_deinit();

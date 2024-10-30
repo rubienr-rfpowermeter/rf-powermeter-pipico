@@ -18,7 +18,7 @@ TrackedInputState::TrackedInputState(uint8_t id) : is_pressed(0), is_released(0)
 
 bool TrackedInputState::update(bool signal)
 {
-  if(signal) counter = counter << 1 | 0x01;
+  if (signal) counter = counter << 1 | 0x01;
   else counter >>= 1;
 
   const bool is_now_pressed  = { counter > 0b00010000 };
@@ -31,7 +31,6 @@ bool TrackedInputState::update(bool signal)
 
   return is_event;
 }
-
 
 void TrackedInputs::update_buttons(uint8_t buttons_signal_mask)
 {

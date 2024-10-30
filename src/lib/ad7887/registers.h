@@ -5,7 +5,7 @@
 namespace ad7887
 {
 
-typedef struct __attribute__((packed))
+struct __attribute__((__packed__)) ControlRegister
 {
   /// Power Management Bits. These two bits decode the mode of operation of the AD7887.
   ///
@@ -54,7 +54,6 @@ typedef struct __attribute__((packed))
   /// should be disabled when operating in the dual-channel mode, that is, REF = 1.
   uint8_t singleDualChanelSelect : 1;
 
-
   /// REF - Reference Bit.
   /// With a 0 in this bit, the on-chip reference is enabled.
   /// With a 1 in this bit, the on-chip reference is disabled.
@@ -69,41 +68,41 @@ typedef struct __attribute__((packed))
   /// The value written to this bit of the control register is a don’t care, that is,
   /// it doesn't matter if the bit is 0 or 1.
   uint8_t dontCare : 1;
-} ControlRegister ;
+};
 
-typedef struct __attribute__((packed))
+struct __attribute__((packed)) Uint16ControlRegister
 {
   ControlRegister controlRegister;
-  uint8_t zero;
-} Uint16ControlRegister;
+  uint8_t         zero;
+};
 
-typedef union __attribute__((packed)) TransmissionData
+union __attribute__((__packed__)) TransmissionData
 {
   TransmissionData();
-  TransmissionData(const ControlRegister &other);
+  explicit TransmissionData(const ControlRegister &other);
 
+  uint8_t               asUint8;
+  uint16_t              asUint16;
   Uint16ControlRegister asUint16ControlRegister;
-  uint8_t asUint8;
-  uint16_t asUint16;
-} TransmissionData;
+};
 
 /// Bit/Reception order:
 /// - LSB of SampleRegister corresponds to MSB of reception from AT7887
 /// - MSB of SampleRegister corresponds to LSB of reception from AT7887
 /// - LSB of SampleRegister is received first, MSB last.
 
-typedef struct __attribute__((packed))
+struct __attribute__((packed)) SampleRegister
 {
   uint16_t raw12Bit : 12;
-  uint16_t zero : 4;
-} SampleRegister;
+  uint16_t zero     : 4;
+};
 
-typedef union __attribute__((packed)) ReceptionData
+union __attribute__((packed)) ReceptionData
 {
   ReceptionData();
 
   SampleRegister asSampleRegister;
-  uint16_t asUint16;
-} ReceptionData;
+  uint16_t       asUint16;
+};
 
-} // namespace ad7887
+}   // namespace ad7887

@@ -15,7 +15,6 @@ dataWrite(dataDigitalWrite), dataRead(dataDigitalRead), delayUs(delayMicroSecond
 {
 }
 
-
 void AD7887::uint16Transaction()
 {
   uint16_t currentDataBit = 0x8000;
@@ -24,7 +23,7 @@ void AD7887::uint16Transaction()
   delayUs(AD7887_T2_DELAY_US);
 #endif
   chipSelectWrite(0);
-  while(currentDataBit)
+  while (currentDataBit)
   {
     // 1. write data bit
     dataWrite((transmissionData.asUint16 & currentDataBit) ? 1 : 0);
@@ -49,11 +48,10 @@ void AD7887::uint16Transaction()
 bool AD7887::readSample(SampleRegister &sample)
 {
   uint16Transaction();
-  if(receptionData.asSampleRegister.zero != 0) return false;
+  if (receptionData.asSampleRegister.zero != 0) return false;
   sample = receptionData.asSampleRegister;
   return true;
 }
-
 
 void AD7887::updateControlRegister(const ControlRegister &newFlags)
 {
@@ -62,4 +60,4 @@ void AD7887::updateControlRegister(const ControlRegister &newFlags)
 
 const ControlRegister &AD7887::getControlRegister() const { return transmissionData.asUint16ControlRegister.controlRegister; }
 
-} // namespace ad7887
+}   // namespace ad7887

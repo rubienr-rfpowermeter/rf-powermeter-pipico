@@ -9,7 +9,7 @@ static volatile uint8_t state;
 
 static uint8_t mask_from_gpio(uint8_t gpio)
 {
-  switch(gpio)
+  switch (gpio)
   {
   case BUTTONS_GPIO_A:
     return BUTTONS_MASK_A;
@@ -29,14 +29,14 @@ bool buttons_on_state_changed_cb(uint gpio, uint32_t event_mask)
 {
   const uint8_t gpio_mask = { mask_from_gpio(gpio) };
 
-  if(0 == gpio_mask) return false;
+  if (0 == gpio_mask) return false;
 
-  else if(event_mask & GPIO_IRQ_EDGE_RISE) // on released
+  else if (event_mask & GPIO_IRQ_EDGE_RISE)   // on released
   {
     state &= ~gpio_mask;
     return true;
   }
-  else if(event_mask & GPIO_IRQ_EDGE_FALL) // on pressed
+  else if (event_mask & GPIO_IRQ_EDGE_FALL)   // on pressed
   {
     state |= gpio_mask;
     return true;

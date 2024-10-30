@@ -39,36 +39,36 @@ void AD8318Converter3rdOrder::convertWatt(const float &correctedDbmW, float &wat
 {
   const float milliWatt = powf(10.0f, correctedDbmW / 10.0f);
 
-  if(milliWatt < 0.000000001f) // femto Watt
+  if (milliWatt < 0.000000001f)   // femto Watt
   {
     watt   = milliWatt * 1e12f;
     siUnit = UnitType::Femto;
   }
-  else if(milliWatt < 0.000001f) // pico Watt
+  else if (milliWatt < 0.000001f)   // pico Watt
   {
     watt   = milliWatt * 1e9f;
     siUnit = UnitType::Pico;
   }
-  else if(watt < 0.001f) // nano Watt
+  else if (watt < 0.001f)   // nano Watt
   {
     watt   = milliWatt * 1e6f;
     siUnit = UnitType::Nano;
   }
-  else if(watt < 1.0f) // micro Watt
+  else if (watt < 1.0f)   // micro Watt
   {
     watt   = milliWatt * 1e3f;
     siUnit = UnitType::Micro;
   }
-  else if(milliWatt < 1000.0f) // milli Watt
+  else if (milliWatt < 1000.0f)   // milli Watt
   {
     // milliWatt *= 10e0f;
     siUnit = UnitType::Milli;
   }
-  else // Watt
+  else   // Watt
   {
     watt   = milliWatt * 10e-3f;
     siUnit = UnitType::TimesOne;
   }
 }
 
-} // namespace ad8318
+}   // namespace ad8318

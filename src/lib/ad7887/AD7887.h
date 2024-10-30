@@ -32,10 +32,11 @@ struct AD7887
   [[nodiscard]]
   const ControlRegister &getControlRegister() const;
 
-  protected:
+protected:
+
   void uint16Transaction();
 
-  ReceptionData receptionData;
+  ReceptionData    receptionData;
   TransmissionData transmissionData;
 
   void (*clockWrite)(uint8_t);
@@ -45,4 +46,4 @@ struct AD7887
   void (*delayUs)(unsigned int);
 };
 
-} // namespace ad7887
+}   // namespace ad7887

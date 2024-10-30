@@ -25,7 +25,7 @@ struct AD8318Converter3rdOrder
   /// \param kValues
   void setCorrectionCoefficients(const KValues3rdOrderFloat &kValues);
 
-  void setAttenuationDb(int8_t newAttenuationDb);
+  void   setAttenuationDb(int8_t newAttenuationDb);
   int8_t getAttenuationDb() const;
 
   /// Converts the raw value to dBmW according to the correction coefficients (k-values) and attenuation offset.
@@ -39,7 +39,8 @@ struct AD8318Converter3rdOrder
   /// \param[out] siUnit respective SI unit
   void convertWatt(const float &correctedDbmW, float &watt, UnitType &siUnit);
 
-  protected:
+protected:
+
   /// @{
   /// 3rd-order correction values.
   float k0{ 0 };
@@ -51,4 +52,4 @@ struct AD8318Converter3rdOrder
   int8_t attenuationDb{ 0 };
 };
 
-} // namespace ad8318
+}   // namespace ad8318

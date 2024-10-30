@@ -5,7 +5,7 @@ namespace si
 
 char unitTypeToChar(const UnitType t)
 {
-  switch(t)
+  switch (t)
   {
   case UnitType::Kilo:
     return 'k';
@@ -26,4 +26,4 @@ char unitTypeToChar(const UnitType t)
   }
 }
 
-} // namespace si
+}   // namespace si

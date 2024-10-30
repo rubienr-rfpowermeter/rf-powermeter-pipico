@@ -4,6 +4,7 @@ namespace ad7887
 {
 
 TransmissionData::TransmissionData() : asUint16(0) { }
+
 TransmissionData::TransmissionData(const ControlRegister &ctlRegister)
 {
   asUint16ControlRegister.controlRegister = ctlRegister;
@@ -12,4 +13,4 @@ TransmissionData::TransmissionData(const ControlRegister &ctlRegister)
 
 ReceptionData::ReceptionData() : asUint16(0) { }
 
-} // namespace ad7887
+}   // namespace ad7887

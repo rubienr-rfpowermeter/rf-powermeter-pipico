@@ -6,13 +6,13 @@ namespace si
 
 enum class UnitType : uint8_t
 {
-  Kilo = 1, // 10^3
-  TimesOne, // 10^0
-  Milli,    // 10^-3
-  Micro,    // 10^-6
-  Nano,     // 10^-9
-  Pico,     // 10^-12
-  Femto,    // 10^-15
+  Kilo = 1,   /// 10^3
+  TimesOne,   /// 10^0
+  Milli,      /// 10^-3
+  Micro,      /// 10^-6
+  Nano,       /// 10^-9
+  Pico,       /// 10^-12
+  Femto,      /// 10^-15
   Undefined
 };
 
@@ -26,5 +26,4 @@ constexpr UnitType unitTypeFromUnderlyingType(uint8_t u)
                                                                                                          UnitType::Undefined;
 }
 
-
-} // namespace si
+}   // namespace si

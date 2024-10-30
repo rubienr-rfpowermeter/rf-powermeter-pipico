@@ -34,12 +34,12 @@ enum DisplayScanDirection : uint8_t
   DisplayScanDirection_90_DEG,
 };
 
-typedef struct DmaPeriphery
+struct DmaPeriphery
 {
-  uint32_t backlight_slice_nr;
-  uint32_t tx_dma_channel;
+  uint32_t           backlight_slice_nr;
+  uint32_t           tx_dma_channel;
   dma_channel_config tx_dma_config;
-} DmaPeriphery;
+};
 
 static_assert(sizeof(DisplayColor) == 2);
 static_assert(sizeof(DisplayScanDirection) == 1);
