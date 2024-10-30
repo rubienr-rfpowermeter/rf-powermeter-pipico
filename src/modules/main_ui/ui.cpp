@@ -1,5 +1,6 @@
 #include "ui.h"
 
+#include "lib/sample_data/TransactionBuffer.h"
 #include "lvgl.h"
 #include "modules/lvgl/lv_display.h"
 #include "modules/lvgl/lv_input.h"
@@ -12,10 +13,16 @@
 
 typedef struct
 {
-  uint8_t unused;
+  ResultUint16 *sample  = { nullptr };
+  lv_obj_t *value_label = { nullptr };
+  lv_obj_t *avg_label   = { nullptr };
+  lv_obj_t *min_label   = { nullptr };
+  lv_obj_t *max_label   = { nullptr };
+  char text_buffer[32]  = { 0 };
+
 } UiData;
 
-static UiData ui_data;
+static UiData ui_data{};
 
 extern const lv_img_dsc_t LCD_1inch3;
 
@@ -29,7 +36,7 @@ static void on_reboot_request(__unused lv_event_t *event)
   lv_display_deinit();
 
   watchdog_enable(1, false);
-  while(true) { }
+  while (true) { }
 }
 
 static void init_info_tab(lv_obj_t *parent)
@@ -66,7 +73,7 @@ static void init_info_tab(lv_obj_t *parent)
   lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
 }
 
-static void widgets_init(__unused UiData &data)
+static void widgets_init(UiData &data)
 {
   lv_obj_t *screen = lv_obj_create(nullptr);
   lv_obj_clean(screen);
@@ -94,10 +101,20 @@ static void widgets_init(__unused UiData &data)
 
   lv_obj_add_event_cb(btn3, on_reboot_request, LV_EVENT_LONG_PRESSED_REPEAT, nullptr);
 
-  lv_obj_t *label = lv_label_create(tab1);
-  lv_label_set_text(label, "1st");
+  data.value_label = lv_label_create(tab1);
+  data.avg_label   = lv_label_create(tab1);
+  data.min_label   = lv_label_create(tab1);
+  data.max_label   = lv_label_create(tab1);
+  lv_obj_set_pos(data.value_label, 10, 10);
+  lv_obj_set_pos(data.avg_label, 10, 25);
+  lv_obj_set_pos(data.min_label, 10, 40);
+  lv_obj_set_pos(data.max_label, 10, 55);
+  lv_label_set_text(data.value_label, "value_label");
+  lv_label_set_text(data.avg_label, "avg_label");
+  lv_label_set_text(data.min_label, "min_label");
+  lv_label_set_text(data.max_label, "max_label");
 
-  label = lv_label_create(tab2);
+  lv_obj_t *label = lv_label_create(tab2);
   lv_label_set_text(label, "2nd");
 
   label = lv_label_create(tab3);
@@ -109,4 +126,23 @@ static void widgets_init(__unused UiData &data)
   lv_scr_load(screen);
 }
 
-void ui_init() { widgets_init(ui_data); }
+void ui_init(ResultUint16 &sample)
+{
+  ui_data.sample = &sample;
+  widgets_init(ui_data);
+}
+
+void ui_update()
+{
+  lv_snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "val=%" PRIu16 "|", ui_data.sample->value);
+  lv_label_set_text(ui_data.value_label, ui_data.text_buffer);
+
+  lv_snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "avg=%" PRIu16 "|", ui_data.sample->avg);
+  lv_label_set_text(ui_data.avg_label, ui_data.text_buffer);
+
+  lv_snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "min=%" PRIu16 "|", ui_data.sample->min);
+  lv_label_set_text(ui_data.min_label, ui_data.text_buffer);
+
+  lv_snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "max=%" PRIu16 "|", ui_data.sample->max);
+  lv_label_set_text(ui_data.max_label, ui_data.text_buffer);
+}

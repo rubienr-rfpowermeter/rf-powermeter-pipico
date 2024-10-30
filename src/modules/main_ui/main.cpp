@@ -1,6 +1,6 @@
 #include "main.h"
 
-#include "lvgl.h"
+#include "lib/sample_data/TransactionBuffer.h"
 #include "modules/lvgl/lv_display.h"
 #include "modules/lvgl/lv_input.h"
 #include "modules/periphery/display/display.h"
@@ -11,11 +11,15 @@
 #include "ui.h"
 #include <cstdio>
 #include <hardware/clocks.h>
+#include <lvgl.h>
+#include <pico/multicore.h>
 #include <pico/stdlib.h>
 
-volatile uint32_t system_ticks_ms = { 0 };
+static TransactionBuffer *samples = { nullptr };
+static ResultUint16       sample;
+static volatile uint32_t  system_ticks_ms = { 0 };
 
-bool ms_tick_timer_cb(__unused struct repeating_timer *t)
+static bool ms_tick_timer_cb(__unused struct repeating_timer *t)
 {
   system_ticks_ms += 1;
   lv_tick_inc(1);
@@ -38,7 +42,7 @@ void on_gpio_edge(uint gpio, uint32_t event_mask)
   if(joystick_on_edge_cb(gpio, event_mask)) return;
 }
 
-static void init(TrackedInputs &input_keys)
+static void init(TransactionBuffer &buffer)
 {
   stdio_init_all();
   uart_post_init();
@@ -55,13 +59,22 @@ static void init(TrackedInputs &input_keys)
   display_init();
   lv_display_init();
   lv_input_init(input_keys);
-  ui_init();
 
-  printf("main_core0: init done\n");
+  samples = &buffer;
+  ui_init(sample);
+
+  printf("c%" PRIu8 " init done\n", get_core_num());
+}
+
+void core0_init(TransactionBuffer &buffer)
+{
+  stdio_init_all();
+  uart_post_init();
+  init(buffer);
 }
 
 [[noreturn]]
-void main_core0()
+void core0_main()
 {
   TrackedInputs input_keys;
   init(input_keys);
@@ -69,11 +82,13 @@ void main_core0()
   repeating_timer_t timer;
   add_repeating_timer_ms(1, ms_tick_timer_cb, nullptr, &timer);
 
-  while(true)
+  while (true)
   {
-    const uint8_t buttons_mask  = { buttons_get_mask() };
-    const uint8_t joystick_mask = { joystick_get_mask() };
-    user_led_set(buttons_mask || joystick_mask);
-    if(0 == system_ticks_ms % 5) { lv_task_handler(); }
+    if (0 == system_ticks_ms % 20)
+    {
+      sample = samples->read();
+      ui_update();
+    }
+    if (0 == system_ticks_ms % 5) { lv_task_handler(); }
   }
 }

@@ -1,4 +1,6 @@
 #pragma once
 
-[[noreturn]]
-void main_core0();
+struct TransactionBuffer;
+
+void              core0_init(TransactionBuffer &samples);
+[[noreturn]] void core0_main();
