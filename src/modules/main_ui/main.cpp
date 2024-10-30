@@ -5,14 +5,14 @@
 #include "modules/lvgl/lv_display.h"
 #include "modules/periphery/display/display.h"
 #include "modules/periphery/input/buttons.h"
-#include "modules/periphery/input/buttons_types.h"
+// #include "modules/periphery/input/buttons_types.h"
 #include "modules/periphery/input/input.h"
 #include "modules/periphery/input/joystick.h"
 #include "modules/periphery/led/user_led.h"
 #include "ui.h"
 #include <cstdio>
 #include <hardware/clocks.h>
-#include <hardware/watchdog.h>
+// #include <hardware/watchdog.h>
 #include <pico/stdlib.h>
 
 volatile uint32_t system_ticks_ms = { 0 };
@@ -87,6 +87,7 @@ void main_core0()
       lv_task_handler();
     }
 
+    /*
     if(input_any_active(BUTTONS_MASK_Y, buttons_mask))
     {
       printf("main resetting, bye ...\n");
@@ -94,5 +95,6 @@ void main_core0()
       watchdog_enable(1, false);
       while(true) { }
     }
+    */
   }
 }
