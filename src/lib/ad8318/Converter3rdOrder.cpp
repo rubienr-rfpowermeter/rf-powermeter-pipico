@@ -4,7 +4,7 @@
 namespace ad8318
 {
 
-Converter3rdOrder::Converter3rdOrder(const CorrectionValues &kValues, float attenuationDb) :
+Converter3rdOrder::Converter3rdOrder(const CorrectionValues &kValues, UnderlyingConversionType attenuationDb) :
 correction(kValues), attenuationDb(attenuationDb)
 {
 }
@@ -13,15 +13,15 @@ void Converter3rdOrder::getCorrectionCoefficients(CorrectionValues &kValues) con
 
 void Converter3rdOrder::setCorrectionCoefficients(const CorrectionValues &kValues) { correction = kValues; }
 
-void Converter3rdOrder::setAttenuationDb(float newAttenuationDb) { attenuationDb = newAttenuationDb; }
+void Converter3rdOrder::setAttenuationDb(UnderlyingConversionType newAttenuationDb) { attenuationDb = newAttenuationDb; }
 
-float Converter3rdOrder::getAttenuationDb() const { return attenuationDb; }
+UnderlyingConversionType Converter3rdOrder::getAttenuationDb() const { return attenuationDb; }
 
-float Converter3rdOrder::toCorrectedDbmW(uint16_t uncorrectedDbmW) const
+UnderlyingConversionType Converter3rdOrder::toCorrectedDbmW(uint16_t uncorrectedDbmW) const
 {
-  const float v{ static_cast<float>(uncorrectedDbmW) };
-  const float v2 = { v * v };
-  const float v3 = { v2 * v };
+  const UnderlyingConversionType v{ static_cast<UnderlyingConversionType>(uncorrectedDbmW) };
+  const UnderlyingConversionType v2 = { v * v };
+  const UnderlyingConversionType v3 = { v2 * v };
   return attenuationDb + correction.k0 + correction.k1 * v + correction.k2 * v2 + correction.k3 * v3;
 }
 
