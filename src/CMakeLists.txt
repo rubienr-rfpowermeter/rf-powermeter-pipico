@@ -40,7 +40,6 @@ add_executable(rf_probe
         lib/ad7887/registers.cpp
         lib/ad8318/AD8318.cpp
         lib/ad8318/KValues3rdOrder.hpp
-        lib/si_units/si_unit_type.cpp
         lib/sample_data/AverageT.hpp
         lib/sample_data/TransactionBuffer.cpp
         modules/globals/globals.cpp
