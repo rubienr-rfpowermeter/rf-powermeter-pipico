@@ -19,8 +19,6 @@ struct SamplingResources
 {
   TransactionBuffer *in_buffer{ nullptr };
   TransactionData    sample;
-  CorrectionValues   correction{};
-  Converter3rdOrder  converter{ correction };
 };
 
 static SamplingResources sampling{};
@@ -67,7 +65,7 @@ static void init(TransactionBuffer &in_buffer)
   lv_input_init(input_keys);
 
   sampling.in_buffer = &in_buffer;
-  ui_init(sampling.sample, sampling.converter);
+  ui_init(sampling.sample);
 
   printf("c%" PRIu8 " init done\n", get_core_num());
 }

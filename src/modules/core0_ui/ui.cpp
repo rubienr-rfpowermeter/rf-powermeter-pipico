@@ -1,21 +1,35 @@
 #include "ui.h"
 
-#include "lib/sample_data/TransactionData.h"
 #include "lvgl.h"
 #include "modules/lvgl/lv_display.h"
 #include "modules/lvgl/lv_input.h"
 #include "modules/periphery/display/display.h"
 #include "modules/periphery/display/display_config.h"
 #include "modules/periphery/input/input.h"
+#include "modules/rf_power_meter/converter.h"
 #include <cinttypes>
 #include <cstdio>
 #include <hardware/watchdog.h>
 
+using namespace si;
+using namespace rfpm;
+
 struct UiData
 {
-  TransactionData   *sample{ nullptr };
-  TransactionData    previous_sample{};
-  Converter3rdOrder *converter{ nullptr };
+  struct
+  {
+    TransactionData *sample{ nullptr };
+    TransactionData  previous_sample{};
+
+    SiUnit volt{ .value = 0, .lin = si::Linearity::Linear, .unit = si::Unit::Volt };
+    SiUnit volt_avg{ .value = 0, .lin = si::Linearity::Linear, .unit = si::Unit::Volt };
+    SiUnit volt_min{ .value = 0, .lin = si::Linearity::Linear, .unit = si::Unit::Volt };
+    SiUnit volt_max{ .value = 0, .lin = si::Linearity::Linear, .unit = si::Unit::Volt };
+    SiUnit volt_db{ .value = 0, .lin = si::Linearity::Db10, .unit = si::Unit::Volt };
+    SiUnit volt_db_avg{ .value = 0, .lin = si::Linearity::Db10, .unit = si::Unit::Volt };
+    SiUnit volt_db_min{ .value = 0, .lin = si::Linearity::Db10, .unit = si::Unit::Volt };
+    SiUnit volt_db_max{ .value = 0, .lin = si::Linearity::Db10, .unit = si::Unit::Volt };
+  } sampling;
 
   lv_obj_t *screen{ nullptr };
 
@@ -206,58 +220,73 @@ static void widgets_init()
   lv_scr_load(ui_data.screen);
 }
 
-static void ui_update_linear_watt_tab()
-{
-  snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "val=%4" PRIu16 " w", ui_data.sample->raw_sample.value);
-  lv_label_set_text(ui_data.tab_view.tab0.value_label, ui_data.text_buffer);
-
-  snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "min=%4" PRIu16 " w", ui_data.sample->raw_sample.min);
-  lv_label_set_text(ui_data.tab_view.tab0.avg_label, ui_data.text_buffer);
-
-  snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "max=%4" PRIu16 " w", ui_data.sample->raw_sample.max);
-  lv_label_set_text(ui_data.tab_view.tab0.min_label, ui_data.text_buffer);
-
-  snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "avg=%4" PRIu16 " w", ui_data.sample->raw_sample.avg);
-  lv_label_set_text(ui_data.tab_view.tab0.max_label, ui_data.text_buffer);
-
-  snprintf(
-    ui_data.text_buffer, sizeof(ui_data.text_buffer), "ts_ms=+%" PRIu32, ui_data.sample->timestamp_ms - ui_data.previous_sample.timestamp_ms);
-  lv_label_set_text(ui_data.tab_view.tab0.ts_label, ui_data.text_buffer);
-}
-
 static void ui_update_dbm_watt_tab()
 {
-  const Converter3rdOrder *converter{ ui_data.converter };
-  const LinearW            valueDbm{ converter->toLinearW(converter->toCorrectedDbmW(ui_data.sample->raw_sample.value)) };
-  const LinearW            minDbm{ converter->toLinearW(converter->toCorrectedDbmW(ui_data.sample->raw_sample.min)) };
-  const LinearW            maxDbm{ converter->toLinearW(converter->toCorrectedDbmW(ui_data.sample->raw_sample.max)) };
-  const LinearW            avgDbm{ converter->toLinearW(converter->toCorrectedDbmW(ui_data.sample->raw_sample.avg)) };
-
-  snprintf(
-    ui_data.text_buffer, sizeof(ui_data.text_buffer), "val=% 6.2lf%c", static_cast<float>(valueDbm.watt), siUnitToChar(valueDbm.unit));
+  snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "val=%4" PRIu16 " w", ui_data.sampling.sample->raw_sample.value);
   lv_label_set_text(ui_data.tab_view.tab1.value_label, ui_data.text_buffer);
 
-  snprintf(
-    ui_data.text_buffer, sizeof(ui_data.text_buffer), "min=% 6.2lf %c", static_cast<float>(minDbm.watt), siUnitToChar(minDbm.unit));
+  snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "min=%4" PRIu16 " w", ui_data.sampling.sample->raw_sample.min);
   lv_label_set_text(ui_data.tab_view.tab1.avg_label, ui_data.text_buffer);
 
-  snprintf(
-    ui_data.text_buffer, sizeof(ui_data.text_buffer), "max=% 6.2lf %c", static_cast<float>(maxDbm.watt), siUnitToChar(maxDbm.unit));
+  snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "max=%4" PRIu16 " w", ui_data.sampling.sample->raw_sample.max);
   lv_label_set_text(ui_data.tab_view.tab1.min_label, ui_data.text_buffer);
 
-  snprintf(
-    ui_data.text_buffer, sizeof(ui_data.text_buffer), "avg=% 6.2lf %c", static_cast<float>(avgDbm.watt), siUnitToChar(avgDbm.unit));
+  snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "avg=%4" PRIu16 " w", ui_data.sampling.sample->raw_sample.avg);
   lv_label_set_text(ui_data.tab_view.tab1.max_label, ui_data.text_buffer);
 
   snprintf(
-    ui_data.text_buffer, sizeof(ui_data.text_buffer), "ts_ms=+%" PRIu32, ui_data.sample->timestamp_ms - ui_data.previous_sample.timestamp_ms);
+    ui_data.text_buffer, sizeof(ui_data.text_buffer), "ts_ms=+%" PRIu32,
+    ui_data.sampling.sample->timestamp_ms - ui_data.sampling.previous_sample.timestamp_ms);
   lv_label_set_text(ui_data.tab_view.tab1.ts_label, ui_data.text_buffer);
 }
 
-void ui_init(TransactionData &sample, Converter3rdOrder &converter)
+#include <list>
+#include <tuple>
+
+static void convert_sample()
 {
-  ui_data.sample    = &sample;
-  ui_data.converter = &converter;
+  static const std::list<std::tuple<SiUnit &, SiUnit &, uint16_t &>> todo{
+    { ui_data.sampling.volt_avg, ui_data.sampling.volt_db_avg, ui_data.sampling.sample->raw_sample.avg },
+    { ui_data.sampling.volt_min, ui_data.sampling.volt_db_min, ui_data.sampling.sample->raw_sample.min },
+    { ui_data.sampling.volt_max, ui_data.sampling.volt_db_max, ui_data.sampling.sample->raw_sample.max }
+  };
+
+  for (auto [out_linear, out_db, in] : todo)
+  {
+    const auto convertedDbv{ dbvCorrectedFromDbv(dbvFromAdc(voltFrom12bitAdc(in, AD7887_V_REF), FrequencyBand::GHz_0_9), 0, { 1, 0, 0 }) };
+    out_db.value = convertedDbv;
+    const SiUnit linearDbv{ toLinearV(convertedDbv) };
+    out_linear.scale = linearDbv.scale;
+    out_linear.value = linearDbv.value;
+  }
+}
+
+static void ui_update_linear_watt_tab()
+{
+  convert_sample();
+
+  static const std::list<std::tuple<const char *, lv_obj_t *, SiUnit &>> todo{
+    {              "->% 6.2lf%s%s", ui_data.tab_view.tab0.value_label,        ui_data.sampling.volt },
+    { LV_SYMBOL_DOWN " % 6.2lf%s%s",   ui_data.tab_view.tab0.avg_label,    ui_data.sampling.volt_avg },
+    {   LV_SYMBOL_UP " % 6.2lf%s%s",   ui_data.tab_view.tab0.min_label,     ui_data.sampling.volt_db },
+    {               "~ % 6.2lf%s%s",   ui_data.tab_view.tab0.max_label, ui_data.sampling.volt_db_avg },
+  };
+
+  for (auto [format, out, in] : todo)
+  {
+    snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), format, in.value, scaleToStr(in.scale), unitToStr(in.unit));
+    lv_label_set_text(out, ui_data.text_buffer);
+  }
+
+  snprintf(
+    ui_data.text_buffer, sizeof(ui_data.text_buffer), LV_SYMBOL_REFRESH " +%" PRIu32,
+    ui_data.sampling.sample->timestamp_ms - ui_data.sampling.previous_sample.timestamp_ms);
+  lv_label_set_text(ui_data.tab_view.tab0.ts_label, ui_data.text_buffer);
+}
+
+void ui_init(TransactionData &sample)
+{
+  ui_data.sampling.sample = &sample;
   widgets_init();
 }
 
@@ -267,11 +296,11 @@ void ui_update()
   {
   case 0:
     ui_update_linear_watt_tab();
-    ui_data.previous_sample = *ui_data.sample;
+    ui_data.sampling.previous_sample = *ui_data.sampling.sample;
     return;
   case 1:
     ui_update_dbm_watt_tab();
-    ui_data.previous_sample = *ui_data.sample;
+    ui_data.sampling.previous_sample = *ui_data.sampling.sample;
     return;
   case 2:
   case 3:
