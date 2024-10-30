@@ -323,3 +323,5 @@ void display_init()
 }
 
 DmaPeriphery &display_get_dma_periphery() { return dma_periphery; }
+
+uint32_t display_get_baud_rate() { return spi_get_baudrate(DISPLAY_SPI_PORT); }

@@ -12,13 +12,6 @@ using namespace ad8318;
 using namespace avg;
 
 
-typedef struct
-{
-  uint16_t width_px;
-  uint16_t height_px;
-  uint32_t baud_rate;
-} DisplayInfo;
-
 typedef struct Probe
 {
   ControlRegister ctlRegister{ .powerManagement0       = 1,
@@ -46,7 +39,6 @@ typedef struct Probe
 
 typedef struct Globals
 {
-  DisplayInfo display{};
   Probe probe{};
 } Globals;
 

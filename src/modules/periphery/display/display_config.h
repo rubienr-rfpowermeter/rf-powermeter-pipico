@@ -3,6 +3,8 @@
 #include "display_hw_config.h"
 #include "display_types.h"
 
+#define DISPLAY_NAME "Waveshare Pico LCD 1.3"
+
 constexpr uint16_t DISPLAY_NUM_PIXELS = { DISPLAY_HORIZONTAL_PX * DISPLAY_VERTICAL_PX };
 
 constexpr enum DisplayScanDirection DISPLAY_DIRECTION = { DisplayScanDirection_90_DEG };
