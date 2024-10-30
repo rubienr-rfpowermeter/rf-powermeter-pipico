@@ -38,16 +38,14 @@ static void uart_post_init()
 
 void on_gpio_edge(uint gpio, uint32_t event_mask)
 {
-  if(buttons_on_state_changed_cb(gpio, event_mask)) return;
-  if(joystick_on_edge_cb(gpio, event_mask)) return;
+  if (buttons_on_state_changed_cb(gpio, event_mask)) return;
+  if (joystick_on_edge_cb(gpio, event_mask)) return;
 }
 
 static void init(TransactionBuffer &buffer)
 {
-  stdio_init_all();
-  uart_post_init();
-
-  printf("\n**** RF Power Meter (Version " PICO_PROGRAM_VERSION_STRING " Built " __DATE__ ") ****\nmain_core0: init ...\n");
+  printf("\n**** RF Power Meter (Version " PICO_PROGRAM_VERSION_STRING " Built " __DATE__ ") ****\n");
+  printf("c%" PRIu8 " init ...\n", get_core_num());
   printf("clk_sys_hz=%" PRIu32 "\n", clock_get_hz(clk_sys));
 
   gpio_set_irq_callback(&on_gpio_edge);
@@ -58,6 +56,7 @@ static void init(TransactionBuffer &buffer)
 
   display_init();
   lv_display_init();
+  static TrackedInputs input_keys;
   lv_input_init(input_keys);
 
   samples = &buffer;
@@ -76,8 +75,12 @@ void core0_init(TransactionBuffer &buffer)
 [[noreturn]]
 void core0_main()
 {
-  TrackedInputs input_keys;
-  init(input_keys);
+  // init();
+
+  constexpr uint8_t sync_signal = { 42 };
+  printf("c%" PRIu8 " main sending sync. signal %" PRIu8 " to other core ...\n", get_core_num(), sync_signal);
+  multicore_fifo_push_blocking(sync_signal);
+  printf("c%" PRIu8 " main sync signal %" PRIu8 " sent other core\n", get_core_num(), sync_signal);
 
   repeating_timer_t timer;
   add_repeating_timer_ms(1, ms_tick_timer_cb, nullptr, &timer);
