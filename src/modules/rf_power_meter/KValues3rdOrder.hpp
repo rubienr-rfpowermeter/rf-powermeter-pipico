@@ -1,6 +1,6 @@
 #pragma once
 
-namespace ad8318
+namespace rfpm
 {
 
 template <typename T> struct KValues3rdOrder

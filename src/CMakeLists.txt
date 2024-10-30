@@ -36,8 +36,6 @@ add_definitions(-DLV_LVGL_H_INCLUDE_SIMPLE=1)
 
 # add executable
 add_executable(rf_probe
-        lib/ad8318/Converter3rdOrder.cpp
-        lib/ad8318/KValues3rdOrder.hpp
         lib/sample_data/AverageT.hpp
         lib/sample_data/TransactionBuffer.h
         modules/ad7887/ad7887.cpp
@@ -48,6 +46,7 @@ add_executable(rf_probe
         modules/periphery/input/joystick.cpp
         modules/periphery/display/display.cpp
         modules/periphery/led/user_led.cpp
+        modules/rf_power_meter/KValues3rdOrder.hpp
         modules/core1_sampler/core1_main.cpp
         modules/core0_ui/core0_main.cpp
         modules/core0_ui/ui.cpp
