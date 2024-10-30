@@ -40,6 +40,7 @@ add_executable(rf_probe
         lib/ad8318/KValues3rdOrder.hpp
         lib/sample_data/AverageT.hpp
         lib/sample_data/TransactionBuffer.h
+        modules/ad7887/ad7887.cpp
         modules/lvgl/lv_display.cpp
         modules/lvgl/lv_input.cpp
         modules/periphery/input/buttons.cpp
