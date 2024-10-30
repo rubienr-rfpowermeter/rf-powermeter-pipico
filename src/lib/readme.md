@@ -1,1 +1,1 @@
-Machine independent implementation goes here.
+Platform independent implementation goes here.

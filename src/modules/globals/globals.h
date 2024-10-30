@@ -21,10 +21,10 @@ struct Probe
                                .mustBeZero2            = 0,
                                .dontCare               = 0 };
   // AD7887 device{ ctlRegister, chipSelectDigitalWrite, clkDigitalWrite, dataDigitalWrite, dataDigitalRead, delayMicroseconds };
-  ad7887::SampleRegister  sampleRegister{ .raw12Bit = 0, .zero = 0 };
-  AverageUint16           sampleAverage;
-  KValues3rdOrderFloat    kValues{};
-  AD8318Converter3rdOrder converter{ kValues };
+  ad7887::SampleRegister sampleRegister{ .raw12Bit = 0, .zero = 0 };
+  AverageUint16          sampleAverage;
+  CorrectionValues       kValues{};
+  Converter3rdOrder      converter{ kValues };
 
   struct
   {
