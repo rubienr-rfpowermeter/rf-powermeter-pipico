@@ -38,10 +38,10 @@ add_definitions(-DLV_LVGL_H_INCLUDE_SIMPLE=1)
 add_executable(rf_probe
         lib/ad7887/AD7887.cpp
         lib/ad7887/registers.cpp
-        lib/ad8318/AD8318.cpp
+        lib/ad8318/Converter3rdOrder.cpp
         lib/ad8318/KValues3rdOrder.hpp
         lib/sample_data/AverageT.hpp
-        lib/sample_data/TransactionBuffer.cpp
+        lib/sample_data/TransactionBuffer.h
         modules/globals/globals.cpp
         modules/lvgl/lv_display.cpp
         modules/lvgl/lv_input.cpp
@@ -56,8 +56,6 @@ add_executable(rf_probe
         modules/main_ui/ui.cpp
         main.cpp
 )
-
-# include_directories(./modules/globals)
 
 #pico_generate_pio_header(rf_probe
 #        ${CMAKE_CURRENT_LIST_DIR}/modules/periphery/ws2812/ws2812.pio
