@@ -45,7 +45,7 @@ struct Converter3rdOrder
 protected:
 
   CorrectionValues correction{ 0, 0, 0 };   /// 3rd-order correction values.
-  float            attenuationDb{ 0 };
+  float            attenuationDb{ 0 };      /// offset correction
 };
 
 constexpr LinearW Converter3rdOrder::toLinearW(const float &correctedDbmW)
