@@ -16,21 +16,51 @@ struct UiData
   TransactionData   *sample    = { nullptr };
   Converter3rdOrder *converter = { nullptr };
 
-  lv_obj_t *value_label = { nullptr };
-  lv_obj_t *avg_label   = { nullptr };
-  lv_obj_t *min_label   = { nullptr };
-  lv_obj_t *max_label   = { nullptr };
-  lv_obj_t *ts_label    = { nullptr };
+  lv_obj_t *screen = { nullptr };
+
+  struct
+  {
+    lv_obj_t *view       = { nullptr };
+    uint32_t  active_tab = { UINT32_MAX };
+
+    struct
+    {
+      lv_obj_t *tab         = { nullptr };
+      lv_obj_t *value_label = { nullptr };
+      lv_obj_t *avg_label   = { nullptr };
+      lv_obj_t *min_label   = { nullptr };
+      lv_obj_t *max_label   = { nullptr };
+      lv_obj_t *ts_label    = { nullptr };
+    } tab0;
+
+    struct
+    {
+      lv_obj_t *tab         = { nullptr };
+      lv_obj_t *value_label = { nullptr };
+      lv_obj_t *avg_label   = { nullptr };
+      lv_obj_t *min_label   = { nullptr };
+      lv_obj_t *max_label   = { nullptr };
+      lv_obj_t *ts_label    = { nullptr };
+    } tab1;
+
+    struct
+    {
+      lv_obj_t *tab = { nullptr };
+    } tab2;
+
+    struct
+    {
+      lv_obj_t *tab = { nullptr };
+    } tab3;
+  } tab_view;
 
   char text_buffer[32] = { 0 };
 };
 
 static UiData ui_data{};
 
-extern const lv_img_dsc_t LCD_1inch3;
-
 [[noreturn]]
-static void on_reboot_request(__unused lv_event_t *event)
+static void on_reboot_request_cb(__unused lv_event_t *event)
 {
   printf("main resetting, bye ...\n");
 
@@ -40,6 +70,11 @@ static void on_reboot_request(__unused lv_event_t *event)
 
   watchdog_enable(1, false);
   while (true) { }
+}
+
+static void on_tab_changed_cb(__unused lv_event_t *event)
+{
+  ui_data.tab_view.active_tab = lv_tabview_get_tab_active(ui_data.tab_view.view);
 }
 
 static void init_info_tab(lv_obj_t *parent)
@@ -76,106 +111,163 @@ static void init_info_tab(lv_obj_t *parent)
   lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
 }
 
-static void widgets_init(UiData &data)
+static void init_linear_watt_tab(lv_obj_t *parent)
 {
-  lv_obj_t *screen = lv_obj_create(nullptr);
-  lv_obj_clean(screen);
+  ui_data.tab_view.tab0.value_label = lv_label_create(parent);
+  ui_data.tab_view.tab0.avg_label   = lv_label_create(parent);
+  ui_data.tab_view.tab0.min_label   = lv_label_create(parent);
+  ui_data.tab_view.tab0.max_label   = lv_label_create(parent);
+  ui_data.tab_view.tab0.ts_label    = lv_label_create(parent);
 
-  lv_obj_t *tabview;
-  tabview = lv_tabview_create(screen);
-  lv_tabview_set_tab_bar_position(tabview, LV_DIR_RIGHT);
-  lv_tabview_set_tab_bar_size(tabview, 30);
+  lv_obj_set_pos(ui_data.tab_view.tab0.value_label, 10, 10);
+  lv_obj_set_pos(ui_data.tab_view.tab0.avg_label, 10, 25);
+  lv_obj_set_pos(ui_data.tab_view.tab0.min_label, 10, 40);
+  lv_obj_set_pos(ui_data.tab_view.tab0.max_label, 10, 55);
+  lv_obj_set_pos(ui_data.tab_view.tab0.ts_label, 10, 70);
 
-  lv_obj_set_style_bg_color(tabview, lv_palette_lighten(LV_PALETTE_PINK, 5), 0);
+  lv_label_set_text(ui_data.tab_view.tab0.value_label, "??");
+  lv_label_set_text(ui_data.tab_view.tab0.avg_label, "??");
+  lv_label_set_text(ui_data.tab_view.tab0.min_label, "??");
+  lv_label_set_text(ui_data.tab_view.tab0.max_label, "??");
+  lv_label_set_text(ui_data.tab_view.tab0.ts_label, "??");
 
-  lv_obj_t *tab_btns = lv_tabview_get_tab_btns(tabview);
+  lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
+}
+
+static void init_dbm_watt_tab(lv_obj_t *parent)
+{
+  ui_data.tab_view.tab1.value_label = lv_label_create(parent);
+  ui_data.tab_view.tab1.avg_label   = lv_label_create(parent);
+  ui_data.tab_view.tab1.min_label   = lv_label_create(parent);
+  ui_data.tab_view.tab1.max_label   = lv_label_create(parent);
+  ui_data.tab_view.tab1.ts_label    = lv_label_create(parent);
+
+  lv_obj_set_pos(ui_data.tab_view.tab1.value_label, 10, 10);
+  lv_obj_set_pos(ui_data.tab_view.tab1.avg_label, 10, 25);
+  lv_obj_set_pos(ui_data.tab_view.tab1.min_label, 10, 40);
+  lv_obj_set_pos(ui_data.tab_view.tab1.max_label, 10, 55);
+  lv_obj_set_pos(ui_data.tab_view.tab1.ts_label, 10, 70);
+
+  lv_label_set_text(ui_data.tab_view.tab1.value_label, "??");
+  lv_label_set_text(ui_data.tab_view.tab1.avg_label, "??");
+  lv_label_set_text(ui_data.tab_view.tab1.min_label, "??");
+  lv_label_set_text(ui_data.tab_view.tab1.max_label, "??");
+  lv_label_set_text(ui_data.tab_view.tab1.ts_label, "??");
+
+  lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
+}
+
+static void init_config_tab(lv_obj_t *parent)
+{
+  lv_obj_t *label = lv_label_create(parent);
+  lv_label_set_text(label, "config");
+
+  lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
+}
+
+static void widgets_init()
+{
+  ui_data.screen = lv_obj_create(nullptr);
+  lv_obj_clean(ui_data.screen);
+
+  ui_data.tab_view.view = lv_tabview_create(ui_data.screen);
+  lv_tabview_set_tab_bar_position(ui_data.tab_view.view, LV_DIR_RIGHT);
+  lv_tabview_set_tab_bar_size(ui_data.tab_view.view, 30);
+
+  lv_obj_set_style_bg_color(ui_data.tab_view.view, lv_palette_lighten(LV_PALETTE_PINK, 5), 0);
+
+  lv_obj_t *tab_btns = lv_tabview_get_tab_btns(ui_data.tab_view.view);
   lv_obj_set_style_bg_color(tab_btns, lv_palette_darken(LV_PALETTE_PINK, 3), 0);
   lv_obj_set_style_text_color(tab_btns, lv_palette_lighten(LV_PALETTE_PINK, 5), 0);
   lv_obj_set_style_border_side(tab_btns, LV_BORDER_SIDE_NONE, (uint32_t)LV_PART_ITEMS | (uint32_t)LV_STATE_CHECKED);
 
-  lv_obj_t *tab1 = lv_tabview_add_tab(tabview, LV_SYMBOL_HOME);
-  lv_obj_t *tab2 = lv_tabview_add_tab(tabview, LV_SYMBOL_PAUSE);
-  lv_obj_t *tab3 = lv_tabview_add_tab(tabview, LV_SYMBOL_SETTINGS);
-  lv_obj_t *tab4 = lv_tabview_add_tab(tabview, LV_SYMBOL_USB);
+  ui_data.tab_view.tab0.tab = lv_tabview_add_tab(ui_data.tab_view.view, LV_SYMBOL_HOME);
+  ui_data.tab_view.tab1.tab = lv_tabview_add_tab(ui_data.tab_view.view, LV_SYMBOL_PAUSE);
+  ui_data.tab_view.tab2.tab = lv_tabview_add_tab(ui_data.tab_view.view, LV_SYMBOL_SETTINGS);
+  ui_data.tab_view.tab3.tab = lv_tabview_add_tab(ui_data.tab_view.view, LV_SYMBOL_USB);
 
-  lv_obj_t *tb = lv_tabview_get_tab_bar(tabview);
+  lv_obj_t *tb = lv_tabview_get_tab_bar(ui_data.tab_view.view);
   lv_group_add_obj(lv_input_get_buttons_group(), tb);
   lv_obj_t *btn3 = lv_obj_get_child(tb, 3);
 
-  lv_obj_add_event_cb(btn3, on_reboot_request, LV_EVENT_LONG_PRESSED_REPEAT, nullptr);
+  lv_obj_add_event_cb(btn3, on_reboot_request_cb, LV_EVENT_LONG_PRESSED_REPEAT, nullptr);
 
-  data.value_label = lv_label_create(tab1);
-  data.avg_label   = lv_label_create(tab1);
-  data.min_label   = lv_label_create(tab1);
-  data.max_label   = lv_label_create(tab1);
-  data.ts_label   = lv_label_create(tab1);
-  lv_obj_set_pos(data.value_label, 10, 10);
-  lv_obj_set_pos(data.avg_label, 10, 25);
-  lv_obj_set_pos(data.min_label, 10, 40);
-  lv_obj_set_pos(data.max_label, 10, 55);
-  lv_obj_set_pos(data.ts_label, 10, 70);
-  lv_label_set_text(data.value_label, "value_label");
-  lv_label_set_text(data.avg_label, "avg_label");
-  lv_label_set_text(data.min_label, "min_label");
-  lv_label_set_text(data.max_label, "max_label");
-  lv_label_set_text(data.ts_label, "ts_label");
+  init_linear_watt_tab(ui_data.tab_view.tab0.tab);
+  init_dbm_watt_tab(ui_data.tab_view.tab1.tab);
+  init_config_tab(ui_data.tab_view.tab2.tab);
+  init_info_tab(ui_data.tab_view.tab3.tab);
 
-  lv_obj_t *label = lv_label_create(tab2);
-  lv_label_set_text(label, "2nd");
+  lv_obj_add_event_cb(ui_data.tab_view.view, on_tab_changed_cb, LV_EVENT_VALUE_CHANGED, nullptr);
+  ui_data.tab_view.active_tab = 0;
+  lv_tabview_set_active(ui_data.tab_view.view, ui_data.tab_view.active_tab, LV_ANIM_OFF);
 
-  label = lv_label_create(tab3);
-  lv_label_set_text(label, "3rd");
-
-  init_info_tab(tab4);
-
-  lv_obj_clear_flag(lv_tabview_get_content(tabview), LV_OBJ_FLAG_SCROLLABLE);
-  lv_scr_load(screen);
+  lv_obj_clear_flag(lv_tabview_get_content(ui_data.tab_view.view), LV_OBJ_FLAG_SCROLLABLE);
+  lv_scr_load(ui_data.screen);
 }
 
 void ui_init(TransactionData &sample, Converter3rdOrder &converter)
 {
-  ui_data.sample = &sample;
+  ui_data.sample    = &sample;
   ui_data.converter = &converter;
-  widgets_init(ui_data);
+  widgets_init();
+}
+
+static void ui_update_linear_watt_tab()
+{
+  snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "val=% 6.2f w", ui_data.sample->raw_sample.value);
+  lv_label_set_text(ui_data.tab_view.tab0.value_label, ui_data.text_buffer);
+
+  snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "min=% 6.2f w", ui_data.sample->raw_sample.min);
+  lv_label_set_text(ui_data.tab_view.tab0.avg_label, ui_data.text_buffer);
+
+  snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "max=% 6.2f w", ui_data.sample->raw_sample.max);
+  lv_label_set_text(ui_data.tab_view.tab0.min_label, ui_data.text_buffer);
+
+  snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "avg=% 6.2f w", ui_data.sample->raw_sample.avg);
+  lv_label_set_text(ui_data.tab_view.tab0.max_label, ui_data.text_buffer);
+
+  snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "ts_ms=%" PRIu32 " w", ui_data.sample->timestamp_ms);
+  lv_label_set_text(ui_data.tab_view.tab0.ts_label, ui_data.text_buffer);
+}
+
+static void ui_update_dbm_watt_tab()
+{
+  const Converter3rdOrder *converter = { ui_data.converter };
+  const LinearW            valueDbm  = { converter->toLinearW(converter->toCorrectedDbmW(ui_data.sample->raw_sample.value)) };
+  const LinearW            minDbm    = { converter->toLinearW(converter->toCorrectedDbmW(ui_data.sample->raw_sample.min)) };
+  const LinearW            maxDbm    = { converter->toLinearW(converter->toCorrectedDbmW(ui_data.sample->raw_sample.max)) };
+  const LinearW            avgDbm    = { converter->toLinearW(converter->toCorrectedDbmW(ui_data.sample->raw_sample.avg)) };
+
+  snprintf(
+    ui_data.text_buffer, sizeof(ui_data.text_buffer), "val=% 6.2f %c", static_cast<float>(valueDbm.watt), siUnitToChar(valueDbm.unit));
+  lv_label_set_text(ui_data.tab_view.tab1.value_label, ui_data.text_buffer);
+
+  snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "min=% 6.2f %c", static_cast<float>(minDbm.watt), siUnitToChar(minDbm.unit));
+  lv_label_set_text(ui_data.tab_view.tab1.avg_label, ui_data.text_buffer);
+
+  snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "max=% 6.2f %c", static_cast<float>(maxDbm.watt), siUnitToChar(maxDbm.unit));
+  lv_label_set_text(ui_data.tab_view.tab1.min_label, ui_data.text_buffer);
+
+  snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "avg=% 6.2f %c", static_cast<float>(avgDbm.watt), siUnitToChar(avgDbm.unit));
+  lv_label_set_text(ui_data.tab_view.tab1.max_label, ui_data.text_buffer);
+
+  snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "ts_ms=%" PRIu32, ui_data.sample->timestamp_ms);
+  lv_label_set_text(ui_data.tab_view.tab1.ts_label, ui_data.text_buffer);
 }
 
 void ui_update()
 {
-
-  // const LinearW valueDbm = { ui_data.converter->toLinearW(ui_data.sample->raw_sample.value) };
-  // const LinearW minDbm = { ui_data.converter->toLinearW(ui_data.sample->raw_sample.min) };
-  // const LinearW maxDbm = { ui_data.converter->toLinearW(ui_data.sample->raw_sample.max) };
-  // const LinearW avgDbm = { ui_data.converter->toLinearW(ui_data.sample->raw_sample.avg) };
-  //
-  // snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "val=%03.1f %c", valueDbm.watt, siUnitToChar(valueDbm.unit));
-  // lv_label_set_text(ui_data.value_label, ui_data.text_buffer);
-  //
-  // snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "min=%03.1f %c", minDbm.watt, siUnitToChar(minDbm.unit));
-  // lv_label_set_text(ui_data.avg_label, ui_data.text_buffer);
-  //
-  // snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "max=%03.1f %c", maxDbm.watt, siUnitToChar(maxDbm.unit));
-  // lv_label_set_text(ui_data.min_label, ui_data.text_buffer);
-  //
-  // snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "avg=% 7.2f %c", avgDbm.watt, siUnitToChar(avgDbm.unit));
-  // lv_label_set_text(ui_data.max_label, ui_data.text_buffer);
-  //
-  // snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "ts_ms=%" PRIu32, ui_data.sample->timestamp_ms);
-  // lv_label_set_text(ui_data.ts_label, ui_data.text_buffer);
-
-
-  snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "val=% 6.1f", ui_data.sample->raw_sample.value);
-  lv_label_set_text(ui_data.value_label, ui_data.text_buffer);
-
-  snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "min=% 6.1f", ui_data.sample->raw_sample.min);
-  lv_label_set_text(ui_data.avg_label, ui_data.text_buffer);
-
-  snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "max=% 6.1f", ui_data.sample->raw_sample.max);
-  lv_label_set_text(ui_data.min_label, ui_data.text_buffer);
-
-  snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "avg=% 6.2f", ui_data.sample->raw_sample.avg);
-  lv_label_set_text(ui_data.max_label, ui_data.text_buffer);
-
-  snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "ts_ms=%" PRIu32, ui_data.sample->timestamp_ms);
-  lv_label_set_text(ui_data.ts_label, ui_data.text_buffer);
-
+  switch (ui_data.tab_view.active_tab)
+  {
+  case 0:
+    ui_update_linear_watt_tab();
+    return;
+  case 1:
+    ui_update_dbm_watt_tab();
+    return;
+  case 2:
+  case 3:
+  default:
+    return;
+  }
 }
