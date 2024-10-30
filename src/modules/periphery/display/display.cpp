@@ -32,8 +32,8 @@ static void display_gpio_init()
     gpio_init(gpio);
     gpio_set_pulls(gpio, false, false);
     gpio_set_dir(gpio, GPIO_OUT);
-    // gpio_set_drive_strength(gpio, GPIO_DRIVE_STRENGTH_2MA);
-    // gpio_set_slew_rate(gpio, GPIO_SLEW_RATE_SLOW);
+    gpio_set_drive_strength(gpio, GPIO_DRIVE_STRENGTH_2MA);
+    gpio_set_slew_rate(gpio, GPIO_SLEW_RATE_SLOW);
     gpio_put(gpio, false);
   }
 
@@ -128,22 +128,26 @@ static void display_set_scanning_method(enum DisplayScanDirection scan_direction
   uint8_t mv             = { 1 }; // d5, page/column order, 0 normal, 1 reverse
   uint8_t ml             = { 1 }; // d4, line address order, 0 refresh top to bottom, 1 refresh bottom to top
   constexpr uint8_t rgb  = { 0 }; // d3, rgb/bgr order, 0 rgb, 1 bgr
-  constexpr uint8_t mh   = { 0 }; // d2, display data latch data order, 0 refresh left to right, 1 refresh right to left
+  uint8_t mh             = { 0 }; // d2, display data latch data order, 0 refresh left to right, 1 refresh right to left
   constexpr uint8_t rfu2 = { 1 }; // d1
   constexpr uint8_t rfu1 = { 0 }; // d0
 
   // get GRAM and display width and height
   if(DisplayScanDirection_0_DEG == scan_direction)
   {
-    mx = 0; // d6, column address order, 0: left to right, 1: right to left
-    mv = 0; // d5, page/column order, 0: normal, 1: reverse
-    ml = 0; // d4, line address order, 0: refresh top to bottom, 1: refresh bottom to top
+    my = 0;
+    mx = 0;
+    mv = 0;
+    ml = 0;
+    mh = 0;
   }
   else // ScanDirection_90_DEG
   {
-    mx = 1; // d6, column address order, 0: left to right, 1: right to left
-    mv = 1; // d5, page/column order, 0: normal, 1: reverse
-    ml = 1; // d4, line address order, 0: refresh top to bottom, 1: refresh bottom to top
+    my = 0;
+    mx = 1;
+    mv = 1;
+    ml = 1;
+    mh = 0;
   }
 
   display_send_command(0x36); // MADCTL, memory data access control, st7789vw, V1.0, page 214, section 9.1.28
@@ -270,20 +274,23 @@ static void display_init_registers()
 
 void display_set_window(uint16_t start_x, uint16_t start_y, uint16_t end_x, uint16_t end_y)
 {
-  // CASET, column address set (column line in frame memory), st7789vw V1.0, page 198, section 9.1.20
-  display_send_command(0x2a);
   const uint8_t x_data[] = { (uint8_t)((start_x & 0xff00) >> 8),     // XS[15:8]
                              (uint8_t)(start_x & 0x00ff),            // XS[7:0]
                              (uint8_t)(((end_x - 1) & 0xff00) >> 8), // XE[15:8]
                              (uint8_t)((end_x - 1) & 0x00ff) };      // XE[7:0]
-  display_send_data_nbyte(x_data, sizeof(x_data));
 
-  // RASET, row address set (page line in frame memory), st7789vw V1.0, page 200, section 9.1.21
-  display_send_command(0x2b);
+
   const uint8_t y_data[] = { (uint8_t)((start_y & 0xff00) >> 8),     // YS[15:8]
                              (uint8_t)(start_y & 0x00ff),            // YS[7:0]
                              (uint8_t)(((end_y - 1) & 0xff00) >> 8), // YE[15:8]
                              (uint8_t)((end_y - 1) & 0x00ff) };      // YE[7:0]
+
+  // CASET, column address set (column line in frame memory), st7789vw V1.0, page 198, section 9.1.20
+  display_send_command(0x2a);
+  display_send_data_nbyte(x_data, sizeof(x_data));
+
+  // RASET, row address set (page line in frame memory), st7789vw V1.0, page 200, section 9.1.21
+  display_send_command(0x2b);
   display_send_data_nbyte(y_data, sizeof(y_data));
 
   // RAMWR, memory write, st7789vw V1.0, page 202, section 9.1.22

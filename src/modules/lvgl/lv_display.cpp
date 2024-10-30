@@ -9,7 +9,6 @@
 
 typedef struct LvglData
 {
-
   uint8_t *buffer_0;
   uint8_t *buffer_1;
   lv_display_t *display;
@@ -64,6 +63,7 @@ static void display_flush_cb(lv_display_t __unused *display, const lv_area_t *ar
 
 static void lvgl_deinit()
 {
+  lv_deinit();
   free(lvgl_data.buffer_0);
   lvgl_data.buffer_0 = nullptr;
   free(lvgl_data.buffer_1);

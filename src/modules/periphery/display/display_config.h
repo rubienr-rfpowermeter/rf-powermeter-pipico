@@ -7,7 +7,10 @@
 
 constexpr uint16_t DISPLAY_NUM_PIXELS = { DISPLAY_HORIZONTAL_PX * DISPLAY_VERTICAL_PX };
 
-constexpr enum DisplayScanDirection DISPLAY_DIRECTION = { DisplayScanDirection_90_DEG };
+constexpr enum DisplayScanDirection DISPLAY_DIRECTION = {
+  // DisplayScanDirection_0_DEG
+  DisplayScanDirection_90_DEG
+};
 
 /// display dimension as seen by SW (after rotation)
 constexpr uint16_t DISPLAY_WIDTH_PX = { DisplayScanDirection_0_DEG == DISPLAY_DIRECTION ? DISPLAY_HORIZONTAL_PX : DISPLAY_VERTICAL_PX };
