@@ -24,8 +24,8 @@ typedef struct TrackedInputs
   TrackedInputState y{ 0x03 };     /// KEY_END
   TrackedInputState up{ 0x11 };    /// KEY_UP
   TrackedInputState down{ 0x12 };  /// KEY_DOWN
-  TrackedInputState left{ 0x13 };  /// KEY_RIGHT
-  TrackedInputState right{ 0x14 }; /// KEY_LEFT
+  TrackedInputState left{ 0x14 };  /// KEY_LEFT
+  TrackedInputState right{ 0x13 }; /// KEY_RIGHT
   TrackedInputState z{ 0x0a };     /// KEY_ENTER
 
   uint8_t joystick_active;
@@ -43,5 +43,6 @@ typedef struct TrackedInputs
 } TrackedInputs;
 
 void input_init();
+void input_deinit();
 bool input_any_active(uint8_t mask, uint8_t state_flags);
 bool input_all_active(uint8_t mask, uint8_t state_flags);
