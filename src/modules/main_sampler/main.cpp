@@ -5,21 +5,22 @@
 #include <cstdio>
 #include <pico/multicore.h>
 
-static TransactionBuffer *samples         = { nullptr };
+static TransactionBuffer *out_buffer      = { nullptr };
 static volatile uint32_t  system_ticks_ms = { 0 };
 
-AverageUint16 average;
+Average average;
 
 static bool __unused ms_tick_timer_cb(__unused struct repeating_timer *t)
 {
   system_ticks_ms += 1;
-  average.put((uint16_t)(sin(system_ticks_ms) * 100u));
+  average.put(sinf(static_cast<float>(((float)system_ticks_ms / 100))) * 100);
 
   if (0 == system_ticks_ms % 5u)
   {
-    ResultUint16 r;
-    average.get(r);
-    samples->write(r);
+    static TransactionData d;
+    d.timestamp_ms = system_ticks_ms;
+    average.get(d.raw_sample);
+    out_buffer->write(d);
   }
 
   return true;
@@ -36,7 +37,7 @@ static void init()
   printf("init_core%" PRIu8 " done\n", get_core_num());
 }
 
-void core1_init(TransactionBuffer &buffer) { samples = &buffer; }
+void core1_init(TransactionBuffer &buffer) { out_buffer = &buffer; }
 
 [[noreturn]]
 void core1_main()

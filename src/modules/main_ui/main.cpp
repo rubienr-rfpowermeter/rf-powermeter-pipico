@@ -15,9 +15,16 @@
 #include <pico/multicore.h>
 #include <pico/stdlib.h>
 
-static TransactionBuffer *samples = { nullptr };
-static ResultUint16       sample;
-static volatile uint32_t  system_ticks_ms = { 0 };
+struct SamplingResources
+{
+  TransactionBuffer *in_buffer = { nullptr };
+  TransactionData    sample;
+  CorrectionValues correction {};
+  Converter3rdOrder converter{correction};
+};
+
+static SamplingResources sampling{};
+static volatile uint32_t system_ticks_ms = { 0 };
 
 static bool ms_tick_timer_cb(__unused struct repeating_timer *t)
 {
@@ -59,8 +66,8 @@ static void init(TransactionBuffer &buffer)
   static TrackedInputs input_keys;
   lv_input_init(input_keys);
 
-  samples = &buffer;
-  ui_init(sample);
+  sampling.in_buffer = &buffer;
+  ui_init(sampling.sample, sampling.converter);
 
   printf("c%" PRIu8 " init done\n", get_core_num());
 }
@@ -89,7 +96,7 @@ void core0_main()
   {
     if (0 == system_ticks_ms % 20)
     {
-      sample = samples->read();
+      sampling.sample = sampling.in_buffer->read();
       ui_update();
     }
     if (0 == system_ticks_ms % 5) { lv_task_handler(); }

@@ -2,7 +2,7 @@
 
 #include "lib/ad7887/AD7887.h"
 #include "lib/ad7887/registers.h"
-#include "lib/ad8318/AD8318.h"
+#include "lib/ad8318/Converter3rdOrder.h"
 #include "lib/ad8318/KValues3rdOrder.hpp"
 #include "lib/sample_data/Average.h"
 #include <stdint.h>
@@ -22,7 +22,7 @@ struct Probe
                                .dontCare               = 0 };
   // AD7887 device{ ctlRegister, chipSelectDigitalWrite, clkDigitalWrite, dataDigitalWrite, dataDigitalRead, delayMicroseconds };
   ad7887::SampleRegister sampleRegister{ .raw12Bit = 0, .zero = 0 };
-  AverageUint16          sampleAverage;
+  Average          sampleAverage;
   CorrectionValues       kValues{};
   Converter3rdOrder      converter{ kValues };
 

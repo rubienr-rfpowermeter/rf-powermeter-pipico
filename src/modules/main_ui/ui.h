@@ -1,9 +1,8 @@
 #pragma once
 
+#include "lib/ad8318/Converter3rdOrder.h"
+#include "lib/sample_data/TransactionData.h"
 #include <cinttypes>
 
-template <typename value_type> struct ResultT;
-using ResultUint16 = ResultT<uint16_t>;
-
-void ui_init(ResultUint16 &samples);
+void ui_init(TransactionData &samples,Converter3rdOrder &converter);
 void ui_update();

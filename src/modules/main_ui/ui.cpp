@@ -1,6 +1,6 @@
 #include "ui.h"
 
-#include "lib/sample_data/TransactionBuffer.h"
+#include "lib/sample_data/TransactionData.h"
 #include "lvgl.h"
 #include "modules/lvgl/lv_display.h"
 #include "modules/lvgl/lv_input.h"
@@ -13,12 +13,16 @@
 
 struct UiData
 {
-  ResultUint16 *sample          = { nullptr };
-  lv_obj_t     *value_label     = { nullptr };
-  lv_obj_t     *avg_label       = { nullptr };
-  lv_obj_t     *min_label       = { nullptr };
-  lv_obj_t     *max_label       = { nullptr };
-  char          text_buffer[32] = { 0 };
+  TransactionData   *sample    = { nullptr };
+  Converter3rdOrder *converter = { nullptr };
+
+  lv_obj_t *value_label = { nullptr };
+  lv_obj_t *avg_label   = { nullptr };
+  lv_obj_t *min_label   = { nullptr };
+  lv_obj_t *max_label   = { nullptr };
+  lv_obj_t *ts_label    = { nullptr };
+
+  char text_buffer[32] = { 0 };
 };
 
 static UiData ui_data{};
@@ -104,14 +108,17 @@ static void widgets_init(UiData &data)
   data.avg_label   = lv_label_create(tab1);
   data.min_label   = lv_label_create(tab1);
   data.max_label   = lv_label_create(tab1);
+  data.ts_label   = lv_label_create(tab1);
   lv_obj_set_pos(data.value_label, 10, 10);
   lv_obj_set_pos(data.avg_label, 10, 25);
   lv_obj_set_pos(data.min_label, 10, 40);
   lv_obj_set_pos(data.max_label, 10, 55);
+  lv_obj_set_pos(data.ts_label, 10, 70);
   lv_label_set_text(data.value_label, "value_label");
   lv_label_set_text(data.avg_label, "avg_label");
   lv_label_set_text(data.min_label, "min_label");
   lv_label_set_text(data.max_label, "max_label");
+  lv_label_set_text(data.ts_label, "ts_label");
 
   lv_obj_t *label = lv_label_create(tab2);
   lv_label_set_text(label, "2nd");
@@ -125,23 +132,50 @@ static void widgets_init(UiData &data)
   lv_scr_load(screen);
 }
 
-void ui_init(ResultUint16 &sample)
+void ui_init(TransactionData &sample, Converter3rdOrder &converter)
 {
   ui_data.sample = &sample;
+  ui_data.converter = &converter;
   widgets_init(ui_data);
 }
 
 void ui_update()
 {
-  lv_snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "val=%" PRIu16 "|", ui_data.sample->value);
+
+  // const LinearW valueDbm = { ui_data.converter->toLinearW(ui_data.sample->raw_sample.value) };
+  // const LinearW minDbm = { ui_data.converter->toLinearW(ui_data.sample->raw_sample.min) };
+  // const LinearW maxDbm = { ui_data.converter->toLinearW(ui_data.sample->raw_sample.max) };
+  // const LinearW avgDbm = { ui_data.converter->toLinearW(ui_data.sample->raw_sample.avg) };
+  //
+  // snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "val=%03.1f %c", valueDbm.watt, siUnitToChar(valueDbm.unit));
+  // lv_label_set_text(ui_data.value_label, ui_data.text_buffer);
+  //
+  // snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "min=%03.1f %c", minDbm.watt, siUnitToChar(minDbm.unit));
+  // lv_label_set_text(ui_data.avg_label, ui_data.text_buffer);
+  //
+  // snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "max=%03.1f %c", maxDbm.watt, siUnitToChar(maxDbm.unit));
+  // lv_label_set_text(ui_data.min_label, ui_data.text_buffer);
+  //
+  // snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "avg=% 7.2f %c", avgDbm.watt, siUnitToChar(avgDbm.unit));
+  // lv_label_set_text(ui_data.max_label, ui_data.text_buffer);
+  //
+  // snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "ts_ms=%" PRIu32, ui_data.sample->timestamp_ms);
+  // lv_label_set_text(ui_data.ts_label, ui_data.text_buffer);
+
+
+  snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "val=% 6.1f", ui_data.sample->raw_sample.value);
   lv_label_set_text(ui_data.value_label, ui_data.text_buffer);
 
-  lv_snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "avg=%" PRIu16 "|", ui_data.sample->avg);
+  snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "min=% 6.1f", ui_data.sample->raw_sample.min);
   lv_label_set_text(ui_data.avg_label, ui_data.text_buffer);
 
-  lv_snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "min=%" PRIu16 "|", ui_data.sample->min);
+  snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "max=% 6.1f", ui_data.sample->raw_sample.max);
   lv_label_set_text(ui_data.min_label, ui_data.text_buffer);
 
-  lv_snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "max=%" PRIu16 "|", ui_data.sample->max);
+  snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "avg=% 6.2f", ui_data.sample->raw_sample.avg);
   lv_label_set_text(ui_data.max_label, ui_data.text_buffer);
+
+  snprintf(ui_data.text_buffer, sizeof(ui_data.text_buffer), "ts_ms=%" PRIu32, ui_data.sample->timestamp_ms);
+  lv_label_set_text(ui_data.ts_label, ui_data.text_buffer);
+
 }
