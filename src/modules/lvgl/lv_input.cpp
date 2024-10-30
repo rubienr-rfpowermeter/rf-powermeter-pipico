@@ -1,9 +1,10 @@
 #include "lv_input.h"
 
-#include "lvgl.h"
 #include "modules/periphery/input/buttons.h"
 #include "modules/periphery/input/input.h"
 #include "modules/periphery/input/joystick.h"
+#include <gitmodules/lvgl/src/indev/lv_indev.h>
+#include <lvgl.h>
 #include <stdio.h>
 
 static lv_indev_t *indev_keypad       = { nullptr };
@@ -12,7 +13,7 @@ static lv_indev_t *indev_button       = { nullptr };
 static lv_group_t *indev_button_group = { nullptr };
 static TrackedInputs *input_keys      = { nullptr };
 
-static void on_read_keys(lv_indev_drv_t __unused *indev_drv, lv_indev_data_t *data)
+static void on_read_keys(lv_indev_t __unused *indev, lv_indev_data_t *data)
 {
   input_keys->update_joystick(joystick_get_mask());
   static uint8_t last_key = 0;
@@ -24,7 +25,7 @@ static void on_read_keys(lv_indev_drv_t __unused *indev_drv, lv_indev_data_t *da
   data->continue_reading = false;
 }
 
-static void on_read_buttons(lv_indev_drv_t __unused *indev_drv, lv_indev_data_t *data)
+static void on_read_buttons(lv_indev_t __unused *indev, lv_indev_data_t *data)
 {
   input_keys->update_buttons(buttons_get_mask());
   static uint8_t last_button = { 0 };
@@ -40,20 +41,16 @@ void lv_input_init(TrackedInputs &keys)
 {
   input_keys = &keys;
 
-  static lv_indev_drv_t input_dev_drv_key;
-  lv_indev_drv_init(&input_dev_drv_key);
-  input_dev_drv_key.type    = LV_INDEV_TYPE_KEYPAD;
-  input_dev_drv_key.read_cb = on_read_keys;
-  indev_keypad              = lv_indev_drv_register(&input_dev_drv_key);
+  indev_keypad = lv_indev_create();
+  lv_indev_set_type(indev_keypad, LV_INDEV_TYPE_KEYPAD);
+  lv_indev_set_read_cb(indev_keypad, on_read_keys);
 
   indev_keypad_group = lv_group_create();
   lv_indev_set_group(indev_keypad, indev_keypad_group);
 
-  static lv_indev_drv_t input_dev_drv_button;
-  lv_indev_drv_init(&input_dev_drv_button);
-  input_dev_drv_button.type    = LV_INDEV_TYPE_BUTTON;
-  input_dev_drv_button.read_cb = on_read_buttons;
-  indev_button                 = lv_indev_drv_register(&input_dev_drv_button);
+  indev_button = lv_indev_create();
+  lv_indev_set_type(indev_button, LV_INDEV_TYPE_BUTTON);
+  lv_indev_set_read_cb(indev_button, on_read_buttons);
 
   static const lv_point_t points_array[] = {
     { 220 + 10, 0 * 60 + 30 },
@@ -66,6 +63,22 @@ void lv_input_init(TrackedInputs &keys)
 
   indev_button_group = lv_group_create();
   lv_indev_set_group(indev_button, indev_button_group);
+}
+
+void lv_input_deinit()
+{
+
+  lv_group_remove_all_objs(indev_keypad_group);
+  lv_group_delete(indev_keypad_group);
+  lv_indev_delete(indev_keypad);
+  indev_keypad_group = nullptr;
+  indev_keypad       = nullptr;
+
+  lv_group_remove_all_objs(indev_button_group);
+  lv_group_delete(indev_button_group);
+  lv_indev_delete(indev_button);
+  indev_button_group = nullptr;
+  indev_button       = nullptr;
 }
 
 lv_group_t *lv_input_get_buttons_group() { return indev_button_group; }
