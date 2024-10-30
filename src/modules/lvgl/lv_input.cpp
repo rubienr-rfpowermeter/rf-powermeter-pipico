@@ -1,5 +1,6 @@
 #include "lv_input.h"
 
+#include "modules/periphery/display/display_hw_config.h"
 #include "modules/periphery/input/buttons.h"
 #include "modules/periphery/input/input.h"
 #include "modules/periphery/input/joystick.h"
@@ -41,32 +42,38 @@ void lv_input_init(TrackedInputs &keys)
 {
   input_keys = &keys;
 
-  indev_keypad = lv_indev_create();
-  lv_indev_set_type(indev_keypad, LV_INDEV_TYPE_KEYPAD);
-  lv_indev_set_read_cb(indev_keypad, on_read_keys);
+  {
+    indev_keypad = lv_indev_create();
+    lv_indev_set_type(indev_keypad, LV_INDEV_TYPE_KEYPAD);
+    lv_indev_set_read_cb(indev_keypad, on_read_keys);
 
-  indev_keypad_group = lv_group_create();
-  lv_indev_set_group(indev_keypad, indev_keypad_group);
+    indev_keypad_group = lv_group_create();
+    lv_indev_set_group(indev_keypad, indev_keypad_group);
+  }
 
-  indev_button = lv_indev_create();
-  lv_indev_set_type(indev_button, LV_INDEV_TYPE_BUTTON);
-  lv_indev_set_read_cb(indev_button, on_read_buttons);
 
-  static const lv_point_t points_array[] = {
-    { 220 + 10, 0 * 60 + 30 },
-    { 220 + 10, 1 * 60 + 30 },
-    { 220 + 10, 2 * 60 + 30 },
-    { 220 + 10, 3 * 60 + 30 }
-  };
+  {
+    indev_button = lv_indev_create();
+    lv_indev_set_type(indev_button, LV_INDEV_TYPE_BUTTON);
+    lv_indev_set_read_cb(indev_button, on_read_buttons);
 
-  lv_indev_set_button_points(indev_button, points_array);
+    static constexpr lv_point_t points_array[] = {
+      { DISPLAY_HORIZONTAL_PX - 10, 0 * (DISPLAY_VERTICAL_PX / 4) + (DISPLAY_VERTICAL_PX / 8) },
+      { DISPLAY_HORIZONTAL_PX - 10, 1 * (DISPLAY_VERTICAL_PX / 4) + (DISPLAY_VERTICAL_PX / 8) },
+      { DISPLAY_HORIZONTAL_PX - 10, 2 * (DISPLAY_VERTICAL_PX / 4) + (DISPLAY_VERTICAL_PX / 8) },
+      { DISPLAY_HORIZONTAL_PX - 10, 3 * (DISPLAY_VERTICAL_PX / 4) + (DISPLAY_VERTICAL_PX / 8) }
+    };
 
-  indev_button_group = lv_group_create();
-  lv_indev_set_group(indev_button, indev_button_group);
+    lv_indev_set_button_points(indev_button, points_array);
+
+    indev_button_group = lv_group_create();
+    lv_indev_set_group(indev_button, indev_button_group);
+  }
 }
 
 void lv_input_deinit()
 {
+  input_keys = nullptr;
 
   lv_group_remove_all_objs(indev_keypad_group);
   lv_group_delete(indev_keypad_group);

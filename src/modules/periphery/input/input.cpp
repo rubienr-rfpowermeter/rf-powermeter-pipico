@@ -7,7 +7,11 @@
 #include <stdio.h>
 
 void input_init() { irq_set_enabled(IO_IRQ_BANK0, true); }
+
+void input_deinit() { irq_set_enabled(IO_IRQ_BANK0, false); }
+
 bool input_any_active(uint8_t mask, uint8_t state_flags) { return 0 != (mask & state_flags); }
+
 bool input_all_active(uint8_t mask, uint8_t state_flags) { return mask == (mask & state_flags); }
 
 TrackedInputState::TrackedInputState(uint8_t id) : is_pressed(0), is_released(0), is_event(0), rfu(0), counter(0), id(id) { }
