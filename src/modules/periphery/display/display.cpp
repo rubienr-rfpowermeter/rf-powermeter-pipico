@@ -19,8 +19,8 @@ struct PwmPeriphery
   uint8_t  backlight_percent;
 };
 
-static PwmPeriphery pwm_periphery = { .backlight_percent = DISPLAY_BACKLIGHT_DEFAULT_PERCENT };
-static DmaPeriphery dma_periphery = { 0 };
+static PwmPeriphery pwm_periphery{ .backlight_percent = DISPLAY_BACKLIGHT_DEFAULT_PERCENT };
+static DmaPeriphery dma_periphery{ 0 };
 
 static void display_gpio_init()
 {
@@ -36,8 +36,8 @@ static void display_gpio_init()
     DISPLAY_GPIO_MOSI, "display DIN"))
     // clang-format on
 
-    constexpr uint8_t gpios[] = { DISPLAY_GPIO_RST, DISPLAY_GPIO_DC,  DISPLAY_GPIO_CS,
-                                  DISPLAY_GPIO_BL,  DISPLAY_GPIO_CLK, DISPLAY_GPIO_MOSI };
+    constexpr uint8_t gpios[]{ DISPLAY_GPIO_RST, DISPLAY_GPIO_DC,  DISPLAY_GPIO_CS,
+                               DISPLAY_GPIO_BL,  DISPLAY_GPIO_CLK, DISPLAY_GPIO_MOSI };
 
   for (auto gpio : gpios)
   {
@@ -67,9 +67,9 @@ static void display_spi_init()
 {
 #define DEBUG_DISPLAY_SPI_INIT 0
 #if DEBUG_DISPLAY_SPI_INIT == 1
-  const uint32_t spi_baud = { spi_init(DISPLAY_SPI_PORT, 1000 * 1000) };
+  const uint32_t spi_baud{ spi_init(DISPLAY_SPI_PORT, 1000 * 1000) };
 #else
-  const uint32_t spi_baud = { spi_init(DISPLAY_SPI_PORT, (clock_get_hz(clk_sys)) / 2 + 1) };
+  const uint32_t spi_baud{ spi_init(DISPLAY_SPI_PORT, (clock_get_hz(clk_sys)) / 2 + 1) };
 #endif
   spi_set_format(DISPLAY_SPI_PORT, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
   printf("st7789 spi_baud=%" PRIu32 "\n", spi_baud);
@@ -135,14 +135,14 @@ static void display_send_data_nbyte(const uint8_t *data, uint8_t length)
 static void display_set_scanning_method(enum DisplayScanDirection scan_direction)
 {
   // see st7789vw, V1.0, page 125
-  uint8_t           my   = { 0 };   // d7, page address order, 0 top to bottom, 1 bottom to top
-  uint8_t           mx   = { 0 };   // d6, column address order, 0 left to right, 1 right to left
-  uint8_t           mv   = { 1 };   // d5, page/column order, 0 normal, 1 reverse
-  uint8_t           ml   = { 1 };   // d4, line address order, 0 refresh top to bottom, 1 refresh bottom to top
-  constexpr uint8_t rgb  = { 0 };   // d3, rgb/bgr order, 0 rgb, 1 bgr
-  uint8_t           mh   = { 0 };   // d2, display data latch data order, 0 refresh left to right, 1 refresh right to left
-  constexpr uint8_t rfu2 = { 1 };   // d1
-  constexpr uint8_t rfu1 = { 0 };   // d0
+  uint8_t           my{ 0 };     // d7, page address order, 0 top to bottom, 1 bottom to top
+  uint8_t           mx{ 0 };     // d6, column address order, 0 left to right, 1 right to left
+  uint8_t           mv{ 1 };     // d5, page/column order, 0 normal, 1 reverse
+  uint8_t           ml{ 1 };     // d4, line address order, 0 refresh top to bottom, 1 refresh bottom to top
+  constexpr uint8_t rgb{ 0 };    // d3, rgb/bgr order, 0 rgb, 1 bgr
+  uint8_t           mh{ 0 };     // d2, display data latch data order, 0 refresh left to right, 1 refresh right to left
+  constexpr uint8_t rfu2{ 1 };   // d1
+  constexpr uint8_t rfu1{ 0 };   // d0
 
   // get GRAM and display width and height
   if (DisplayScanDirection_0_DEG == scan_direction)
@@ -285,15 +285,15 @@ static void display_init_registers()
 
 void display_set_window(uint16_t start_x, uint16_t start_y, uint16_t end_x, uint16_t end_y)
 {
-  const uint8_t x_data[] = { (uint8_t)((start_x & 0xff00) >> 8),       // XS[15:8]
-                             (uint8_t)(start_x & 0x00ff),              // XS[7:0]
-                             (uint8_t)(((end_x - 1) & 0xff00) >> 8),   // XE[15:8]
-                             (uint8_t)((end_x - 1) & 0x00ff) };        // XE[7:0]
+  const uint8_t x_data[]{ (uint8_t)((start_x & 0xff00) >> 8),       // XS[15:8]
+                          (uint8_t)(start_x & 0x00ff),              // XS[7:0]
+                          (uint8_t)(((end_x - 1) & 0xff00) >> 8),   // XE[15:8]
+                          (uint8_t)((end_x - 1) & 0x00ff) };        // XE[7:0]
 
-  const uint8_t y_data[] = { (uint8_t)((start_y & 0xff00) >> 8),       // YS[15:8]
-                             (uint8_t)(start_y & 0x00ff),              // YS[7:0]
-                             (uint8_t)(((end_y - 1) & 0xff00) >> 8),   // YE[15:8]
-                             (uint8_t)((end_y - 1) & 0x00ff) };        // YE[7:0]
+  const uint8_t y_data[]{ (uint8_t)((start_y & 0xff00) >> 8),       // YS[15:8]
+                          (uint8_t)(start_y & 0x00ff),              // YS[7:0]
+                          (uint8_t)(((end_y - 1) & 0xff00) >> 8),   // YE[15:8]
+                          (uint8_t)((end_y - 1) & 0x00ff) };        // YE[7:0]
 
   // CASET, column address set (column line in frame memory), st7789vw V1.0, page 198, section 9.1.20
   display_send_command(0x2a);
@@ -312,7 +312,7 @@ void display_clear(enum DisplayColor color)
   display_set_window(0, 0, DISPLAY_WIDTH_PX, DISPLAY_HEIGHT_PX);
 
   uint16_t       line[DISPLAY_WIDTH_PX];
-  const uint16_t clr = { (uint16_t)(((color & 0x00ff) << 8) | ((color & 0xff00) >> 8)) };
+  const uint16_t clr{ (uint16_t)(((color & 0x00ff) << 8) | ((color & 0xff00) >> 8)) };
 
   for (auto &i : line)
     i = clr;

@@ -17,14 +17,14 @@
 
 struct SamplingResources
 {
-  TransactionBuffer *in_buffer = { nullptr };
+  TransactionBuffer *in_buffer{ nullptr };
   TransactionData    sample;
-  CorrectionValues correction {};
-  Converter3rdOrder converter{correction};
+  CorrectionValues   correction{};
+  Converter3rdOrder  converter{ correction };
 };
 
 static SamplingResources sampling{};
-static volatile uint32_t system_ticks_ms = { 0 };
+static volatile uint32_t system_ticks_ms{ 0 };
 
 static bool ms_tick_timer_cb(__unused struct repeating_timer *t)
 {
@@ -35,8 +35,8 @@ static bool ms_tick_timer_cb(__unused struct repeating_timer *t)
 
 static void uart_post_init()
 {
-  constexpr uint8_t gpio_uart_tx = { PICO_DEFAULT_UART_TX_PIN };
-  constexpr uint8_t gpio_uart_rx = { PICO_DEFAULT_UART_RX_PIN };
+  constexpr uint8_t gpio_uart_tx{ PICO_DEFAULT_UART_TX_PIN };
+  constexpr uint8_t gpio_uart_rx{ PICO_DEFAULT_UART_RX_PIN };
   gpio_disable_pulls(gpio_uart_tx);
   gpio_disable_pulls(gpio_uart_rx);
   gpio_set_drive_strength(gpio_uart_tx, GPIO_DRIVE_STRENGTH_2MA);
@@ -49,7 +49,7 @@ void on_gpio_edge(uint gpio, uint32_t event_mask)
   if (joystick_on_edge_cb(gpio, event_mask)) return;
 }
 
-static void init(TransactionBuffer &buffer)
+static void init(TransactionBuffer &in_buffer)
 {
   printf("\n**** RF Power Meter (Version " PICO_PROGRAM_VERSION_STRING " Built " __DATE__ ") ****\n");
   printf("c%" PRIu8 " init ...\n", get_core_num());
@@ -66,17 +66,17 @@ static void init(TransactionBuffer &buffer)
   static TrackedInputs input_keys;
   lv_input_init(input_keys);
 
-  sampling.in_buffer = &buffer;
+  sampling.in_buffer = &in_buffer;
   ui_init(sampling.sample, sampling.converter);
 
   printf("c%" PRIu8 " init done\n", get_core_num());
 }
 
-void core0_init(TransactionBuffer &buffer)
+void core0_init(TransactionBuffer &in_buffer)
 {
   stdio_init_all();
   uart_post_init();
-  init(buffer);
+  init(in_buffer);
 }
 
 [[noreturn]]
@@ -84,7 +84,7 @@ void core0_main()
 {
   // init();
 
-  constexpr uint8_t sync_signal = { 42 };
+  constexpr uint8_t sync_signal{ 42 };
   printf("c%" PRIu8 " main sending sync. signal %" PRIu8 " to other core ...\n", get_core_num(), sync_signal);
   multicore_fifo_push_blocking(sync_signal);
   printf("c%" PRIu8 " main sync signal %" PRIu8 " sent other core\n", get_core_num(), sync_signal);

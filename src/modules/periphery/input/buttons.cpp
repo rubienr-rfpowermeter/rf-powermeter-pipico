@@ -27,7 +27,7 @@ static uint8_t mask_from_gpio(uint8_t gpio)
 
 bool buttons_on_state_changed_cb(uint gpio, uint32_t event_mask)
 {
-  const uint8_t gpio_mask = { mask_from_gpio(gpio) };
+  const uint8_t gpio_mask{ mask_from_gpio(gpio) };
 
   if (0 == gpio_mask) return false;
 

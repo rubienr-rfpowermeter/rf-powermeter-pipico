@@ -21,8 +21,8 @@ bool TrackedInputState::update(bool signal)
   if (signal) counter = counter << 1 | 0x01;
   else counter >>= 1;
 
-  const bool is_now_pressed  = { counter > 0b00010000 };
-  const bool is_now_released = { counter < 0b00001000 };
+  const bool is_now_pressed{ counter > 0b00010000 };
+  const bool is_now_released{ counter < 0b00001000 };
 
   is_event = (is_now_pressed && !is_now_released && !is_pressed) || (is_now_released && !is_now_pressed && !is_released);
 

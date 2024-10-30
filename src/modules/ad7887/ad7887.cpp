@@ -36,7 +36,7 @@ static void gpio_init()
     AD7887_GPIO_DOUT, "probe output"))
     // clang-format on
 
-    constexpr uint8_t out_gpios[] = { AD7887_GPIO_CS, AD7887_GPIO_SCLK, AD7887_GPIO_DIN };
+    constexpr uint8_t out_gpios[]{ AD7887_GPIO_CS, AD7887_GPIO_SCLK, AD7887_GPIO_DIN };
 
   for (auto gpio : out_gpios)
   {
@@ -50,7 +50,7 @@ static void gpio_init()
   gpio_put(AD7887_GPIO_CS, true);
   gpio_put(AD7887_GPIO_DIN, false);
 
-  constexpr uint8_t in_gpios[] = { AD7887_GPIO_DOUT };
+  constexpr uint8_t in_gpios[]{ AD7887_GPIO_DOUT };
 
   for (auto gpio : in_gpios)
   {
@@ -59,13 +59,13 @@ static void gpio_init()
   }
 }
 
-static void __unused spi_init()
+static void spi_init()
 {
 #define AD7887_DISPLAY_SPI_INIT 1
 #if AD7887_DISPLAY_SPI_INIT == 1
-  const uint32_t spi_baud = { spi_init(AD7887_SPI_PORT, 500 * 1000) };
+  const uint32_t spi_baud{ spi_init(AD7887_SPI_PORT, 500 * 1000) };
 #else
-  const uint32_t spi_baud = { spi_init(AD7887_SPI_PORT, 2 * 1000 * 1000) };
+  const uint32_t spi_baud{ spi_init(AD7887_SPI_PORT, 2 * 1000 * 1000) };
 #endif
   spi_set_format(AD7887_SPI_PORT, 16, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);
   printf("ad7887 spi_baud=%" PRIu32 "\n", spi_baud);
@@ -76,9 +76,8 @@ static void __unused spi_init()
   gpio_set_function(AD7887_GPIO_DIN, GPIO_FUNC_SPI);
 }
 
-__unused static void on_trx_dma_finished_cb()
+static void on_trx_dma_finished_cb()
 {
-
   if (dma_channel_get_irq1_status(dma_periphery.tx.channel))
   {
     dma_channel_acknowledge_irq1(dma_periphery.tx.channel);
@@ -99,7 +98,7 @@ static void on_tx_dma_flush_cb()
   dma_start_channel_mask(1u << dma_periphery.tx.channel | 1u << dma_periphery.rx.channel);
 }
 
-static void __unused tx_dma_init(DmaSettings &settings, uint16_t &data_out)
+static void tx_dma_init(DmaSettings &settings, uint16_t &data_out)
 {
   settings.channel = dma_claim_unused_channel(true);
 
@@ -120,7 +119,7 @@ static void __unused tx_dma_init(DmaSettings &settings, uint16_t &data_out)
   dma_channel_set_irq1_enabled(settings.channel, true);
 }
 
-static void __unused rx_dma_init(DmaSettings &settings, uint16_t &data_in)
+static void rx_dma_init(DmaSettings &settings, uint16_t &data_in)
 {
   settings.channel = dma_claim_unused_channel(true);
   settings.config  = dma_channel_get_default_config(settings.channel);

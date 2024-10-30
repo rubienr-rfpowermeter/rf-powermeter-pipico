@@ -17,45 +17,45 @@ struct UiData
   TransactionData    previous_sample{};
   Converter3rdOrder *converter{ nullptr };
 
-  lv_obj_t *screen = { nullptr };
+  lv_obj_t *screen{ nullptr };
 
   struct
   {
-    lv_obj_t *view       = { nullptr };
-    uint32_t  active_tab = { UINT32_MAX };
+    lv_obj_t *view{ nullptr };
+    uint32_t  active_tab{ UINT32_MAX };
 
     struct
     {
-      lv_obj_t *tab         = { nullptr };
-      lv_obj_t *value_label = { nullptr };
-      lv_obj_t *avg_label   = { nullptr };
-      lv_obj_t *min_label   = { nullptr };
-      lv_obj_t *max_label   = { nullptr };
-      lv_obj_t *ts_label    = { nullptr };
+      lv_obj_t *tab{ nullptr };
+      lv_obj_t *value_label{ nullptr };
+      lv_obj_t *avg_label{ nullptr };
+      lv_obj_t *min_label{ nullptr };
+      lv_obj_t *max_label{ nullptr };
+      lv_obj_t *ts_label{ nullptr };
     } tab0;
 
     struct
     {
-      lv_obj_t *tab         = { nullptr };
-      lv_obj_t *value_label = { nullptr };
-      lv_obj_t *avg_label   = { nullptr };
-      lv_obj_t *min_label   = { nullptr };
-      lv_obj_t *max_label   = { nullptr };
-      lv_obj_t *ts_label    = { nullptr };
+      lv_obj_t *tab{ nullptr };
+      lv_obj_t *value_label{ nullptr };
+      lv_obj_t *avg_label{ nullptr };
+      lv_obj_t *min_label{ nullptr };
+      lv_obj_t *max_label{ nullptr };
+      lv_obj_t *ts_label{ nullptr };
     } tab1;
 
     struct
     {
-      lv_obj_t *tab = { nullptr };
+      lv_obj_t *tab{ nullptr };
     } tab2;
 
     struct
     {
-      lv_obj_t *tab = { nullptr };
+      lv_obj_t *tab{ nullptr };
     } tab3;
   } tab_view;
 
-  char text_buffer[32] = { 0 };
+  char text_buffer[32]{ 0 };
 };
 
 static UiData ui_data{};
@@ -82,7 +82,7 @@ static void init_info_tab(lv_obj_t *parent)
 {
   lv_obj_center(parent);
 
-  char product_info[512] = { 0 };
+  char product_info[512]{ 0 };
 
   // clang-format off
   snprintf(

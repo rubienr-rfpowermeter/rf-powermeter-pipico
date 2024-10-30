@@ -5,17 +5,17 @@
 
 #define DISPLAY_NAME "Waveshare Pico LCD 1.3"
 
-constexpr uint16_t DISPLAY_NUM_PIXELS = { DISPLAY_HORIZONTAL_PX * DISPLAY_VERTICAL_PX };
+constexpr uint16_t DISPLAY_NUM_PIXELS{ DISPLAY_HORIZONTAL_PX * DISPLAY_VERTICAL_PX };
 
-constexpr enum DisplayScanDirection DISPLAY_DIRECTION = {
+constexpr enum DisplayScanDirection DISPLAY_DIRECTION {
   // DisplayScanDirection_0_DEG
   DisplayScanDirection_90_DEG
 };
 
 /// display dimension as seen by SW (after rotation)
-constexpr uint16_t DISPLAY_WIDTH_PX = { DisplayScanDirection_0_DEG == DISPLAY_DIRECTION ? DISPLAY_HORIZONTAL_PX : DISPLAY_VERTICAL_PX };
+constexpr uint16_t DISPLAY_WIDTH_PX{ DisplayScanDirection_0_DEG == DISPLAY_DIRECTION ? DISPLAY_HORIZONTAL_PX : DISPLAY_VERTICAL_PX };
 /// display dimension as seen by SW (after rotation)
-constexpr uint16_t DISPLAY_HEIGHT_PX = { DisplayScanDirection_0_DEG == DISPLAY_DIRECTION ? DISPLAY_VERTICAL_PX : DISPLAY_HORIZONTAL_PX };
+constexpr uint16_t DISPLAY_HEIGHT_PX{ DisplayScanDirection_0_DEG == DISPLAY_DIRECTION ? DISPLAY_VERTICAL_PX : DISPLAY_HORIZONTAL_PX };
 
-constexpr uint8_t DISPLAY_BACKLIGHT_DEFAULT_PERCENT = { 70 };
-constexpr uint8_t DISPLAY_BACKLIGHT_MIN_PERCENT     = { 1 };
+constexpr uint8_t DISPLAY_BACKLIGHT_DEFAULT_PERCENT{ 70 };
+constexpr uint8_t DISPLAY_BACKLIGHT_MIN_PERCENT{ 1 };

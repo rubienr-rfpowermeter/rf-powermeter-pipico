@@ -36,18 +36,18 @@ static void display_flush_cb(lv_display_t __unused *display, const lv_area_t *ar
 {
   display_set_window(area->x1, area->y1, area->x2 + 1, area->y2 + 1);
 
-  const int32_t width  = { area->x2 - area->x1 + 1 };
-  const int32_t height = { area->y2 - area->y1 + 1 };
+  const int32_t width{ area->x2 - area->x1 + 1 };
+  const int32_t height{ area->y2 - area->y1 + 1 };
 
-  const uint16_t *in  = { (uint16_t *)(px_map) };
-  uint16_t       *out = { (uint16_t *)lvgl_data.buffer_1 };
+  const uint16_t *in{ (uint16_t *)(px_map) };
+  uint16_t       *out{ (uint16_t *)lvgl_data.buffer_1 };
 
   for (int32_t x_px_map = area->x1; x_px_map <= area->x2; x_px_map++)
   {
-    const int32_t x_buffer = { x_px_map - area->x1 };
+    const int32_t x_buffer{ x_px_map - area->x1 };
     for (int32_t y_px_map = area->y1; y_px_map <= area->y2; y_px_map++)
     {
-      const int32_t y_buffer           = { y_px_map - area->y1 };
+      const int32_t y_buffer{ y_px_map - area->y1 };
       out[x_px_map + y_px_map * width] = in[x_buffer + y_buffer * width];
     }
   }
@@ -73,7 +73,7 @@ void lvgl_init()
 {
   lv_init();
 
-  constexpr size_t buffer_size_bytes = { DISPLAY_NUM_PIXELS * LV_COLOR_FORMAT_GET_SIZE(LV_COLOR_FORMAT_RGB565) };
+  constexpr size_t buffer_size_bytes{ DISPLAY_NUM_PIXELS * LV_COLOR_FORMAT_GET_SIZE(LV_COLOR_FORMAT_RGB565) };
   if (nullptr == lvgl_data.buffer_0) lvgl_data.buffer_0 = (uint8_t *)malloc(buffer_size_bytes);
   if (nullptr == lvgl_data.buffer_1) lvgl_data.buffer_1 = (uint8_t *)malloc(buffer_size_bytes);
 

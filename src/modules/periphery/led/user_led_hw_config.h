@@ -2,4 +2,4 @@
 
 #include <cinttypes>
 
-constexpr uint8_t USER_LED_GPIO = { 25 };
+constexpr uint8_t USER_LED_GPIO{ 25 };

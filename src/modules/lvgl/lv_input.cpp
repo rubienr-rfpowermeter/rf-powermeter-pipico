@@ -7,13 +7,13 @@
 #include <gitmodules/lvgl/src/indev/lv_indev.h>
 #include <stdio.h>
 
-static lv_indev_t    *indev_keypad       = { nullptr };
-static lv_group_t    *indev_keypad_group = { nullptr };
-static lv_indev_t    *indev_button       = { nullptr };
-static lv_group_t    *indev_button_group = { nullptr };
-static TrackedInputs *input_keys         = { nullptr };
+static lv_indev_t    *indev_keypad{ nullptr };
+static lv_group_t    *indev_keypad_group{ nullptr };
+static lv_indev_t    *indev_button{ nullptr };
+static lv_group_t    *indev_button_group{ nullptr };
+static TrackedInputs *input_keys{ nullptr };
 
-static void on_read_keys(lv_indev_t __unused *indev, lv_indev_data_t *data)
+static void on_read_keys(__unused lv_indev_t *indev, lv_indev_data_t *data)
 {
   input_keys->update_joystick(joystick_get_mask());
   static uint8_t last_key = 0;
@@ -25,10 +25,10 @@ static void on_read_keys(lv_indev_t __unused *indev, lv_indev_data_t *data)
   data->continue_reading = false;
 }
 
-static void on_read_buttons(lv_indev_t __unused *indev, lv_indev_data_t *data)
+static void on_read_buttons(__unused lv_indev_t *indev, lv_indev_data_t *data)
 {
   input_keys->update_buttons(buttons_get_mask());
-  static uint8_t last_button = { 0 };
+  static uint8_t last_button{ 0 };
 
   data->state = input_keys->button_active ? LV_INDEV_STATE_PRESSED : LV_INDEV_STATE_RELEASED;
   if (nullptr != input_keys->next_active_button) last_button = input_keys->next_active_button->id;
@@ -55,7 +55,7 @@ void lv_input_init(TrackedInputs &keys)
     lv_indev_set_type(indev_button, LV_INDEV_TYPE_BUTTON);
     lv_indev_set_read_cb(indev_button, on_read_buttons);
 
-    static constexpr lv_point_t points_array[] = {
+    static constexpr lv_point_t points_array[]{
       { DISPLAY_HORIZONTAL_PX - 10, 0 * (DISPLAY_VERTICAL_PX / 4) + (DISPLAY_VERTICAL_PX / 8) },
       { DISPLAY_HORIZONTAL_PX - 10, 1 * (DISPLAY_VERTICAL_PX / 4) + (DISPLAY_VERTICAL_PX / 8) },
       { DISPLAY_HORIZONTAL_PX - 10, 2 * (DISPLAY_VERTICAL_PX / 4) + (DISPLAY_VERTICAL_PX / 8) },

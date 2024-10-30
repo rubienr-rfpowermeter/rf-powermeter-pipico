@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "lib/ad7887/AD7887.h"
 #include "lib/ad7887/registers.h"
 #include "lib/ad8318/Converter3rdOrder.h"
 #include "lib/ad8318/KValues3rdOrder.hpp"
@@ -40,6 +39,6 @@ struct Probe
 struct TransactionData
 {
   uint32_t timestamp_ms;
-  Probe        probe{};
-  Sample raw_sample{};
+  Probe    probe{};
+  Sample   raw_sample{};
 };
