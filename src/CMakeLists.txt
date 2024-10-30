@@ -41,7 +41,8 @@ add_executable(rf_probe
         lib/ad8318/AD8318.cpp
         lib/ad8318/KValues3rdOrder.hpp
         lib/si_units/si_unit_type.cpp
-        lib/average/AverageT.hpp
+        lib/sample_data/AverageT.hpp
+        lib/sample_data/TransactionBuffer.cpp
         modules/globals/globals.cpp
         modules/lvgl/lv_display.cpp
         modules/lvgl/lv_input.cpp
