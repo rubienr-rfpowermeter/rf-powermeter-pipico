@@ -78,11 +78,10 @@ struct __attribute__((packed)) Uint16ControlRegister
 
 union __attribute__((__packed__)) TransmissionData
 {
-  TransmissionData();
-  explicit TransmissionData(const ControlRegister &other);
+   TransmissionData(const ControlRegister &other);
 
   uint8_t               asUint8;
-  uint16_t              asUint16;
+  uint16_t              asUint16 {0};
   Uint16ControlRegister asUint16ControlRegister;
 };
 
@@ -99,10 +98,8 @@ struct __attribute__((packed)) SampleRegister
 
 union __attribute__((packed)) ReceptionData
 {
-  ReceptionData();
-
+  uint16_t       asUint16 {0};
   SampleRegister asSampleRegister;
-  uint16_t       asUint16;
 };
 
 }   // namespace ad7887
