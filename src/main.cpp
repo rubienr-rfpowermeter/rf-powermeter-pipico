@@ -1,6 +1,6 @@
-#include "modules/main_sampler/main.h"
 #include "lib/sample_data/TransactionBuffer.h"
-#include "modules/main_ui/main.h"
+#include "modules/core0_ui/core0_main.h"
+#include "modules/core1_sampler/core1_main.h"
 #include <pico/multicore.h>
 
 TransactionBuffer transactionBuffer{};

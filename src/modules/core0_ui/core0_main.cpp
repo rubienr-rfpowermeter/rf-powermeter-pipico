@@ -1,4 +1,4 @@
-#include "main.h"
+#include "core0_main.h"
 
 #include "lib/sample_data/TransactionBuffer.h"
 #include "modules/lvgl/lv_display.h"
