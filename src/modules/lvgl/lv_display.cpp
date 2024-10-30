@@ -1,9 +1,9 @@
 #include "lv_display.h"
 
-#include "hardware/gpio.h"
 #include "modules/periphery/display/display.h"
 #include "modules/periphery/display/display_config.h"
 #include <cstdlib>
+#include <hardware/gpio.h>
 #include <lvgl.h>
 
 struct LvglData

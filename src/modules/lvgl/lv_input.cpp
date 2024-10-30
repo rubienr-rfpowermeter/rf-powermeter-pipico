@@ -5,7 +5,6 @@
 #include "modules/periphery/input/input.h"
 #include "modules/periphery/input/joystick.h"
 #include <gitmodules/lvgl/src/indev/lv_indev.h>
-#include <lvgl.h>
 #include <stdio.h>
 
 static lv_indev_t    *indev_keypad       = { nullptr };

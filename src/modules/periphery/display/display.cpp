@@ -3,14 +3,15 @@
 #include "display_config.h"
 #include "display_hw_config.h"
 #include "display_types.h"
-#include "hardware/dma.h"
-#include "hardware/gpio.h"
-#include "hardware/i2c.h"
-#include "hardware/pwm.h"
-#include "hardware/spi.h"
 #include <cinttypes>
 #include <cstdio>
 #include <hardware/clocks.h>
+#include <hardware/dma.h>
+#include <hardware/gpio.h>
+#include <hardware/i2c.h>
+#include <hardware/pwm.h>
+#include <hardware/spi.h>
+#include <pico/binary_info.h>
 
 struct PwmPeriphery
 {
@@ -23,8 +24,20 @@ static DmaPeriphery dma_periphery = { 0 };
 
 static void display_gpio_init()
 {
-  constexpr uint8_t gpios[] = { DISPLAY_GPIO_RST, DISPLAY_GPIO_DC,  DISPLAY_GPIO_CS,
-                                DISPLAY_GPIO_BL,  DISPLAY_GPIO_CLK, DISPLAY_GPIO_MOSI };
+  // clang-format off
+  bi_decl_if_func_used(bi_program_feature("SPI Display"))
+  bi_decl_if_func_used(bi_4pins_with_names(
+    DISPLAY_GPIO_RST, "reset, low active",
+    DISPLAY_GPIO_DC, "data(1)/command(0)",
+    DISPLAY_GPIO_CS, "chip select, low active",
+    DISPLAY_GPIO_BL, "backlight"))
+  bi_decl_if_func_used(bi_2pins_with_names(
+    DISPLAY_GPIO_CLK, "SCLK",
+    DISPLAY_GPIO_MOSI, "display DIN"))
+    // clang-format on
+
+    constexpr uint8_t gpios[] = { DISPLAY_GPIO_RST, DISPLAY_GPIO_DC,  DISPLAY_GPIO_CS,
+                                  DISPLAY_GPIO_BL,  DISPLAY_GPIO_CLK, DISPLAY_GPIO_MOSI };
 
   for (auto gpio : gpios)
   {

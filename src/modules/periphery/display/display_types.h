@@ -1,6 +1,6 @@
 #pragma once
 
-#include "hardware/dma.h"
+#include <hardware/dma.h>
 #include <pico/types.h>
 
 enum DisplayColor : uint16_t
