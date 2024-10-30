@@ -5,14 +5,12 @@
 #include "modules/lvgl/lv_input.h"
 #include "modules/periphery/display/display.h"
 #include "modules/periphery/input/buttons.h"
-// #include "modules/periphery/input/buttons_types.h"
 #include "modules/periphery/input/input.h"
 #include "modules/periphery/input/joystick.h"
 #include "modules/periphery/led/user_led.h"
 #include "ui.h"
 #include <cstdio>
 #include <hardware/clocks.h>
-// #include <hardware/watchdog.h>
 #include <pico/stdlib.h>
 
 volatile uint32_t system_ticks_ms = { 0 };
@@ -76,17 +74,6 @@ void main_core0()
     const uint8_t buttons_mask  = { buttons_get_mask() };
     const uint8_t joystick_mask = { joystick_get_mask() };
     user_led_set(buttons_mask || joystick_mask);
-
     if(0 == system_ticks_ms % 5) { lv_task_handler(); }
-
-    /*
-    if(input_any_active(BUTTONS_MASK_Y, buttons_mask))
-    {
-      printf("main resetting, bye ...\n");
-      while(input_any_active(BUTTONS_MASK_Y, buttons_get_mask())) { }
-      watchdog_enable(1, false);
-      while(true) { }
-    }
-    */
   }
 }
