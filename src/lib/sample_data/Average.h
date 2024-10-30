@@ -2,7 +2,6 @@
 #include "AverageT.hpp"
 
 constexpr uint8_t AVERAGE_COUNT {255};
-using UnderlyingAverageType = double;
 
-using Average = AverageT<AVERAGE_COUNT, UnderlyingAverageType, UnderlyingAverageType>;
-using Sample  = ResultT<UnderlyingAverageType>;
+using Average = AverageT<AVERAGE_COUNT, uint16_t, uint32_t>;
+using Sample  = ResultT<uint16_t>;
