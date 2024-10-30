@@ -36,8 +36,6 @@ add_definitions(-DLV_LVGL_H_INCLUDE_SIMPLE=1)
 
 # add executable
 add_executable(rf_probe
-        lib/ad7887/AD7887.cpp
-        lib/ad7887/registers.cpp
         lib/ad8318/Converter3rdOrder.cpp
         lib/ad8318/KValues3rdOrder.hpp
         lib/sample_data/AverageT.hpp
