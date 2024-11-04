@@ -2,25 +2,23 @@
 
 ## Description
 
-RF-Powermeter with "Pico Breakboard Kit" and 3.5" TFT Capacitive Touch Screen.
+RF-Powermeter with RP2350 + Pico LCD 1.3 (Waveshare).
 
 ```
-                                             Pico Breadboard Kit
-               ╔═══════════════════════════════════════════════╗
-┌──────────┐   ║    ┌───────────┐       ┌────────────────────┐ ║
-│ RF Probe ├────────┤ Pi Pico   ├───────│     Periphery      │ ║
-│          │  I2C   │           │       │                    │ ║
-│          │   ║    │ 2040/2350 │       │                    │ ║
-└──────────┘   ║    └────┬──────┘       │  RGB LED           │ ║
-               ║     SPI │              │  LEDs              │ ║
-               ║  ┌──────┴────────┐     │  Joystick 2-Axis   │ ║
-               ║  │ Touch Display │     │  Buttons           │ ║
-               ║  │               │     │  Buzzer            │ ║              
-               ║  │ 480x320 3.5"  │     │                    │ ║
-               ║  │ capacitive    │     │                    │ ║
-               ║  └───────────────┘     └────────────────────┘ ║
-               ╚═══════════════════════════════════════════════╝
+      RF Probe              Pi Pico               Waveshare Pico LC D1.3
+   │ ┌──────────┐          ┌────────────┐        ┌──────────────────────┐
+   │ │   ┌──TEMP├──────────┤AN0     SPI1├────────┼─────Display          │
+   └─┼──AD318──┐│ → analog │            │ ⇆ SPI  │     240x240 1.3"     │
+     │ ┌AD7787─┘│          │   RP2350   │        │                      │
+     │ └────────┼──────────┤SPI0    GPIO├────────┼───┐                  │
+     └──────────┘  ⇆ SPI   └────────────┘ ← dig. │   ├ Joystick 2-Axis  │
+                                                 │   │ - 2-Axis + 1 PB  │
+                      - RP Core 0: UI (LVGL)     │   │ - 1 PB           │
+                      - RP Core 1: sampling      │   └ Keypad           │              
+                                                 │     - 4 buttons      │
+                                                 └──────────────────────┘
 ```
+
 ## Getting Started
 
 1. Download repository
@@ -64,44 +62,64 @@ RF-Powermeter with "Pico Breakboard Kit" and 3.5" TFT Capacitive Touch Screen.
 scripts/serial-monitor.sh
 ```
 
-## TFT Features
-
-* Resolution: 480x320 (3.5")
-* Touch Type: Capacitive Touch
-* TFT Controller: ST7796SU1 (SPI)
-* Capacitive Touch Interface: I2C
-* Input Voltage: 3.3V
-
 ## Pinout
 
-### Components
+### Pico
 
-| Raspberry Pi Pico | Component       |
-|-------------------|-----------------|
-| GP12 (PIO)        | RGBW LED        |
-| GP13              | Buzzer          |
-| GP14              | Button 2        |
-| GP15              | Button 1        |
-| GP16              | LED 1           |
-| GP17              | LED 2           |
-| 3V3               | LED 3           |
-| 5V                | LED 4           |
-| GP26 (ADC0)       | Joystick X-axis |                                     
-| GP27 (ADC1)       | Joystick Y-axis |                                     
+- RP Pinout: https://datasheets.raspberrypi.com/pico/Pico-R3-A4-Pinout.pdf
+- Connect Debug Probe: https://www.raspberrypi.com/documentation/microcontrollers/debug-probe.html
 
-### TFT screen Pinout
+| Raspberry Pi Pico | Component |
+|-------------------|-----------|
+| GP00              | RX        |
+| GP01              | TX        |
+| GP25              | LED       |
+
+### Pico LCD 1.3
+
+https://www.waveshare.com/wiki/Pico-LCD-1.3
+
+#### TFT
 
 | Raspberry Pi Pico | 3.5 TFT Screen |
+|-------------------|----------------|
+| GP08 (SPI1)       | DC             |
+| GP09 (SPI1)       | CS             |
+| GP10 (SPI1)       | CLK            |
+| GP11 (SPI1)       | DIN            |
+| GP12 (SPI1)       | RST            |
+| GP13 (SPI1)       | BL             |
+
+#### Switches
+
+| Raspberry Pi Pico | Component      |
+|-------------------|----------------|
+| GP15              | Button A       |
+| GP17              | Button B       |
+| GP19              | Button X       |
+| GP20              | Button Y       |
+| GP02              | Joystick up    |
+| GP18              | Joystick down  |
+| GP16              | Joystick left  |
+| GP20              | Joystick right |
+| GP03              | Joystick ctrl  |
+
+### Power Detector
+
+https://www.sv1afn.com/en/products/ad8318-digital-rf-power-detector.html
+
+| Raspberry Pi Pico | Power Detector |
 |-------------------|----------------|
 | GP2 (SPI0)        | CLK            |
 | GP3 (SPI0)        | DIN            |
 | GP5 (SPI0)        | CS             |
 | GP6 (SPI0)        | DC             |
 | GP7 (SPI0)        | RST            |
+| GP13(SPI0)        | BL             |
 
-### Capacitive Touch Pinout
 
-| Raspberry Pi Pico | Capacitive Touch |
-|-------------------|------------------|
-| GP8 (I2C0)        | SDA              |
-| GP9 (I2C0)        | SCL              |
+
+
+
+
+
