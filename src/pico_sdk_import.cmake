@@ -24,9 +24,9 @@ if (DEFINED ENV{PICO_SDK_FETCH_FROM_GIT_TAG} AND (NOT PICO_SDK_FETCH_FROM_GIT_TA
 endif ()
 
 if (PICO_SDK_FETCH_FROM_GIT AND NOT PICO_SDK_FETCH_FROM_GIT_TAG)
-  set(PICO_SDK_FETCH_FROM_GIT_TAG "master")
-  message("Using master as default value for PICO_SDK_FETCH_FROM_GIT_TAG")
-endif()
+    set(PICO_SDK_FETCH_FROM_GIT_TAG "master")
+    message("Using master as default value for PICO_SDK_FETCH_FROM_GIT_TAG")
+endif ()
 
 set(PICO_SDK_PATH "${PICO_SDK_PATH}" CACHE PATH "Path to the Raspberry Pi Pico SDK")
 set(PICO_SDK_FETCH_FROM_GIT "${PICO_SDK_FETCH_FROM_GIT}" CACHE BOOL "Set to ON to fetch copy of SDK from git if not otherwise locatable")
@@ -65,7 +65,7 @@ if (NOT PICO_SDK_PATH)
     else ()
         message(FATAL_ERROR
                 "SDK location was not specified. Please set PICO_SDK_PATH or set PICO_SDK_FETCH_FROM_GIT to on to fetch from git."
-                )
+        )
     endif ()
 endif ()
 
