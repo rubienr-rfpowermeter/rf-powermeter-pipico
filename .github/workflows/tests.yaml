@@ -26,7 +26,7 @@ env:
 
 jobs:
   unit-tests:
-    name: CMake build on ${{ matrix.os }}
+    name: Unit Tests on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
 
     permissions:
