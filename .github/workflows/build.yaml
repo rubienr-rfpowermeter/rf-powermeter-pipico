@@ -9,7 +9,7 @@ on:
       - "!**.gitignore"
       - "!**.clang-format"
       - "!.github/workflows/**.yaml"
-      - ".github/workflows/cmake.yaml"
+      - ".github/workflows/build.yaml"
   pull_request:
     paths:
       - "**"
@@ -18,7 +18,7 @@ on:
       - "!**.gitignore"
       - "!**.clang-format"
       - "!.github/workflows/**.yaml"
-      - ".github/workflows/cmake.yml.yaml"
+      - ".github/workflows/build.yaml"
 
 env:
   PICO_SDK_VERSION: 2.0.0
@@ -68,7 +68,7 @@ jobs:
 
       - name: "build: prerequisites"
         working-directory: ${{env.REPO_PATH}}
-        run: src/scripts/install-prerequisites-ubuntu.sh
+        run: src/scripts/install-build-prerequisites-ubuntu.sh
         # uses: tecolicom/actions-use-apt-tools@v1
         # with:
         #   tools: cmake gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib

@@ -1,0 +1,64 @@
+name: Unit Tests
+on:
+  push:
+    branches:
+    paths:
+      - "**"
+      - "!**.md"
+      - "!**license"
+      - "!**.gitignore"
+      - "!**.clang-format"
+      - "!.github/workflows/**.yaml"
+      - ".github/workflows/tests.yaml"
+  pull_request:
+    paths:
+      - "**"
+      - "!**.md"
+      - "!**license"
+      - "!**.gitignore"
+      - "!**.clang-format"
+      - "!.github/workflows/**.yaml"
+      - ".github/workflows/tests.yaml"
+
+env:
+  REPO_REL_CHECKOUT_PATH: target-repo
+  REPO_PATH: ${{github.workspace}}/target-repo
+
+jobs:
+  unit-tests:
+    name: CMake build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    permissions:
+      checks: write
+      pull-requests: write
+
+    strategy:
+      matrix:
+        os: [ ubuntu-24.04 ]
+    
+    steps:
+      - name: "repository: checkout"
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          path: ${{env.REPO_REL_CHECKOUT_PATH}}
+
+      - name: "test: prerequisites"
+        working-directory: ${{env.REPO_PATH}}
+        run: src/scripts/install-tests-prerequisites-ubuntu.sh
+
+      - name: "build: create build env + CMake"
+        working-directory: ${{env.REPO_PATH}}
+        run: |
+          cd src/tests/unit
+          cmake -S ./ -B ./build
+          cmake --build ./build
+          ctest --output-junit test-results.xml --test-dir ./build
+
+      - name: "publish test results"
+        uses: EnricoMi/publish-unit-test-result-action/linux@v2
+        if: always()
+        with:
+          files: |
+            ${{github.workspace}}/target-repo/src/tests/unit/build/test-results.xml
