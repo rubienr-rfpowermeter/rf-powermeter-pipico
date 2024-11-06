@@ -42,8 +42,7 @@ TEST_F(AverageTest, average_a)
   updateTestData({ 1, 2, 3, 4, 5, 6, 7 });
   EXPECT_EQ(8, entries_count);
 
-  SampleF s;
-  get(s);
+  SampleF s {get()};
   EXPECT_FLOAT_EQ((1 + 2 + 3 + 4 + 5 + 6 + 7 + 0) / 8.0f, s.avg);
 }
 
@@ -54,8 +53,7 @@ TEST_F(AverageTest, average_b)
   updateTestData({ 1, 2, 3, 4, 5, 6 });
   EXPECT_EQ(6, entries_count);
 
-  SampleF s;
-  get(s);
+  SampleF s {get()};
   EXPECT_FLOAT_EQ((1 + 2 + 3 + 4 + 5 + 6) / 6.0f, s.avg);
 }
 
@@ -66,8 +64,7 @@ TEST_F(AverageTest, set_capacity_a)
   updateTestData({ 1, 2, 3, 4, 5, 6 });
   EXPECT_EQ(2, entries_count);
 
-  SampleF s;
-  get(s);
+  SampleF s {get()};
   EXPECT_FLOAT_EQ((5 + 6) / 2.0f, s.avg);
 }
 
@@ -79,8 +76,7 @@ TEST_F(AverageTest, upate_capacity_a)
   updateTestData({ 1, 2, 3, 4, 5, 6 });
   EXPECT_EQ(1, entries_count);
 
-  SampleF s;
-  get(s);
+  SampleF s {get()};
   EXPECT_FLOAT_EQ(6 / 1.0f, s.avg);
 }
 
@@ -92,8 +88,7 @@ TEST_F(AverageTest, upate_capacity_b)
   updateTestData({ 1, 2, 3, 4, 5, 6 });
   EXPECT_EQ(1, entries_count);
 
-  SampleF s;
-  get(s);
+  SampleF s {get()};
   EXPECT_FLOAT_EQ(6 / 1.0f, s.avg);
 }
 
@@ -105,8 +100,7 @@ TEST_F(AverageTest, upate_capacity_c)
   updateTestData({ 1, 2, 3, 4, 5, 6, 7, 8 });
   EXPECT_EQ(8, entries_count);
 
-  SampleF s;
-  get(s);
+  SampleF s {get()};
   EXPECT_FLOAT_EQ((1 + 2 + 3 + 4 + 5 + 6 + 7 + 8) / 8.0f, s.avg);
 }
 
@@ -122,8 +116,7 @@ TEST_F(AverageTest, random_values_a)
   updateTestData(random_values);
   EXPECT_EQ(8, entries_count);
 
-  SampleF s;
-  get(s);
+  SampleF s {get()};
   EXPECT_FLOAT_EQ(sum, cumulative_sum);
   EXPECT_FLOAT_EQ(average, s.avg);
   EXPECT_FLOAT_EQ(*min, s.min);
@@ -147,8 +140,7 @@ TEST_F(AverageTest, random_values_b)
   const UnderlyingAvgType average = { sum / static_cast<UnderlyingAvgType>(8) };
   EXPECT_EQ(8, entries_count);
 
-  SampleF s;
-  get(s);
+  SampleF s {get()};
   EXPECT_FLOAT_EQ(sum, cumulative_sum);
   EXPECT_FLOAT_EQ(average, s.avg);
   EXPECT_FLOAT_EQ(*min, s.min);
