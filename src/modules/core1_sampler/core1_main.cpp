@@ -5,6 +5,7 @@
 #include "modules/rf_power_meter/converter.h"
 #include <cinttypes>
 #include <cstdio>
+#include <hardware/gpio.h>
 #include <pico/multicore.h>
 
 struct Sampling
@@ -22,7 +23,7 @@ static Sampling           sampling{};
 static bool ms_tick_timer_cb(__unused struct repeating_timer *t)
 {
   system_ticks_ms += 1;
-  if (0 == system_ticks_ms % 5u) sampling.request_new_data = true;
+  sampling.request_new_data = true;
   return true;
 }
 
@@ -64,31 +65,33 @@ static ConvertedSample convert_sample(const AveragedUint16 &sample)
 {
   init();
 
-  alarm_pool_t *pool = alarm_pool_create_with_unused_hardware_alarm(8);
-
   repeating_timer_t timer;
-  alarm_pool_add_repeating_timer_ms(pool, 1, ms_tick_timer_cb, nullptr, &timer);
-  // add_repeating_timer_ms(1, ms_tick_timer_cb, nullptr, &timer);
+  alarm_pool_t     *pool = alarm_pool_create_with_unused_hardware_alarm(4);
+  alarm_pool_add_repeating_timer_us(pool, 1000, ms_tick_timer_cb, nullptr, &timer);
 
+  constexpr uint8_t timing_debug_pin{ 14 };
+  gpio_init(timing_debug_pin);
+  gpio_set_dir(timing_debug_pin, GPIO_OUT);
+
+  ad7887_start_transaction();
   while (true)
   {
-
     if (sampling.request_new_data)
     {
-      sampling.request_new_data          = false;
-      sampling.last_sample.is_data_ready = false;
-      ad7887_update();
+      gpio_put(timing_debug_pin, true);
+      sampling.request_new_data = false;
+      ad7887_start_transaction();
     }
 
     if (sampling.last_sample.is_data_ready)
     {
       sampling.last_sample.is_data_ready = false;
-
       sampling.average.put(sampling.last_sample.data.asSampleRegister16b.raw12b);
       TransactionData td{ .timestamp_ms = system_ticks_ms,
                           .probe_temperature{},
                           .converted_sample{ convert_sample(sampling.average.get()) } };
       out_buffer->write(td);
+      gpio_put(timing_debug_pin, false);
     }
   }
 }

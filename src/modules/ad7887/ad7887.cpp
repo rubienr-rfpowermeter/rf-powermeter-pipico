@@ -91,9 +91,8 @@ static void on_trx_dma_finished_cb()
   }
 }
 
-static void on_tx_dma_flush_cb()
+static inline void on_tx_dma_flush_cb()
 {
-  dma_periphery.data_in->is_data_ready = false;
   gpio_put(AD7887_GPIO_CS, false);
   dma_start_channel_mask(1u << dma_periphery.tx.channel | 1u << dma_periphery.rx.channel);
 }
@@ -153,4 +152,4 @@ void ad7887_init(Ad7887Sample &data)
   irq_set_enabled(DMA_IRQ_1, true);
 }
 
-void ad7887_update() { on_tx_dma_flush_cb(); }
+void ad7887_start_transaction() { on_tx_dma_flush_cb(); }
