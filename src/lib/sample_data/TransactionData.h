@@ -2,25 +2,32 @@
 
 #include "lib/ad7887/registers.h"
 #include "lib/sample_data/Average.h"
+#include "modules/rf_power_meter/converter_types.h"
 
-using namespace ad7887;
+using SiInt8   = si::Value<uint8_t>;
+using SiUint16 = si::Value<uint16_t>;
+using SiFloat  = si::Value<float>;
+
+using AveragedSiFloat  = ResultT<SiFloat>;
+using AveragedSiUint16 = ResultT<SiUint16>;
+using AveragedSiInt8   = ResultT<SiInt8>;
 
 struct Temperature
 {
-  uint16_t rawSample10Bit{ 0 };
-  uint16_t volt_em4{ 0 };
-  uint16_t kelvin_em2{ 0 };
-  int16_t  celsius_em2{ 0 };
+  AveragedSiUint16 volt_em4{};
+  AveragedSiUint16 kelvin_em2{};
+  AveragedSiInt8   celsius_em2{};
 };
 
-struct Probe
+struct ConvertedSample
 {
-  Temperature temperature{};
+  AveragedSiFloat value_dbv{};
+  AveragedSiFloat value_linearv{};
 };
 
 struct TransactionData
 {
-  uint32_t timestamp_ms {0};
-  Probe    probe{};
-  Sample   raw_sample{};
+  uint32_t        timestamp_ms{ 0 };
+  Temperature     probe_temperature{};
+  ConvertedSample converted_sample{};
 };

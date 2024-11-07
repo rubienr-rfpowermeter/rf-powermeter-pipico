@@ -1,7 +1,6 @@
 #pragma once
 #include "AverageT.hpp"
+#include "lib/si/si.h"
 
-constexpr uint8_t AVERAGE_COUNT{ 255 };
-
-using Average = AverageT<AVERAGE_COUNT, uint16_t, uint32_t>;
-using Sample  = ResultT<uint16_t>;
+using Average255Uint16 = AverageT<255, uint16_t, uint32_t>;
+using AveragedUint16 = ResultT<uint16_t>;
