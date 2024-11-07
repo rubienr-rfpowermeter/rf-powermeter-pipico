@@ -13,49 +13,48 @@ using namespace si;
 
 constexpr UnderlyingConversionType voltFrom12bitAdc(uint16_t raw_value, UnderlyingConversionType v_ref)
 {
-   printf("xxx raw %hu res %f\n", raw_value, (v_ref * static_cast<UnderlyingConversionType>(raw_value)) / (4096 - 1));
-  return (v_ref * static_cast<UnderlyingConversionType>(raw_value)) / (4096 - 1);
+  return (v_ref * static_cast<UnderlyingConversionType>(raw_value)) / static_cast<float>(4096 - 1);
 }
 
-constexpr UnderlyingConversionType dbvFromAdc(float voltFromAdc, FrequencyBand band)
+constexpr UnderlyingConversionType dbvFromVAdc(float voltFromAdc, FrequencyBand band)
 {
-  const UnderlyingConversionType slope_mV{
-    static_cast<UnderlyingConversionType>(AD8318_BAND_SPECS[std::to_underlying<FrequencyBand>(band)].slope_mV_em1) * 0.1f
+  const UnderlyingConversionType slope_V{
+    static_cast<UnderlyingConversionType>(AD8318_BAND_SPECS[std::to_underlying<FrequencyBand>(band)].slope_mV_em1) * 0.1f * 0.001f
   };
 
-  if (voltFromAdc < AD8138_MIN_OUT_V) { printf("xxx v %f\n", voltFromAdc); }
-  else if (voltFromAdc > AD8138_MAX_OUT_V) { printf("xxx ^ %f\n", voltFromAdc); }
+  const UnderlyingConversionType min_input_level_db{ static_cast<UnderlyingConversionType>(
+    AD8318_BAND_SPECS[std::to_underlying<FrequencyBand>(band)].min_input_level_dBm) };
 
-  return (voltFromAdc < AD8138_MIN_OUT_V) ? std::numeric_limits<UnderlyingConversionType>::max() :
-         (voltFromAdc > AD8138_MAX_OUT_V) ? std::numeric_limits<UnderlyingConversionType>::min() :
-                                            (AD8138_MAX_OUT_V - voltFromAdc) * slope_mV;
+  return min_input_level_db + ((voltFromAdc > AD8138_MAX_OUT_V) ? 0 :
+                               (voltFromAdc < AD8138_MIN_OUT_V) ? (AD8138_MAX_OUT_V - AD8138_MIN_OUT_V) / fabsf(slope_V) :
+                                                                  ((AD8138_MAX_OUT_V - voltFromAdc) / fabsf(slope_V)));
 }
 
 /// Corrects the raw dBmW value according to the correction coefficients (k-values) and attenuation offset.
 /// @param rawValue the value to convert
 /// @refitem converted and corrected value
-constexpr UnderlyingConversionType dbvCorrectedFromDbv(UnderlyingConversionType dbvFromAdc, float attenuationDb, const CorrectionValues &correction)
+constexpr UnderlyingConversionType dbvCorrectedFromDbv(UnderlyingConversionType dbvFromAdc, const CorrectionValues &correction)
 {
-  const UnderlyingConversionType v{ static_cast<UnderlyingConversionType>(dbvFromAdc) };
+  const UnderlyingConversionType v{ dbvFromAdc };
   const UnderlyingConversionType v2 = { v * v };
   const UnderlyingConversionType v3 = { v2 * v };
-  return attenuationDb + correction.k0 + correction.k1 * v + correction.k2 * v2 + correction.k3 * v3;
+  return correction.k0 + correction.k1 * v + correction.k2 * v2 + correction.k3 * v3;
 }
 
 /// Converts the dBmW value to Watts using SI units.
 /// @param correctedDbmW the dBmW value to convert to W
 constexpr SiUnit toLinearV(const UnderlyingConversionType &correctedDbv)
 {
-  const UnderlyingConversionType milliWatt = powf(10.0f, correctedDbv / 10.0f);
+  const UnderlyingConversionType mV = powf(10.0f, correctedDbv / 10.0f);
   constexpr si::Linearity        l{ si::Linearity::Linear };
-  constexpr si::Unit             u{ si::Unit::Watt };
+  constexpr si::Unit             u{ si::Unit::Volt };
 
-  if (milliWatt < 0.000000001f) return { .value = milliWatt * 1e12f, .lin = l, .scale = si::Scale::Femto, .unit = u };
-  else if (milliWatt < 0.000001f) return { .value = milliWatt * 1e9f, .lin = l, .scale = si::Scale::Pico, .unit = u };
-  else if (milliWatt < 0.001f) return { .value = milliWatt * 1e6f, .lin = l, .scale = si::Scale::Nano, .unit = u };
-  else if (milliWatt < 1.0f) return { .value = milliWatt * 1e3f, .lin = l, .scale = si::Scale::Micro, .unit = u };
-  else if (milliWatt < 1000.0f) return { .value = milliWatt * 10e0f, .lin = l, .scale = si::Scale::Milli, .unit = u };
-  else return { .value = milliWatt * 10e-3f, .lin = l, .scale = si::Scale::TimesOne, .unit = u };
+  if (mV < 0.000000001f) return { .value = mV * 1e12f, .lin = l, .scale = si::Scale::Femto, .unit = u };
+  else if (mV < 0.000001f) return { .value = mV * 1e9f, .lin = l, .scale = si::Scale::Pico, .unit = u };
+  else if (mV < 0.001f) return { .value = mV * 1e6f, .lin = l, .scale = si::Scale::Nano, .unit = u };
+  else if (mV < 1.0f) return { .value = mV * 1e3f, .lin = l, .scale = si::Scale::Micro, .unit = u };
+  else if (mV < 1000.0f) return { .value = mV * 10e0f, .lin = l, .scale = si::Scale::Milli, .unit = u };
+  else return { .value = mV * 10e-3f, .lin = l, .scale = si::Scale::TimesOne, .unit = u };
 }
 
 }   // namespace rfpm
