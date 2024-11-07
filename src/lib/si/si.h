@@ -13,6 +13,8 @@ enum struct Unit : uint8_t
   Undefined = 0,
   Watt,
   Volt,
+  Kelvin,
+  Celsius,
   TotalUnits
 };
 
@@ -61,6 +63,10 @@ constexpr const char *unitToStr(const Unit t)
     return "W";
   case Unit::Volt:
     return "V";
+  case Unit::Kelvin:
+    return "°K";
+  case Unit::Celsius:
+    return "°C";
   default:
     return "?";
   }
