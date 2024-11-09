@@ -36,15 +36,15 @@ constexpr si::SiFloat frequencyBandToSi(FrequencyBand band)
   switch (band)
   {
   case FrequencyBand::GHz_0_9:
-    return { .value = 900.0f, .scale = si::Scale::Mega };
+    return { .value = 900.0f, .scale = si::Scale::Mega, .unit=si::Unit::Hertz };
   case FrequencyBand::GHz_1_9:
-    return { .value = 1.9f, .scale = si::Scale::Giga };
+    return { .value = 1.9f, .scale = si::Scale::Giga, .unit=si::Unit::Hertz };
   case FrequencyBand::GHz_2_2:
-    return { .value = 2.2f, .scale = si::Scale::Giga };
+    return { .value = 2.2f, .scale = si::Scale::Giga, .unit=si::Unit::Hertz };
   case FrequencyBand::GHz_5_8:
-    return { .value = 5.8f, .scale = si::Scale::Giga };
+    return { .value = 5.8f, .scale = si::Scale::Giga, .unit=si::Unit::Hertz };
   case FrequencyBand::GHz_8_0:
-    return { .value = 8.0f, .scale = si::Scale::Giga };
+    return { .value = 8.0f, .scale = si::Scale::Giga, .unit=si::Unit::Hertz };
   default:
     return {};
   }
