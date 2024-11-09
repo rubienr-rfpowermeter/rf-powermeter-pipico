@@ -47,7 +47,8 @@ static void gpio_init()
     gpio_set_slew_rate(gpio, GPIO_SLEW_RATE_SLOW);
     gpio_put(gpio, true);
   }
-  gpio_put(AD7887_GPIO_CS, true);
+  // gpio_put(AD7887_GPIO_CS, true);
+  gpio_put(AD7887_GPIO_CS, false);
   gpio_put(AD7887_GPIO_DIN, false);
 
   constexpr uint8_t in_gpios[]{ AD7887_GPIO_DOUT };
@@ -55,7 +56,7 @@ static void gpio_init()
   for (auto gpio : in_gpios)
   {
     gpio_init(gpio);
-    gpio_set_pulls(gpio, false, true);
+    gpio_set_pulls(gpio, true, false);   // pull-up/down only slightly improves noise situation on ADC input signal
   }
 }
 
@@ -70,7 +71,7 @@ static void spi_init()
   spi_set_format(AD7887_SPI_PORT, 16, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);
   printf("ad7887 spi_baud=%" PRIu32 "\n", spi_baud);
 
-  gpio_set_function(AD7887_GPIO_CS, GPIO_FUNC_SPI);
+  // gpio_set_function(AD7887_GPIO_CS, GPIO_FUNC_SPI);
   gpio_set_function(AD7887_GPIO_SCLK, GPIO_FUNC_SPI);
   gpio_set_function(AD7887_GPIO_DOUT, GPIO_FUNC_SPI);
   gpio_set_function(AD7887_GPIO_DIN, GPIO_FUNC_SPI);
@@ -81,7 +82,8 @@ static void on_trx_dma_finished_cb()
   if (dma_channel_get_irq1_status(dma_periphery.tx.channel))
   {
     dma_channel_acknowledge_irq1(dma_periphery.tx.channel);
-    gpio_put(AD7887_GPIO_CS, true);
+    // gpio_put(AD7887_GPIO_CS, true);
+    printf("tx\n");
   }
 
   if (dma_channel_get_irq1_status(dma_periphery.rx.channel))

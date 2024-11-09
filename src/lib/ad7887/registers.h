@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
 
 namespace ad7887
 {
@@ -74,7 +74,8 @@ struct ControlRegister8b
   uint8_t singleDualChanelSelect : 1 { ControlRegisterChannelMode::Single };
   uint8_t onChipReference        : 1 { ControlRegisterVReference::OffChip };
   uint8_t mustBeZero2            : 1 { 0 };   /// ZERO A 0 must be written to this bit to ensure correct operation of the AD7887.
-  uint8_t dontCare               : 1 { 1 };   /// DONTC The value written to this bit of the control register doesn't matter.
+  uint8_t dontCare               : 1 { 0 };   /// DONTC The value written to this bit of the control register doesn't matter.
+                                              /// Zero slightly improves noise situation on analogue input signal.
 };
 
 struct ControlRegister16b
