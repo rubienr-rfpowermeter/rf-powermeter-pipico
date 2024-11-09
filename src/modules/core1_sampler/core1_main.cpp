@@ -12,20 +12,11 @@ struct Sampling
 {
   Ad7887Sample     last_sample{};
   Average255Uint16 average{};
-  volatile bool    request_new_data{ false };
 };
 
 using namespace rfpm;
-static volatile uint32_t  system_ticks_ms{ 0 };
 static TransactionBuffer *out_buffer{ nullptr };
 static Sampling           sampling{};
-
-static bool ms_tick_timer_cb(__unused struct repeating_timer *t)
-{
-  system_ticks_ms += 1;
-  sampling.request_new_data = true;
-  return true;
-}
 
 static void init()
 {
@@ -64,34 +55,19 @@ static ConvertedSample convert_sample(const AveragedUint16 &sample)
 [[noreturn]] void core1_main()
 {
   init();
+  alarm_pool_create_with_unused_hardware_alarm(16);
 
-  repeating_timer_t timer;
-  alarm_pool_t     *pool = alarm_pool_create_with_unused_hardware_alarm(4);
-  alarm_pool_add_repeating_timer_us(pool, 1000, ms_tick_timer_cb, nullptr, &timer);
-
-  constexpr uint8_t timing_debug_pin{ 14 };
-  gpio_init(timing_debug_pin);
-  gpio_set_dir(timing_debug_pin, GPIO_OUT);
-
-  ad7887_start_transaction();
+  ad7887_start();
   while (true)
   {
-    if (sampling.request_new_data)
-    {
-      gpio_put(timing_debug_pin, true);
-      sampling.request_new_data = false;
-      ad7887_start_transaction();
-    }
-
     if (sampling.last_sample.is_data_ready)
     {
       sampling.last_sample.is_data_ready = false;
       sampling.average.put(sampling.last_sample.data.asSampleRegister16b.raw12b);
-      TransactionData td{ .timestamp_ms = system_ticks_ms,
+      TransactionData td{ .timestamp_ms = timer_hw->timerawl,
                           .probe_temperature{},
                           .converted_sample{ convert_sample(sampling.average.get()) } };
       out_buffer->write(td);
-      gpio_put(timing_debug_pin, false);
     }
   }
 }
