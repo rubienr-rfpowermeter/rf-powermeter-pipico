@@ -11,11 +11,6 @@ namespace rfpm
 
 using namespace si;
 
-constexpr UnderlyingConversionType voltFrom12bitAdc(uint16_t raw_value, UnderlyingConversionType v_ref)
-{
-  return (v_ref * static_cast<UnderlyingConversionType>(raw_value)) / static_cast<float>(4096 - 1);
-}
-
 constexpr UnderlyingConversionType dbvFromVAdc(float voltFromAdc, FrequencyBand band)
 {
   const UnderlyingConversionType slope_V{

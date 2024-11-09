@@ -1,5 +1,6 @@
 #include "core1_main.h"
 
+#include "lib/adc/conversion.h"
 #include "lib/sample_data/TransactionBuffer.h"
 #include "modules/ad7887/ad7887.h"
 #include "modules/rf_power_meter/converter.h"
@@ -8,13 +9,15 @@
 #include <hardware/gpio.h>
 #include <pico/multicore.h>
 
+using namespace rfpm;
+using namespace ad7887;
+
 struct Sampling
 {
   Ad7887Sample     last_sample{};
   Average255Uint16 average{};
 };
 
-using namespace rfpm;
 static TransactionBuffer *out_buffer{ nullptr };
 static Sampling           sampling{};
 
