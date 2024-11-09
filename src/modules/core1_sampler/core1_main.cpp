@@ -22,11 +22,11 @@ static void init()
 {
 
   const uint32_t received_value{ multicore_fifo_pop_blocking() };
-  printf("c%" PRIu8 " init synchronized on signal %" PRIu32 "\n", get_core_num(), received_value);
+  printf("C1I init synchronized on signal %" PRIu32 "\n", received_value);
 
-  printf("init_core%" PRIu8 " ...\n", get_core_num());
+  printf("C1I init_core%" PRIu8 " ...\n", get_core_num());
   ad7887_init(sampling.last_sample);
-  printf("init_core%" PRIu8 " done\n", get_core_num());
+  printf("C1I init_core%" PRIu8 " done\n", get_core_num());
 }
 
 void core1_init(TransactionBuffer &out_buff) { out_buffer = &out_buff; }
@@ -54,6 +54,8 @@ static ConvertedSample convert_sample(const AveragedUint16 &sample)
 
 [[noreturn]] void core1_main()
 {
+  assert(1 == get_core_num());
+
   init();
   alarm_pool_create_with_unused_hardware_alarm(16);
 

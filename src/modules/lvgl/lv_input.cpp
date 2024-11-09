@@ -4,8 +4,8 @@
 #include "modules/periphery/input/buttons.h"
 #include "modules/periphery/input/input.h"
 #include "modules/periphery/input/joystick.h"
+#include <cstdio>
 #include <gitmodules/lvgl/src/indev/lv_indev.h>
-#include <stdio.h>
 
 static lv_indev_t    *indev_keypad{ nullptr };
 static lv_group_t    *indev_keypad_group{ nullptr };

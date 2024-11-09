@@ -76,18 +76,18 @@ static void gpio_init()
 
 static void pwm_init(PwmSettings &settings)
 {
-  constexpr uint8_t gpio{ 14 };
+  bi_decl_if_func_used(bi_1pin_with_name(AD7887_ACQUIRE_OUT, "ADC acquire out"))
 
-  settings.cfg = pwm_get_default_config();
+    settings.cfg = pwm_get_default_config();
   pwm_config_set_clkdiv_mode(&settings.cfg, PWM_DIV_FREE_RUNNING);
   pwm_config_set_clkdiv_int_frac(&settings.cfg, 3, 0);   // 150MHz / 3 = 50MHz
   pwm_config_set_wrap(&settings.cfg, 50000);             // 50MHz / 50000 = 1kH
 
-  settings.slice = pwm_gpio_to_slice_num(gpio);
+  settings.slice = pwm_gpio_to_slice_num(AD7887_ACQUIRE_OUT);
   pwm_init(settings.slice, &settings.cfg, false);
 
-  pwm_set_chan_level(settings.slice, pwm_gpio_to_channel(gpio), 50000 / 2);
-  gpio_set_function(gpio, GPIO_FUNC_PWM);
+  pwm_set_chan_level(settings.slice, pwm_gpio_to_channel(AD7887_ACQUIRE_OUT), 50000 / 2);
+  gpio_set_function(AD7887_ACQUIRE_OUT, GPIO_FUNC_PWM);
 }
 
 static void pwm_start(PwmSettings &settings) { pwm_set_enabled(settings.slice, true); }
@@ -101,7 +101,7 @@ static void spi_init()
   const uint32_t spi_baud{ spi_init(AD7887_SPI_PORT, 2 * 1000 * 1000) };
 #endif
   spi_set_format(AD7887_SPI_PORT, 16, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);
-  printf("ad7887 spi_baud=%" PRIu32 "\n", spi_baud);
+  printf("C1I ad7887 spi_baud=%" PRIu32 "\n", spi_baud);
 
   // gpio_set_function(AD7887_GPIO_CS, GPIO_FUNC_SPI);
   gpio_set_function(AD7887_GPIO_SCLK, GPIO_FUNC_SPI);
@@ -117,7 +117,7 @@ static void on_trx_dma_finished_cb()
     dma_data.data_in->is_data_ready = true;
     return;
   }
-  else printf("W: unhandled irq\n");
+  else printf("C1W unhandled irq\n");
 }
 
 static void rx_ready_dma_init(DmaSettings &settings, Ad7887Sample &data_out)

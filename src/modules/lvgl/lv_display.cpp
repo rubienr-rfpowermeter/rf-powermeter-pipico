@@ -29,9 +29,6 @@ static void on_dma_finished_handler()
   }
 }
 
-#include <cinttypes>
-#include <cstdio>
-
 static void display_flush_cb(lv_display_t __unused *display, const lv_area_t *area, uint8_t *px_map)
 {
   display_set_window(area->x1, area->y1, area->x2 + 1, area->y2 + 1);

@@ -49,9 +49,9 @@ void on_gpio_edge(uint gpio, uint32_t event_mask)
 
 static void init(TransactionBuffer &in_buffer)
 {
-  printf("\n**** RF Power Meter (Version " PICO_PROGRAM_VERSION_STRING " Built " __DATE__ ") ****\n");
-  printf("c%" PRIu8 " init ...\n", get_core_num());
-  printf("sys_clk_hz=%" PRIu32 "\n", clock_get_hz(clk_sys));
+  printf("\nC0I **** RF Power Meter (Version " PICO_PROGRAM_VERSION_STRING " Built " __DATE__ ") ****\n");
+  printf("C0I init ...\n");
+  printf("C0I sys_clk_hz=%" PRIu32 "\n", clock_get_hz(clk_sys));
 
   gpio_set_irq_callback(&on_gpio_edge);
   user_led_init();
@@ -67,7 +67,7 @@ static void init(TransactionBuffer &in_buffer)
   sampling.in_buffer = &in_buffer;
   ui_init(sampling.sample);
 
-  printf("c%" PRIu8 " init done\n", get_core_num());
+  printf("C0I init done\n");
 }
 
 void core0_init(TransactionBuffer &in_buffer)
@@ -80,12 +80,14 @@ void core0_init(TransactionBuffer &in_buffer)
 [[noreturn]]
 void core0_main()
 {
+  assert(0 == get_core_num());
+
   // init();
 
   constexpr uint8_t sync_signal{ 42 };
-  printf("c%" PRIu8 " main sending sync. signal %" PRIu8 " to other core ...\n", get_core_num(), sync_signal);
+  printf("C0I main sending sync. signal %" PRIu8 " to other core ...\n", sync_signal);
   multicore_fifo_push_blocking(sync_signal);
-  printf("c%" PRIu8 " main sync signal %" PRIu8 " sent other core\n", get_core_num(), sync_signal);
+  printf("C0I main sync signal %" PRIu8 " sent other core\n", sync_signal);
 
   repeating_timer_t timer;
   add_repeating_timer_ms(1, ms_tick_timer_cb, nullptr, &timer);
