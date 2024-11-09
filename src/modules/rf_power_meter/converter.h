@@ -25,9 +25,9 @@ constexpr UnderlyingConversionType dbvFromVAdc(float voltFromAdc, FrequencyBand 
   const UnderlyingConversionType min_input_level_db{ static_cast<UnderlyingConversionType>(
     AD8318_BAND_SPECS[std::to_underlying<FrequencyBand>(band)].min_input_level_dBm) };
 
-  return min_input_level_db + ((voltFromAdc > AD8138_MAX_OUT_V) ? 0 :
-                               (voltFromAdc < AD8138_MIN_OUT_V) ? (AD8138_MAX_OUT_V - AD8138_MIN_OUT_V) / fabsf(slope_V) :
-                                                                  ((AD8138_MAX_OUT_V - voltFromAdc) / fabsf(slope_V)));
+  return min_input_level_db + ((voltFromAdc > AD8318_MAX_OUT_V) ? 0 :
+                               (voltFromAdc < AD8318_MIN_OUT_V) ? (AD8318_MAX_OUT_V - AD8318_MIN_OUT_V) / fabsf(slope_V) :
+                                                                  ((AD8318_MAX_OUT_V - voltFromAdc) / fabsf(slope_V)));
 }
 
 /// Corrects the raw dBmW value according to the correction coefficients (k-values) and attenuation offset.

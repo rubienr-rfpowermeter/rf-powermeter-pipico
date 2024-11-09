@@ -6,8 +6,8 @@ namespace rfpm
 {
 
 const float AD7887_V_REF{ 2.5 };       /// AD7887 reverence voltage in [V]
-const float AD8138_MAX_OUT_V{ 2.1 };   /// AD8138 max output voltage in [V]
-const float AD8138_MIN_OUT_V{ 0.5 };   /// AD7887 min output voltage in [V]
+const float AD8318_MAX_OUT_V{ 2.1 };   /// AD8138 max output voltage in [V]
+const float AD8318_MIN_OUT_V{ 0.5 };   /// AD7887 min output voltage in [V]
 
 constexpr BandSpecs AD8318_BAND_SPECS[FrequencyBand::BandsTotal]{
   [FrequencyBand::GHz_0_9] = {  .f_GHz_em1 = 9, .slope_mV_em1 = -245, .intercept_dBm_em1 = 220, .min_input_level_dBm = -58, .max_input_level_dBm = -1,  .r_Tadj_ohm = 500 },
