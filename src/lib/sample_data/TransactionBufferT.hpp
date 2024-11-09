@@ -17,7 +17,7 @@ private:
   volatile uint8_t read_index{ 0 };    /// cannot ake over write index, stalls if nothing to read
 
   T       buffer[buffer_size] = { 0 };
-  mutex_t mutex {};
+  mutex_t mutex{};
 };
 
 template <typename T> TransactionBufferT<T>::TransactionBufferT() { mutex_init(&mutex); }
