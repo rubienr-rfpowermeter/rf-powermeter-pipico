@@ -11,4 +11,4 @@ template <typename T> struct KValues3rdOrder
   T k3{ 0 };   /// default: no correction
 };
 
-}   // namespace ad8318
+}   // namespace rfpm

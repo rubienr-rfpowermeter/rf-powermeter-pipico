@@ -1,4 +1,5 @@
 #pragma once
+
 #include "AverageT.hpp"
 #include "lib/si/si.h"
 

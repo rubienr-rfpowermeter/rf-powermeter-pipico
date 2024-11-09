@@ -1,6 +1,6 @@
 #pragma once
-#include <stdint.h>
 
+#include <cinttypes>
 #include <cmath>
 #include <string>
 #include <utility>
@@ -11,16 +11,20 @@ namespace si
 enum struct Unit : uint8_t
 {
   Undefined = 0,
-  Watt,
-  Volt,
-  Kelvin,
   Celsius,
+  Hertz,
+  Kelvin,
+  NoUnit,
+  Volt,
+  Watt,
   TotalUnits
 };
 
 enum struct Scale : uint8_t
 {
   Undefined = 0,
+  Giga,       /// 10^9
+  Mega,       /// 10^6
   Kilo,       /// 10^3
   TimesOne,   /// 10^0
   Milli,      /// 10^-3
@@ -59,14 +63,18 @@ constexpr const char *unitToStr(const Unit t)
 {
   switch (t)
   {
-  case Unit::Watt:
-    return "W";
-  case Unit::Volt:
-    return "V";
-  case Unit::Kelvin:
-    return "°K";
   case Unit::Celsius:
     return "°C";
+  case Unit::Hertz:
+    return "Hz";
+  case Unit::Kelvin:
+    return "°K";
+  case Unit::NoUnit:
+    return "";
+  case Unit::Volt:
+    return "V";
+  case Unit::Watt:
+    return "W";
   default:
     return "?";
   }
@@ -76,6 +84,10 @@ constexpr const char *scaleToStr(const Scale t)
 {
   switch (t)
   {
+  case Scale::Giga:
+    return "G";
+  case Scale::Mega:
+    return "M";
   case Scale::Kilo:
     return "k";
   case Scale::TimesOne:
@@ -99,8 +111,8 @@ template <typename T> struct Value
 {
   T         value{ std::numeric_limits<T>::quiet_NaN() };
   Linearity lin{ Linearity::Linear };
-  Scale     scale{ Scale::Undefined };
-  Unit      unit{ Unit::Undefined };
+  Scale     scale{ Scale::TimesOne };
+  Unit      unit{ Unit::NoUnit };
 };
 
 constexpr uint8_t linearityToUnderlyingType(Linearity u) { return std::to_underlying<Linearity>(u); }
@@ -129,8 +141,10 @@ constexpr Scale scaleFromUnderlyingType(uint8_t u)
 
 constexpr float SI_FACTORS[std::to_underlying<Scale>(Scale::TotalScales)] = {
   [scaleToUnderlyingType(Scale::Undefined)] = 0,
-  [scaleToUnderlyingType(Scale::Kilo)]      = 1000,               /// 10^3
-  [scaleToUnderlyingType(Scale::TimesOne)]  = 1,                  /// 10^0
+  [scaleToUnderlyingType(Scale::Giga)]      = 1000000000.0f,      /// 10^9
+  [scaleToUnderlyingType(Scale::Mega)]      = 1000000.0f,         /// 10^6
+  [scaleToUnderlyingType(Scale::Kilo)]      = 1000.0f,            /// 10^3
+  [scaleToUnderlyingType(Scale::TimesOne)]  = 1.0f,               /// 10^0
   [scaleToUnderlyingType(Scale::Milli)]     = 0.001,              /// 10^-3
   [scaleToUnderlyingType(Scale::Micro)]     = 0.000001,           /// 10^-6
   [scaleToUnderlyingType(Scale::Nano)]      = 0.000000001,        /// 10^-9

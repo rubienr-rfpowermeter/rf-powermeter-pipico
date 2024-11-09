@@ -39,6 +39,9 @@ add_executable(rf_probe
         lib/sample_data/AverageT.hpp
         lib/sample_data/TransactionBuffer.h
         modules/ad7887/ad7887.cpp
+        modules/core0_ui/ui.cpp
+        modules/core0_ui/core0_main.cpp
+        modules/core1_sampler/core1_main.cpp
         modules/lvgl/lv_display.cpp
         modules/lvgl/lv_input.cpp
         modules/periphery/input/buttons.cpp
@@ -47,9 +50,6 @@ add_executable(rf_probe
         modules/periphery/display/display.cpp
         modules/periphery/led/user_led.cpp
         modules/rf_power_meter/KValues3rdOrder.hpp
-        modules/core1_sampler/core1_main.cpp
-        modules/core0_ui/core0_main.cpp
-        modules/core0_ui/ui.cpp
         main.cpp
 )
 

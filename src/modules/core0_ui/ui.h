@@ -1,7 +1,5 @@
 #pragma once
 
-#include "lib/sample_data/TransactionData.h"
-#include <cinttypes>
-
+struct TransactionData;
 void ui_init(TransactionData &samples);
 void ui_update();

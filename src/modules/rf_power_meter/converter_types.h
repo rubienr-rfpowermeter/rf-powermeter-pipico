@@ -1,13 +1,15 @@
 #pragma once
+
 #include "KValues3rdOrder.hpp"
-#include "lib/si/si.h"
+#include "lib/sample_data/TransactionData.h"
+#include "lib/si/si_types.h"
+#include "modules/core0_ui/ui.h"
 
 namespace rfpm
 {
 
 using UnderlyingConversionType = float;
 using CorrectionValues         = KValues3rdOrder<UnderlyingConversionType>;
-using SiUnit                     = si::Value<UnderlyingConversionType>;
 
 enum FrequencyBand : uint8_t
 {
@@ -28,5 +30,24 @@ struct BandSpecs
   int16_t  max_input_level_dBm;   /// [dBm] max input level at +/-1dB error
   uint16_t r_Tadj_ohm;            /// [Ω]
 };
+
+constexpr si::SiFloat frequencyBandToSi(FrequencyBand band)
+{
+  switch (band)
+  {
+  case FrequencyBand::GHz_0_9:
+    return { .value = 900.0f, .scale = si::Scale::Mega };
+  case FrequencyBand::GHz_1_9:
+    return { .value = 1.9f, .scale = si::Scale::Giga };
+  case FrequencyBand::GHz_2_2:
+    return { .value = 2.2f, .scale = si::Scale::Giga };
+  case FrequencyBand::GHz_5_8:
+    return { .value = 5.8f, .scale = si::Scale::Giga };
+  case FrequencyBand::GHz_8_0:
+    return { .value = 8.0f, .scale = si::Scale::Giga };
+  default:
+    return {};
+  }
+}
 
 }   // namespace rfpm

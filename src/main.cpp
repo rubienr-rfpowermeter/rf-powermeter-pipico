@@ -3,7 +3,7 @@
 #include "modules/core1_sampler/core1_main.h"
 #include <pico/multicore.h>
 
-TransactionBuffer core1_to_core0_transaction_buffer;
+TransactionBuffer core1_to_core0_transaction_buffer {};
 
 [[noreturn]] int main()
 {

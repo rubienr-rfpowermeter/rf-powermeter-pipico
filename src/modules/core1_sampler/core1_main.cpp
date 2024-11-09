@@ -9,8 +9,12 @@
 #include <hardware/gpio.h>
 #include <pico/multicore.h>
 
-using namespace rfpm;
-using namespace ad7887;
+using ad7887::voltFrom12bitAdc;
+using rfpm::AD7887_V_REF;
+using rfpm::CorrectionValues;
+using rfpm::FrequencyBand;
+using rfpm::toLinearV;
+using rfpm::UnderlyingConversionType;
 
 struct Sampling
 {
@@ -18,8 +22,15 @@ struct Sampling
   Average255Uint16 average{};
 };
 
+struct Conversion
+{
+  FrequencyBand    frequency_band{ FrequencyBand::GHz_0_9 };
+  CorrectionValues correction{ .k0 = 0, .k1 = 1 };
+};
+
 static TransactionBuffer *out_buffer{ nullptr };
 static Sampling           sampling{};
+static Conversion         conversion{};
 
 static void init()
 {
@@ -32,17 +43,20 @@ static void init()
   printf("C1I init_core%" PRIu8 " done\n", get_core_num());
 }
 
-void core1_init(TransactionBuffer &out_buff) { out_buffer = &out_buff; }
-
 static ConvertedSample convert_sample(const AveragedUint16 &sample)
 {
-  constexpr FrequencyBand    band{ FrequencyBand::GHz_0_9 };
-  constexpr CorrectionValues correction{ .k0 = 0, .k1 = 1 };
-
-  const UnderlyingConversionType dbv_value{ dbvCorrectedFromDbv(dbvFromVAdc(voltFrom12bitAdc(sample.value, AD7887_V_REF), band), correction) };
-  const UnderlyingConversionType dbv_avg{ dbvCorrectedFromDbv(dbvFromVAdc(voltFrom12bitAdc(sample.avg, AD7887_V_REF), band), correction) };
-  const UnderlyingConversionType dbv_min{ dbvCorrectedFromDbv(dbvFromVAdc(voltFrom12bitAdc(sample.min, AD7887_V_REF), band), correction) };
-  const UnderlyingConversionType dbv_max{ dbvCorrectedFromDbv(dbvFromVAdc(voltFrom12bitAdc(sample.max, AD7887_V_REF), band), correction) };
+  const UnderlyingConversionType dbv_value{
+    dbvCorrectedFromDbv(dbvFromVAdc(voltFrom12bitAdc(sample.value, AD7887_V_REF), conversion.frequency_band), conversion.correction)
+  };
+  const UnderlyingConversionType dbv_avg{
+    dbvCorrectedFromDbv(dbvFromVAdc(voltFrom12bitAdc(sample.avg, AD7887_V_REF), conversion.frequency_band), conversion.correction)
+  };
+  const UnderlyingConversionType dbv_min{
+    dbvCorrectedFromDbv(dbvFromVAdc(voltFrom12bitAdc(sample.min, AD7887_V_REF), conversion.frequency_band), conversion.correction)
+  };
+  const UnderlyingConversionType dbv_max{
+    dbvCorrectedFromDbv(dbvFromVAdc(voltFrom12bitAdc(sample.max, AD7887_V_REF), conversion.frequency_band), conversion.correction)
+  };
 
   return {
     .value_dbv{
@@ -54,6 +68,8 @@ static ConvertedSample convert_sample(const AveragedUint16 &sample)
     .value_linearv{ .value{ toLinearV(dbv_value) }, .avg{ toLinearV(dbv_avg) }, .min{ toLinearV(dbv_min) }, .max{ toLinearV(dbv_max) } }
   };
 }
+
+void core1_init(TransactionBuffer &out_buff) { out_buffer = &out_buff; }
 
 [[noreturn]] void core1_main()
 {
@@ -71,6 +87,8 @@ static ConvertedSample convert_sample(const AveragedUint16 &sample)
       sampling.average.put(sampling.last_sample.data.asSampleRegister16b.raw12b);
       TransactionData td{ .timestamp_us = timer_hw->timerawl,
                           .probe_temperature{},
+                          .correction_values{ conversion.correction },
+                          .frequency_band = conversion.frequency_band,
                           .converted_sample{ convert_sample(sampling.average.get()) } };
       out_buffer->write(td);
     }

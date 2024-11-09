@@ -9,8 +9,6 @@
 namespace rfpm
 {
 
-using namespace si;
-
 constexpr UnderlyingConversionType dbvFromVAdc(float voltFromAdc, FrequencyBand band)
 {
   const UnderlyingConversionType slope_V{
@@ -38,7 +36,7 @@ constexpr UnderlyingConversionType dbvCorrectedFromDbv(UnderlyingConversionType 
 
 /// Converts the dBmW value to Watts using SI units.
 /// @param correctedDbmW the dBmW value to convert to W
-constexpr SiUnit toLinearV(const UnderlyingConversionType &correctedDbv)
+constexpr si::SiFloat toLinearV(const UnderlyingConversionType &correctedDbv)
 {
   const UnderlyingConversionType mV = powf(10.0f, correctedDbv / 10.0f);
   constexpr si::Linearity        l{ si::Linearity::Linear };
