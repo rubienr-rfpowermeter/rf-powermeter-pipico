@@ -1,4 +1,4 @@
 [submodule "src/gitmodules/lvgl"]
 	path = src/gitmodules/lvgl
 	url = git@github.com:lvgl/lvgl.git
-	branch = release/v8.3
+	branch = release/v9.2
