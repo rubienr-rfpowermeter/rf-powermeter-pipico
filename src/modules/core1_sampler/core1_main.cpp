@@ -69,7 +69,7 @@ static ConvertedSample convert_sample(const AveragedUint16 &sample)
     {
       sampling.last_sample.is_data_ready = false;
       sampling.average.put(sampling.last_sample.data.asSampleRegister16b.raw12b);
-      TransactionData td{ .timestamp_ms = timer_hw->timerawl,
+      TransactionData td{ .timestamp_us = timer_hw->timerawl,
                           .probe_temperature{},
                           .converted_sample{ convert_sample(sampling.average.get()) } };
       out_buffer->write(td);

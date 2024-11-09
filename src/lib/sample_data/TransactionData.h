@@ -27,7 +27,7 @@ struct ConvertedSample
 
 struct TransactionData
 {
-  uint32_t        timestamp_ms{ 0 };
+  uint32_t        timestamp_us{ 0 };
   Temperature     probe_temperature{};
   ConvertedSample converted_sample{};
 };

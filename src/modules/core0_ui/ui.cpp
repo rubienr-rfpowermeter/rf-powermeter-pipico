@@ -19,7 +19,7 @@ struct UiData
   struct
   {
     TransactionData *sample{ nullptr };
-    uint32_t         previous_ts_ms{};
+    uint32_t         previous_ts_us{};
   } sampling;
 
   lv_obj_t *screen{ nullptr };
@@ -224,7 +224,7 @@ static void ui_update_tab0()
 
   snprintf(
     ui_data.text_buffer, sizeof(ui_data.text_buffer), LV_SYMBOL_REFRESH " +%" PRIu32,
-    ui_data.sampling.sample->timestamp_ms - ui_data.sampling.previous_ts_ms);
+    (ui_data.sampling.sample->timestamp_us - ui_data.sampling.previous_ts_us)/1000);
   lv_label_set_text(ui_data.tab_view.tab0.ts_label, ui_data.text_buffer);
 }
 
@@ -242,11 +242,11 @@ void ui_update()
   {
   case 0:
     ui_update_tab0();
-    ui_data.sampling.previous_ts_ms = ui_data.sampling.sample->timestamp_ms;
+    ui_data.sampling.previous_ts_us = ui_data.sampling.sample->timestamp_us;
     return;
   case 1:
     ui_update_tab1();
-    ui_data.sampling.previous_ts_ms = ui_data.sampling.sample->timestamp_ms;
+    ui_data.sampling.previous_ts_us = ui_data.sampling.sample->timestamp_us;
     return;
   case 2:
   case 3:
