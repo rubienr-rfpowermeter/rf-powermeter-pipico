@@ -30,12 +30,17 @@ struct Tab0
   lv_obj_t *min_lin_label{ nullptr };
   lv_obj_t *max_lin_label{ nullptr };
 
-  lv_obj_t *ts_label{ nullptr };
+  lv_obj_t *refresh_label{ nullptr };
 };
 
 struct Tab1
 {
   lv_obj_t *tab{ nullptr };
+
+  lv_obj_t          *chart{ nullptr };
+  lv_obj_t          *curent_value{ nullptr };
+  lv_chart_series_t *series{ nullptr };
+  lv_obj_t          *refresh_label{ nullptr };
 };
 
 struct Tab2
@@ -61,7 +66,7 @@ struct UiData
   struct
   {
     TransactionData *sample{ nullptr };
-    uint32_t         previous_ts_us{};
+    uint32_t         previous_timestamp_us{};
   } sampling;
 
   lv_obj_t *screen{ nullptr };
@@ -114,7 +119,7 @@ static void init_tab0(Tab0 &tab)
   tab.min_lin_label   = lv_label_create(parent);
   tab.max_lin_label   = lv_label_create(parent);
 
-  tab.ts_label = lv_label_create(parent);
+  tab.refresh_label = lv_label_create(parent);
 
   const int32_t y_offset_px{ 22 };
   const int32_t x_margin{ 0 };
@@ -129,7 +134,7 @@ static void init_tab0(Tab0 &tab)
     { tab.value_lin_label, x_margin, y_margin + 5 * y_offset_px },
     {   tab.min_lin_label, x_margin, y_margin + 6 * y_offset_px },
     {   tab.max_lin_label, x_margin, y_margin + 7 * y_offset_px },
-    {        tab.ts_label, x_margin, y_margin + 8 * y_offset_px },
+    {   tab.refresh_label, x_margin, y_margin + 8 * y_offset_px },
   };
 
   for (auto [label, x_px, y_px] : todo)
@@ -141,8 +146,27 @@ static void init_tab0(Tab0 &tab)
 static void init_tab1(Tab1 &tab)
 {
   lv_obj_t *parent{ tab.tab };
-  lv_obj_t *label = lv_label_create(parent);
-  lv_label_set_text(label, "config");
+
+  tab.chart = lv_chart_create(parent);
+  lv_chart_set_update_mode(tab.chart, LV_CHART_UPDATE_MODE_SHIFT);
+  lv_obj_set_style_size(tab.chart, 0, 0, LV_PART_INDICATOR);
+  lv_obj_set_size(tab.chart, 200, 150);
+  lv_obj_center(tab.chart);
+
+  lv_chart_set_point_count(tab.chart, 100);
+  lv_chart_set_range(tab.chart, LV_CHART_AXIS_PRIMARY_Y, -60, 2);
+  tab.series = lv_chart_add_series(tab.chart, lv_palette_main(LV_PALETTE_GREEN), LV_CHART_AXIS_PRIMARY_Y);
+
+  uint32_t i;
+  for (i = 0; i < 100; i++)
+    lv_chart_set_next_value(tab.chart, tab.series, 0);
+
+  lv_chart_refresh(tab.chart);
+
+  tab.curent_value  = lv_label_create(parent);
+  tab.refresh_label = lv_label_create(parent);
+  lv_obj_set_pos(tab.curent_value, 0, 0);
+  lv_obj_set_pos(tab.refresh_label, 0, 200);
 
   lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
 }
@@ -213,7 +237,7 @@ static void init_tab3(Tab3 &tab)
   lv_obj_add_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
 }
 
-static void widgets_init()
+static void init_widgets()
 {
   ui_data.screen = lv_obj_create(nullptr);
   lv_obj_clean(ui_data.screen);
@@ -253,7 +277,7 @@ static void widgets_init()
   lv_scr_load(ui_data.screen);
 }
 
-static void ui_update_tab0(Tab0 &tab)
+static void update_tab0(Tab0 &tab)
 {
   const AveragedSiFloat &db_volt{ ui_data.sampling.sample->converted_sample.value_dbv };
   const AveragedSiFloat &linv{ ui_data.sampling.sample->converted_sample.value_linearv };
@@ -279,13 +303,35 @@ static void ui_update_tab0(Tab0 &tab)
 
   snprintf(
     ui_data.text_buffer, sizeof(ui_data.text_buffer), LV_SYMBOL_REFRESH " +%" PRIu32,
-    (ui_data.sampling.sample->timestamp_us - ui_data.sampling.previous_ts_us) / 1000);
-  lv_label_set_text(ui_data.tab_view.tab0.ts_label, ui_data.text_buffer);
+    (ui_data.sampling.sample->timestamp_us - ui_data.sampling.previous_timestamp_us) / 1000);
+  lv_label_set_text(tab.refresh_label, ui_data.text_buffer);
 }
 
-static void ui_update_tab1(__unused Tab1 tab) { }
+static void update_tab1(Tab1 tab)
+{
+  snprintf(
+    ui_data.text_buffer, sizeof(ui_data.text_buffer), LV_SYMBOL_RIGHT " %5.1f",
+    ui_data.sampling.sample->converted_sample.value_dbv.value.value);
+  lv_label_set_text(tab.curent_value, ui_data.text_buffer);
 
-static void ui_update_tab2(Tab2 &tab)
+  lv_chart_set_next_value(tab.chart, tab.series, static_cast<int32_t>(ui_data.sampling.sample->converted_sample.value_dbv.value.value));
+  const uint32_t p{ lv_chart_get_point_count(tab.chart) };
+  const uint32_t s{ lv_chart_get_x_start_point(tab.chart, tab.series) };
+  int32_t       *a{ lv_chart_get_y_array(tab.chart, tab.series) };
+
+  a[(s + 1) % p] = LV_CHART_POINT_NONE;
+  a[(s + 2) % p] = LV_CHART_POINT_NONE;
+  a[(s + 2) % p] = LV_CHART_POINT_NONE;
+
+  lv_chart_refresh(tab.chart);
+
+  snprintf(
+    ui_data.text_buffer, sizeof(ui_data.text_buffer), LV_SYMBOL_REFRESH " +%" PRIu32,
+    (ui_data.sampling.sample->timestamp_us - ui_data.sampling.previous_timestamp_us) / 1000);
+  lv_label_set_text(tab.refresh_label, ui_data.text_buffer);
+}
+
+static void update_tab2(Tab2 &tab)
 {
 
   const std::vector<std::tuple<const char *, const SiFloat &, lv_obj_t *>> todo{
@@ -306,12 +352,12 @@ static void ui_update_tab2(Tab2 &tab)
   }
 }
 
-static void ui_update_tab3(__unused Tab3 tab) { }
+static void update_tab3(__unused Tab3 tab) { }
 
 void ui_init(TransactionData &sample)
 {
   ui_data.sampling.sample = &sample;
-  widgets_init();
+  init_widgets();
 }
 
 void ui_update()
@@ -319,18 +365,18 @@ void ui_update()
   switch (ui_data.tab_view.active_tab)
   {
   case 0:
-    ui_update_tab0(ui_data.tab_view.tab0);
-    ui_data.sampling.previous_ts_us = ui_data.sampling.sample->timestamp_us;
+    update_tab0(ui_data.tab_view.tab0);
+    ui_data.sampling.previous_timestamp_us = ui_data.sampling.sample->timestamp_us;
     return;
   case 1:
-    ui_update_tab1(ui_data.tab_view.tab1);
-    ui_data.sampling.previous_ts_us = ui_data.sampling.sample->timestamp_us;
+    update_tab1(ui_data.tab_view.tab1);
+    ui_data.sampling.previous_timestamp_us = ui_data.sampling.sample->timestamp_us;
     return;
   case 2:
-    ui_update_tab2(ui_data.tab_view.tab2);
+    update_tab2(ui_data.tab_view.tab2);
     return;
   case 3:
-    ui_update_tab3(ui_data.tab_view.tab3);
+    update_tab3(ui_data.tab_view.tab3);
     return;
   default:
     return;
