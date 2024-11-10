@@ -111,8 +111,7 @@ static void spi_init()
   spi_set_format(AD7887_SPI_PORT, 16, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);
   printf("C1I ad7887 spi_baud=%" PRIu32 "\n", spi_baud);
 
-  if (!AD7887_FEATURE_DISABLE_SCLK)
-    gpio_set_function(AD7887_GPIO_CS, GPIO_FUNC_SPI);
+  if (!AD7887_FEATURE_DISABLE_SCLK) gpio_set_function(AD7887_GPIO_CS, GPIO_FUNC_SPI);
   gpio_set_function(AD7887_GPIO_SCLK, GPIO_FUNC_SPI);
   gpio_set_function(AD7887_GPIO_DOUT, GPIO_FUNC_SPI);
   gpio_set_function(AD7887_GPIO_DIN, GPIO_FUNC_SPI);
