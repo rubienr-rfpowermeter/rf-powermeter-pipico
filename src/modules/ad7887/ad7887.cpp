@@ -65,13 +65,11 @@ static void gpio_init()
   gpio_put(AD7887_GPIO_CS, false);
   gpio_put(AD7887_GPIO_DIN, false);
 
-  constexpr uint8_t in_gpios[]{ AD7887_GPIO_DOUT };
-
-  for (auto gpio : in_gpios)
-  {
-    gpio_init(gpio);
-    gpio_set_pulls(gpio, true, false);   // pull-up/down only slightly improves noise situation on ADC input signal
-  }
+  gpio_init(AD7887_GPIO_DOUT);
+  // NOTE:
+  // - With only pull-up/down enabled the noise situation is improved by a homeopathic dose on the ADC input signal;
+  //   will choose pull-up: rp2350 has higher leakage current (erratum RP2350-E9) when input + with pull-down is enabled.
+  gpio_set_pulls(AD7887_GPIO_DOUT, true, false);
 }
 
 static void pwm_init(PwmSettings &settings)
@@ -94,12 +92,22 @@ static void pwm_start(PwmSettings &settings) { pwm_set_enabled(settings.slice, t
 
 static void spi_init()
 {
-#define AD7887_DISPLAY_SPI_INIT 1
-#if AD7887_DISPLAY_SPI_INIT == 1
-  const uint32_t spi_baud{ spi_init(AD7887_SPI_PORT, 500 * 1000) };
-#else
-  const uint32_t spi_baud{ spi_init(AD7887_SPI_PORT, 2 * 1000 * 1000) };
-#endif
+  // NOTES:
+  // - Despite the chosen 20kHz CKL the SPI speed can be as high as 2MHz.
+  //   Since the ADC is read in DMA mode, we don't care how long the transaction takes unless is slower than
+  //   the target sampling rate, which is 1kHz. The aim is to read as slow as possible, to couple as less digital interference
+  //   into the analogue input as possible.
+  // - The input signal on ADC AT7887:AIN0 from power detector AD8138:VOUT is additionally routed to the 4x2 connector contrary
+  //   to the indication in AD7887 APPLICATION HINTS - "Grounding and Layout" that advices to never run digital signals near the
+  //   analogue input.As a consequence of this, any digital level switch (CLK, MOSI/DIN and especially MISO/DOUT) couples into
+  //   the analogue signal.
+  // - Hopefully correct assumption:
+  //   The input track-and-hold acquires a signal in 500ns. The sampling capacitor on AIN is held in track-mode until the input
+  //   signal is sampled on the second rising edge of the CLK input after the falling edge of CS. At 20kHz CLK the low phase is
+  //   25µs (hence 200x longer tha the acquisition). In the 2nd CLK-rise until V_LOW reaches V_INH=2.4V (rise time 7.5ns) the signal
+  //   looks okay-ish except the last 7.5ns: analogue signal swings -27mV.
+  // - To slightly reduce ringing on SPI lines introduce 150R series resistors at the TX side.
+  const uint32_t spi_baud{ spi_init(AD7887_SPI_PORT, 20 * 1000) };
   spi_set_format(AD7887_SPI_PORT, 16, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);
   printf("C1I ad7887 spi_baud=%" PRIu32 "\n", spi_baud);
 
