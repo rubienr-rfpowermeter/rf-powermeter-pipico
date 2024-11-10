@@ -36,6 +36,11 @@ struct Tab0
 struct Tab1
 {
   lv_obj_t *tab{ nullptr };
+};
+
+struct Tab2
+{
+  lv_obj_t *tab{ nullptr };
 
   lv_obj_t *k0_label{ nullptr };
   lv_obj_t *k1_label{ nullptr };
@@ -44,11 +49,6 @@ struct Tab1
 
   lv_obj_t *frequency_band_label{ nullptr };
   lv_obj_t *probe_temp_label{ nullptr };
-};
-
-struct Tab2
-{
-  lv_obj_t *tab{ nullptr };
 };
 
 struct Tab3
@@ -141,6 +141,15 @@ static void init_tab0(Tab0 &tab)
 static void init_tab1(Tab1 &tab)
 {
   lv_obj_t *parent{ tab.tab };
+  lv_obj_t *label = lv_label_create(parent);
+  lv_label_set_text(label, "config");
+
+  lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
+}
+
+static void init_tab2(Tab2 &tab)
+{
+  lv_obj_t *parent{ tab.tab };
 
   tab.k0_label = lv_label_create(parent);
   tab.k1_label = lv_label_create(parent);
@@ -165,15 +174,6 @@ static void init_tab1(Tab1 &tab)
 
   for (auto [label, x_px, y_px] : todo)
     lv_obj_set_pos(label, x_px, y_px);
-
-  lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
-}
-
-static void init_tab2(Tab2 &tab)
-{
-  lv_obj_t *parent{ tab.tab };
-  lv_obj_t *label = lv_label_create(parent);
-  lv_label_set_text(label, "config");
 
   lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
 }
@@ -230,7 +230,7 @@ static void widgets_init()
   lv_obj_set_style_border_side(tab_btns, LV_BORDER_SIDE_NONE, (uint32_t)LV_PART_ITEMS | (uint32_t)LV_STATE_CHECKED);
 
   ui_data.tab_view.tab0.tab = lv_tabview_add_tab(ui_data.tab_view.view, LV_SYMBOL_HOME);
-  ui_data.tab_view.tab1.tab = lv_tabview_add_tab(ui_data.tab_view.view, LV_SYMBOL_PAUSE);
+  ui_data.tab_view.tab1.tab = lv_tabview_add_tab(ui_data.tab_view.view, LV_SYMBOL_SHUFFLE);
   ui_data.tab_view.tab2.tab = lv_tabview_add_tab(ui_data.tab_view.view, LV_SYMBOL_SETTINGS);
   ui_data.tab_view.tab3.tab = lv_tabview_add_tab(ui_data.tab_view.view, LV_SYMBOL_USB);
 
@@ -283,7 +283,9 @@ static void ui_update_tab0(Tab0 &tab)
   lv_label_set_text(ui_data.tab_view.tab0.ts_label, ui_data.text_buffer);
 }
 
-static void ui_update_tab1(Tab1 &tab)
+static void ui_update_tab1(__unused Tab1 tab) { }
+
+static void ui_update_tab2(Tab2 &tab)
 {
 
   const std::vector<std::tuple<const char *, const SiFloat &, lv_obj_t *>> todo{
@@ -303,8 +305,6 @@ static void ui_update_tab1(Tab1 &tab)
     lv_label_set_text(label, ui_data.text_buffer);
   }
 }
-
-static void ui_update_tab2(__unused Tab2 tab) { }
 
 static void ui_update_tab3(__unused Tab3 tab) { }
 
