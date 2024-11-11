@@ -84,6 +84,11 @@ void core0_main()
 
   // init();
 
+  { // todo rr - find out why this fishy workaround was necessary (repair hotfix)
+    lv_tick_inc(1);
+    lv_task_handler();
+  }
+
   constexpr uint8_t sync_signal{ 42 };
   printf("C0I main sending sync. signal %" PRIu8 " to other core ...\n", sync_signal);
   multicore_fifo_push_blocking(sync_signal);
