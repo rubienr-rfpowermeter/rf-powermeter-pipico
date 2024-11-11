@@ -73,6 +73,7 @@ SeparateDefinitionBlocks: Always
 ShortNamespaceLines: 0
 SortUsingDeclarations: true
 SpaceBeforeAssignmentOperators: true
+SpaceBeforeCpp11BracedList: true
 SpaceBeforeParens: Custom
 SpaceBeforeParensOptions:
   AfterControlStatements: true
