@@ -88,7 +88,7 @@ target_compile_definitions(rf_probe PRIVATE
         PICO_STDIO_STACK_BUFFER_SIZE=64 # use a small printf on stack buffer
 )
 
-target_compile_options(rf_probe PUBLIC -Werror -Wall -Wnull-dereference)
+target_compile_options(rf_probe PUBLIC -Werror -Wall -Wnull-dereference -g -O0)
 
 pico_set_program_url(${PROJECT_NAME} "https://github.com/rubienr-rfpowermeter/rf-powermeter-pipico")
 pico_set_program_description(${PROJECT_NAME} "Power Meter UI (sv1afn.com)")
