@@ -94,11 +94,11 @@ void core0_main()
 
   while (true)
   {
-    if (0 == system_ticks_ms % 20)
+    if (0 == system_ticks_ms % 5)
     {
       sampling.sample = sampling.in_buffer->read();
       ui_update();
+      lv_task_handler();
     }
-    if (0 == system_ticks_ms % 5) { lv_task_handler(); }
   }
 }
