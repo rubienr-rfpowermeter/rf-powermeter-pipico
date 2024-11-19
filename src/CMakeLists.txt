@@ -18,7 +18,6 @@ set(PICO_PLATFORM rp2350-arm-s CACHE STRING "Pico Platform")
 # pull in Raspberry Pi Pico SDK
 include(pico_sdk_import.cmake)
 
-
 if (PICO_SDK_VERSION_STRING VERSION_LESS "1.4.0")
     message(FATAL_ERROR "Raspberry Pi Pico SDK version 1.4.0 (or later) required. Your version is ${PICO_SDK_VERSION_STRING}")
 endif ()
@@ -50,6 +49,7 @@ add_executable(rf_probe
         modules/periphery/display/display.cpp
         modules/periphery/led/user_led.cpp
         modules/rf_power_meter/KValues3rdOrder.hpp
+        modules/debug.c
         main.cpp
 )
 
@@ -88,7 +88,7 @@ target_compile_definitions(rf_probe PRIVATE
         PICO_STDIO_STACK_BUFFER_SIZE=64 # use a small printf on stack buffer
 )
 
-target_compile_options(rf_probe PUBLIC -Werror -Wall -Wnull-dereference -g -O0)
+target_compile_options(rf_probe PUBLIC -Werror -Wall -Wnull-dereference -g3)
 
 pico_set_program_url(${PROJECT_NAME} "https://github.com/rubienr-rfpowermeter/rf-powermeter-pipico")
 pico_set_program_description(${PROJECT_NAME} "Power Meter UI (sv1afn.com)")
