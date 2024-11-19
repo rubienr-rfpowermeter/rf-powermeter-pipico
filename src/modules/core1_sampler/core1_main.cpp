@@ -76,7 +76,7 @@ void core1_init(TransactionBuffer &out_buff) { out_buffer = &out_buff; }
   assert(1 == get_core_num());
 
   init();
-  alarm_pool_create_with_unused_hardware_alarm(16);
+  alarm_pool_create_with_unused_hardware_alarm(PICO_TIME_DEFAULT_ALARM_POOL_MAX_TIMERS);
 
   ad7887_start();
   while (true)
