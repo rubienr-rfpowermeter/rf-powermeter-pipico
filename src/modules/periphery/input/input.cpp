@@ -3,8 +3,8 @@
 #include "buttons_types.h"
 #include "joystick_types.h"
 #include <cinttypes>
+#include <cstdio>
 #include <pico/stdlib.h>
-#include <stdio.h>
 
 void input_init() { irq_set_enabled(IO_IRQ_BANK0, true); }
 
@@ -21,8 +21,8 @@ bool TrackedInputState::update(bool signal)
   if (signal) counter = counter << 1 | 0x01;
   else counter >>= 1;
 
-  const bool is_now_pressed{ counter > 0b00010000 };
-  const bool is_now_released{ counter < 0b00001000 };
+  const bool is_now_pressed { counter > 0b00000001 };
+  const bool is_now_released { counter < 0b00000001 };
 
   is_event = (is_now_pressed && !is_now_released && !is_pressed) || (is_now_released && !is_now_pressed && !is_released);
 
