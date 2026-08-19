@@ -86,3 +86,18 @@ target_compile_options(rf_probe PUBLIC -Werror -Wall -Wnull-dereference -g3)
 pico_set_program_url(${PROJECT_NAME} "https://github.com/rubienr-rfpowermeter/rf-powermeter-pipico")
 pico_set_program_description(${PROJECT_NAME} "Power Meter UI (sv1afn.com)")
 pico_add_extra_outputs(rf_probe)
+
+add_custom_target(upload
+     COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/scripts/upload-openocd.sh"
+     DEPENDS rf_probe
+     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+     USES_TERMINAL
+     VERBATIM
+ )
+
+add_custom_target(monitor
+    COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/scripts/serial-monitor.sh"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+    USES_TERMINAL
+    VERBATIM
+)
