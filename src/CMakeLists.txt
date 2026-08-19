@@ -82,6 +82,7 @@ target_compile_definitions(rf_probe PRIVATE
 )
 
 target_compile_options(rf_probe PUBLIC -Werror -Wall -Wnull-dereference -g3 -Og)
+target_compile_options(rf_probe PRIVATE -fstack-usage)
 
 pico_set_program_url(${PROJECT_NAME} "https://github.com/rubienr-rfpowermeter/rf-powermeter-pipico")
 pico_set_program_description(${PROJECT_NAME} "Power Meter UI (sv1afn.com)")
