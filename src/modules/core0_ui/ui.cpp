@@ -58,6 +58,7 @@ struct Tab1
   lv_obj_t *tab { nullptr };
 
   lv_obj_t          *chart { nullptr };
+  lv_obj_t          *scale { nullptr };
   lv_obj_t          *current_value { nullptr };
   lv_chart_series_t *series { nullptr };
   lv_obj_t          *refresh_label { nullptr };
@@ -132,6 +133,20 @@ __unused static void on_tab0_tab_changed_cb(__unused lv_event_t *event)
   ui.tabs.tab0.active_tab = lv_tabview_get_tab_active(ui.tabs.tab0.tab_view);
 }
 
+static void set_label_row(lv_obj_t *label, int32_t row)
+{
+  constexpr int32_t y_offset_px { 22 };
+  lv_obj_set_pos(label, 0, row * y_offset_px);
+}
+
+static void update_label_text(lv_obj_t *label, const char *format, const SiFloat &value)
+{
+  snprintf(
+    ui.text_buffer, sizeof(ui.text_buffer), format, value.value, linearityToStr(value.lin), scaleToStr(value.scale),
+    unitToStr(value.unit));
+  lv_label_set_text(label, ui.text_buffer);
+}
+
 __unused static void init_tab0_page0(Tab0Page0 &tab)
 {
   lv_obj_t *parent { tab.tab };
@@ -148,24 +163,15 @@ __unused static void init_tab0_page0(Tab0Page0 &tab)
 
   tab.refresh_label = lv_label_create(parent);
 
-  const int32_t y_offset_px { 22 };
-  const int32_t x_margin { 0 };
-  const int32_t y_margin { 0 };
-
-  const std::vector<std::tuple<lv_obj_t *, int32_t, int32_t>> todo {
-    {    tab.avg_db_label, x_margin, y_margin + 0 * y_offset_px },
-    {  tab.value_db_label, x_margin, y_margin + 1 * y_offset_px },
-    {    tab.min_db_label, x_margin, y_margin + 2 * y_offset_px },
-    {    tab.max_db_label, x_margin, y_margin + 3 * y_offset_px },
-    {   tab.avg_lin_label, x_margin, y_margin + 4 * y_offset_px },
-    { tab.value_lin_label, x_margin, y_margin + 5 * y_offset_px },
-    {   tab.min_lin_label, x_margin, y_margin + 6 * y_offset_px },
-    {   tab.max_lin_label, x_margin, y_margin + 7 * y_offset_px },
-    {   tab.refresh_label, x_margin, y_margin + 8 * y_offset_px },
-  };
-
-  for (auto [label, x_px, y_px] : todo)
-    lv_obj_set_pos(label, x_px, y_px);
+  set_label_row(tab.avg_db_label, 0);
+  set_label_row(tab.value_db_label, 1);
+  set_label_row(tab.min_db_label, 2);
+  set_label_row(tab.max_db_label, 3);
+  set_label_row(tab.avg_lin_label, 4);
+  set_label_row(tab.value_lin_label, 5);
+  set_label_row(tab.min_lin_label, 6);
+  set_label_row(tab.max_lin_label, 7);
+  set_label_row(tab.refresh_label, 8);
 
   lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
 }
@@ -440,23 +446,13 @@ static void update_tab1(Tab1 tab)
 
 static void update_tab2(Tab2 &tab)
 {
-
-  const std::vector<std::tuple<const char *, const SiFloat &, lv_obj_t *>> todo {
-    {  "k0: %6.1f %s%s%s", SiFloat { .value = ui_data.sample->correction_values.k0 },             tab.k0_label },
-    {  "k1: %6.1f %s%s%s", SiFloat { .value = ui_data.sample->correction_values.k1 },             tab.k1_label },
-    {  "k2: %6.1f %s%s%s", SiFloat { .value = ui_data.sample->correction_values.k2 },             tab.k2_label },
-    {  "k3: %6.1f %s%s%s", SiFloat { .value = ui_data.sample->correction_values.k3 },             tab.k3_label },
-    { "Band: %5.1f%s%s%s",         frequencyBandToSi(ui_data.sample->frequency_band), tab.frequency_band_label },
-    { "Temp: %5.1f%s%s%s",             ui_data.sample->probe_temperature.celsius.avg,     tab.probe_temp_label },
-  };
-
-  for (auto &[format, value, label] : todo)
-  {
-    snprintf(
-      ui.text_buffer, sizeof(ui.text_buffer), format, value.value, linearityToStr(value.lin), scaleToStr(value.scale),
-      unitToStr(value.unit));
-    lv_label_set_text(label, ui.text_buffer);
-  }
+  update_label_text(tab.k0_label, "k0: %6.1f %s%s%s", SiFloat { .value = ui_data.sample->correction_values.k0 });
+  update_label_text(tab.k1_label, "k1: %6.1f %s%s%s", SiFloat { .value = ui_data.sample->correction_values.k1 });
+  update_label_text(tab.k2_label, "k2: %6.1f %s%s%s", SiFloat { .value = ui_data.sample->correction_values.k2 });
+  update_label_text(tab.k3_label, "k3: %6.1f %s%s%s", SiFloat { .value = ui_data.sample->correction_values.k3 });
+  update_label_text(
+    tab.frequency_band_label, "Band: %5.1f%s%s%s", frequencyBandToSi(ui_data.sample->frequency_band));
+  update_label_text(tab.probe_temp_label, "Temp: %5.1f%s%s%s", ui_data.sample->probe_temperature.celsius.avg);
 }
 
 static void update_tab3(__unused Tab3 tab) { }

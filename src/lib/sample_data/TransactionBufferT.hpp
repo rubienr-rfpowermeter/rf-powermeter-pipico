@@ -8,7 +8,7 @@ template <typename T> struct TransactionBufferT
   static constexpr uint8_t buffer_size = { 3 };
 
   TransactionBufferT();
-  T    read();
+  void read(T &out);
   void write(const T &in);
 
 private:
@@ -22,14 +22,14 @@ private:
 
 template <typename T> TransactionBufferT<T>::TransactionBufferT() { mutex_init(&mutex); }
 
-template <typename T> T TransactionBufferT<T>::read()
+template <typename T> void TransactionBufferT<T>::read(T &out)
 {
   mutex_enter_blocking(&mutex);
   const uint8_t next_index = { (uint8_t)((read_index + 1) % buffer_size) };
   read_index               = (next_index != write_index) ? next_index : read_index;
   mutex_exit(&mutex);
 
-  return buffer[read_index];
+  out = buffer[read_index];
 }
 
 template <typename T> void TransactionBufferT<T>::write(const T &in)

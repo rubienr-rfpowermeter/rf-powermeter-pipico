@@ -311,7 +311,9 @@ void display_clear(enum DisplayColor color)
 {
   display_set_window(0, 0, DISPLAY_WIDTH_PX, DISPLAY_HEIGHT_PX);
 
-  uint16_t       line[DISPLAY_WIDTH_PX];
+  // Keep the scanline out of the small core stack. display_clear() is only
+  // used synchronously, so sharing this storage between calls is safe.
+  static uint16_t line[DISPLAY_WIDTH_PX];
   const uint16_t clr{ (uint16_t)(((color & 0x00ff) << 8) | ((color & 0xff00) >> 8)) };
 
   for (auto &i : line)

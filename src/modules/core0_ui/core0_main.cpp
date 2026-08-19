@@ -101,7 +101,7 @@ void core0_main()
     if (current_ticks_ms - last_ui_update_ms >= ui_update_interval_ms)
     {
       last_ui_update_ms = current_ticks_ms;
-      sampling.sample = sampling.in_buffer->read();
+      sampling.in_buffer->read(sampling.sample);
       ui_update();
       lv_task_handler();
     }

@@ -2,9 +2,21 @@
 
 #include "buttons_types.h"
 #include "joystick_types.h"
-#include <cinttypes>
 #include <cstdio>
 #include <pico/stdlib.h>
+
+static constexpr char decimal_digit(uint8_t value) { return static_cast<char>('0' + value); }
+
+static char *append_input_state(char *out, char name, const TrackedInputState &state)
+{
+  *out++ = name;
+  *out++ = '=';
+  *out++ = decimal_digit(state.is_pressed);
+  *out++ = decimal_digit(state.is_released);
+  *out++ = decimal_digit(state.is_event);
+  *out++ = ' ';
+  return out;
+}
 
 void input_init() { irq_set_enabled(IO_IRQ_BANK0, true); }
 
@@ -59,30 +71,34 @@ void TrackedInputs::update_joystick(uint8_t joystick_signal_mask)
 
 void TrackedInputs::print() const
 {
-  // clang-format off
-  printf(
-    "a=%" PRIu8 "%" PRIu8 "%" PRIu8 " "
-    "b=%" PRIu8 "%" PRIu8 "%" PRIu8 " "
-    "x=%" PRIu8 "%" PRIu8 "%" PRIu8 " "
-    "y=%" PRIu8 "%" PRIu8 "%" PRIu8 " "
-    "u=%" PRIu8 "%" PRIu8 "%" PRIu8 " "
-    "d=%" PRIu8 "%" PRIu8 "%" PRIu8 " "
-    "l=%" PRIu8 "%" PRIu8 "%" PRIu8 " "
-    "r=%" PRIu8 "%" PRIu8 "%" PRIu8 " "
-    "z=%" PRIu8 "%" PRIu8 "%" PRIu8 " "
-    "bs=%" PRIu8 "%" PRIu8 " "
-    "js=%" PRIu8 "%" PRIu8 "\n",
-    a.is_pressed,     a.is_released,     a.is_event,
-    b.is_pressed,     b.is_released,     b.is_event,
-    x.is_pressed,     x.is_released,     x.is_event,
-    y.is_pressed,     y.is_released,     y.is_event,
-    up.is_pressed,    up.is_released,    up.is_event,
-    down.is_pressed,  down.is_released,  down.is_event,
-    left.is_pressed,  left.is_released,  left.is_event,
-    right.is_pressed, right.is_released, right.is_event,
-    z.is_pressed,     z.is_released,     z.is_event,
-    button_active, button_event,
-    joystick_active, joystick_event
-  );
-  // clang-format on
+  // Nine six-character input states, a six-character button summary, a
+  // five-character joystick summary, and the null terminator.
+  static char line[9 * 6 + 6 + 5 + 1];
+  char       *out { line };
+
+  out = append_input_state(out, 'a', a);
+  out = append_input_state(out, 'b', b);
+  out = append_input_state(out, 'x', x);
+  out = append_input_state(out, 'y', y);
+  out = append_input_state(out, 'u', up);
+  out = append_input_state(out, 'd', down);
+  out = append_input_state(out, 'l', left);
+  out = append_input_state(out, 'r', right);
+  out = append_input_state(out, 'z', z);
+
+  *out++ = 'b';
+  *out++ = 's';
+  *out++ = '=';
+  *out++ = decimal_digit(button_active);
+  *out++ = decimal_digit(button_event);
+  *out++ = ' ';
+
+  *out++ = 'j';
+  *out++ = 's';
+  *out++ = '=';
+  *out++ = decimal_digit(joystick_active);
+  *out++ = decimal_digit(joystick_event);
+  *out   = '\0';
+
+  puts(line);
 }
