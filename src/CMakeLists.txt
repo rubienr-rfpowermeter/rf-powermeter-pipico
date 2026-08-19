@@ -5,13 +5,6 @@ set(CMAKE_CXX_STANDARD 23)
 
 set(CMAKE_EXE_LINKER_FLAGS "-Wl,--print-memory-usage")
 
-# pico-sdk fallback to $USER/pico/pico-sdk if environment PICO_SDK_PATH is not set
-if (DEFINED ENV{PICO_SDK_PATH})
-    set(PICO_SDK_PATH "$ENV{PICO_SDK_PATH}")
-else ()
-    set(PICO_SDK_PATH "$ENV{USER}/pico/pico-sdk")
-endif ()
-
 set(PICO_BOARD pico2 CACHE STRING "Pico Board Type")
 set(PICO_PLATFORM rp2350-arm-s CACHE STRING "Pico Platform")
 
