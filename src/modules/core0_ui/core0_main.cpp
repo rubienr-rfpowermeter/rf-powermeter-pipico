@@ -84,11 +84,6 @@ void core0_main()
 
   // init();
 
-  { // todo rr - find out why this fishy workaround was necessary (repair hotfix)
-    lv_tick_inc(1);
-    lv_task_handler();
-  }
-
   constexpr uint8_t sync_signal { 42 };
   printf("C0I main sending sync. signal %" PRIu8 " to other core ...\n", sync_signal);
   multicore_fifo_push_blocking(sync_signal);
@@ -97,10 +92,15 @@ void core0_main()
   repeating_timer_t timer;
   add_repeating_timer_ms(1, ms_tick_timer_cb, nullptr, &timer);
 
+  constexpr uint32_t ui_update_interval_ms { 5 };
+  uint32_t           last_ui_update_ms { system_ticks_ms };
+
   while (true)
   {
-    if (0 == system_ticks_ms % 5)
+    const uint32_t current_ticks_ms { system_ticks_ms };
+    if (current_ticks_ms - last_ui_update_ms >= ui_update_interval_ms)
     {
+      last_ui_update_ms = current_ticks_ms;
       sampling.sample = sampling.in_buffer->read();
       ui_update();
       lv_task_handler();
