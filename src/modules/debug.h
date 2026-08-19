@@ -1,3 +1,3 @@
 #pragma once
 
-void isr_hardfault();
+void isr_hardfault(void);
