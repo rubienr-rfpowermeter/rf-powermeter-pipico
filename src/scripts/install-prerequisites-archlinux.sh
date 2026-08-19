@@ -5,19 +5,26 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 packages=(
   arm-none-eabi-gcc
   arm-none-eabi-newlib
+  base-devel
   cmake
+  gdb
   ninja
-  openocd
+  #openocd
   picocom
 )
 
-sudo pacman -S --needed "${packages[@]}"
+if (( EUID == 0 )); then
+  pacman -S --noconfirm --needed "${packages[@]}"
+else
+  sudo pacman -S --noconfirm --needed "${packages[@]}"
+fi
 
 
 if command -v yay &> /dev/null; then
   aur_packages=(
     picotool
+    openocd-git
   )
 
-  yay -S --needed "${aur_packages[@]}"
+  yay -S --noconfirm --needed "${aur_packages[@]}"
 fi
