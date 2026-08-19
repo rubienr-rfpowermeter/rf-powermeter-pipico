@@ -77,8 +77,10 @@ target_include_directories(rf_probe PRIVATE
 )
 
 target_compile_definitions(rf_probe PRIVATE
-        # PICO_STACK_SIZE=0x1000
-        PICO_STDIO_STACK_BUFFER_SIZE=64 # use a small printf on stack buffer
+        PICO_STACK_SIZE=0x1000            # core 0
+        PICO_CORE1_STACK_SIZE=0x1000      # core 1
+        #PICO_STDIO_STACK_BUFFER_SIZE=64  # use a small printf on stack buffer
+        PICO_USE_STACK_GUARDS=1           # make last 32B of stack a write-protected electric-fence
 )
 
 target_compile_options(rf_probe PUBLIC -Werror -Wall -Wnull-dereference -g3 -Og)
