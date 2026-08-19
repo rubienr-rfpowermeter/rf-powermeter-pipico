@@ -7,7 +7,6 @@ git -C "${REPOSITORY_DIR}" submodule sync --recursive \
 && git -C "${REPOSITORY_DIR}" submodule update \
      --init \
      --recursive \
-     --remote \
      --recommend-shallow \
      --single-branch \
      --verbose \
