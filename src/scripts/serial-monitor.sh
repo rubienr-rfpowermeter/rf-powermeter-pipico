@@ -3,7 +3,7 @@
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 SERIAL_PORT="/dev/ttyACM0"
-if [ "x$1" == "x"] ; then
+if [ "x$1" != "x" ] ; then
   SERIAL_PORT="$1"
 fi
 
