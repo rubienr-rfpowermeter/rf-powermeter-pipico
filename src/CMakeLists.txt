@@ -77,11 +77,19 @@ target_include_directories(rf_probe PRIVATE
 )
 
 target_compile_definitions(rf_probe PRIVATE
-        PICO_STACK_SIZE=0x1000            # core 0
-        PICO_CORE1_STACK_SIZE=0x1000      # core 1
+        PICO_STACK_SIZE=0x1c00            # core 0: 7 KiB of the combined scratch SRAM
+        PICO_CORE1_STACK_SIZE=0x400       # core 1: lower 1 KiB of scratch X
         #PICO_STDIO_STACK_BUFFER_SIZE=64  # use a small printf on stack buffer
-        PICO_USE_STACK_GUARDS=1           # make last 32B of stack a write-protected electric-fence
+        PICO_USE_STACK_GUARDS=1           # guard the lower stack boundary
 )
+
+# Repartition the contiguous 8 KiB scratch area without putting either stack
+# in main SRAM. Core 1 grows down through the lower 1 KiB; core 0 grows down
+# through the upper 7 KiB (all of physical scratch Y plus 3 KiB of X).
+pico_set_linker_script_var(rf_probe SCRATCH_X_ORIGIN 0x20080000)
+pico_set_linker_script_var(rf_probe SCRATCH_X_LENGTH 0x400)
+pico_set_linker_script_var(rf_probe SCRATCH_Y_ORIGIN 0x20080400)
+pico_set_linker_script_var(rf_probe SCRATCH_Y_LENGTH 0x1c00)
 
 target_compile_options(rf_probe PUBLIC -Werror -Wall -Wnull-dereference -g3 -Og)
 target_compile_options(rf_probe PRIVATE -fstack-usage)
