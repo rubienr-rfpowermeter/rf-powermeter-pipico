@@ -56,14 +56,14 @@ jobs:
 
       - name: "pico-sdk: cache restore"
         id: cache-picosdk-restore
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: ${{env.PICO_SDK_PATH}}
           key: pico-sdk-${{env.PICO_SDK_VERSION}}-${{matrix.os}}
 
       - name: "pico-sdk: checkout"
         if: steps.cache-picosdk-restore.outputs.cache-hit != 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: raspberrypi/pico-sdk
           ref: ${{env.PICO_SDK_VERSION}}
@@ -73,13 +73,13 @@ jobs:
       - name: "pico-sdk: cache store"
         id: cache-picosdk-save
         if: steps.cache-picosdk-restore.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: ${{env.PICO_SDK_PATH}}
           key: ${{steps.cache-picosdk-restore.outputs.cache-primary-key}}
 
       - name: "repository: checkout"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: true
           path: ${{env.REPO_REL_CHECKOUT_PATH}}
@@ -92,8 +92,33 @@ jobs:
         working-directory: ${{env.REPO_PATH}}
         run: src/scripts/cmake.sh
 
+      - name: "analysis: clang-tidy"
+        if: matrix.os == 'ubuntu-latest'
+        working-directory: ${{env.REPO_PATH}}
+        run: src/scripts/clang-tidy.sh
+
       - name: "build: make"
         working-directory: ${{env.REPO_PATH}}
         run: |
           src/scripts/make.sh
           src/scripts/picotool-info.sh
+
+      - name: "build: resource limits"
+        working-directory: ${{env.REPO_PATH}}
+        run: |
+          src/scripts/firmware-resource-check.sh | tee src/build/firmware-resource-report.txt
+          src/scripts/stack-usage-summary.sh > src/build/stack-usage-report.txt
+
+          echo "Largest stack frames:"
+          sed -n '1,22p' src/build/stack-usage-report.txt
+
+          {
+            echo '### Firmware resources'
+            echo '```text'
+            cat src/build/firmware-resource-report.txt
+            echo '```'
+            echo '### Largest stack frames'
+            echo '```text'
+            sed -n '1,22p' src/build/stack-usage-report.txt
+            echo '```'
+          } >> "${GITHUB_STEP_SUMMARY}"

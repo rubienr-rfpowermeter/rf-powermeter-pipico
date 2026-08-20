@@ -1,0 +1,56 @@
+name: CodeQL
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: "24 3 * * 1"
+
+permissions:
+  contents: read
+  security-events: write
+
+env:
+  PICO_SDK_VERSION: 2.3.0
+  PICO_SDK_PATH: ${{github.workspace}}/pico-sdk
+
+jobs:
+  analyze:
+    name: Analyze C/C++
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "repository: checkout"
+        uses: actions/checkout@v6
+        with:
+          submodules: true
+
+      - name: "pico-sdk: checkout"
+        uses: actions/checkout@v6
+        with:
+          repository: raspberrypi/pico-sdk
+          ref: ${{env.PICO_SDK_VERSION}}
+          submodules: true
+          path: pico-sdk
+
+      - name: "build: prerequisites"
+        run: src/scripts/install-prerequisites-ubuntu.sh
+
+      - name: "CodeQL: initialize"
+        uses: github/codeql-action/init@v4
+        with:
+          languages: c-cpp
+          build-mode: manual
+          queries: security-extended
+
+      - name: "CodeQL: build firmware"
+        run: |
+          src/scripts/cmake.sh
+          src/scripts/make.sh
+
+      - name: "CodeQL: analyze"
+        uses: github/codeql-action/analyze@v4

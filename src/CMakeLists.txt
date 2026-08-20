@@ -28,10 +28,13 @@ add_definitions(-DLV_LVGL_H_INCLUDE_SIMPLE=1)
 
 set(PROJECT_AUXILIARY_FILES
         ../readme.md
+        .clang-tidy
+        scripts/clang-tidy.sh
         scripts/cmake-make.sh
         scripts/cmake.sh
         scripts/device-reset-openocd.sh
         scripts/auto-format.sh
+        scripts/firmware-resource-check.sh
         scripts/gdb-client.sh
         scripts/gdb-server.sh
         scripts/git-submodule-init.sh

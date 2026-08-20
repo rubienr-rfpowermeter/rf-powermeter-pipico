@@ -25,7 +25,7 @@ input.
 
 - Raspberry Pi Pico SDK 2.3.0 or newer, including its submodules
 - CMake and Ninja
-- `clang-format` and GNU Parallel for source formatting
+- `clang-format`, Clang-Tidy, ShellCheck, and GNU Parallel for quality checks
 - Arm GNU embedded toolchain and Newlib
 - OpenOCD with RP2350 support for debug-probe uploads
 - `picotool` for inspecting firmware metadata
@@ -146,11 +146,21 @@ The GDB server listens on `localhost:3333` and the client loads
 ## Unit tests
 
 The platform-independent unit tests are built and run on the host. Their first
-configuration downloads GoogleTest.
+configuration downloads GoogleTest. The test executable is instrumented with
+AddressSanitizer and UndefinedBehaviorSanitizer; GCC and Clang are supported.
 
 ```sh
 src/tests/unit/scripts/run.sh
 ```
+
+## Continuous integration
+
+Pull requests build the firmware and run host unit tests on Ubuntu and Arch
+Linux. A separate quality job verifies C/C++ formatting with
+`auto-format.sh --check`, checks shell scripts with ShellCheck, and validates
+GitHub Actions workflows with actionlint. The Ubuntu firmware build also runs
+Clang-Tidy, while every firmware build enforces reviewed flash, SRAM, and stack
+frame limits. CodeQL performs an additional C/C++ security analysis.
 
 ## Pinout
 

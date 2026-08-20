@@ -97,10 +97,30 @@ Recursively formats C and C++ source and header files below `src` using
 core and displays a progress bar in an interactive terminal. Non-interactive
 runs print each formatter command instead. Build directories, the `gitmodules`
 third-party tree, generated font and PIO sources, `src/lv_conf.h`, and source
-files larger than 1 MiB are excluded.
+files larger than 1 MiB are excluded. CI pins ClangFormat 22.1.8 so formatting
+does not change with the Ubuntu runner's distribution package version.
 
 ```sh
 src/scripts/auto-format.sh
+```
+
+To verify formatting without modifying any files, as done by CI, use:
+
+```sh
+src/scripts/auto-format.sh --check
+```
+
+### `clang-tidy.sh`
+
+Runs Clang-Tidy on the project-owned firmware translation units using
+`src/.clang-tidy` and the compilation database generated in `src/build`.
+Pico SDK and LVGL translation units are not analyzed. Configure the firmware
+before running it; an alternative build directory can be passed as the first
+argument.
+
+```sh
+src/scripts/clang-tidy.sh
+src/scripts/clang-tidy.sh /path/to/build
 ```
 
 ## Device access and debugging
@@ -188,3 +208,19 @@ src/scripts/stack-usage-summary.sh /path/to/build
 
 The `.su` files are produced because the firmware target is compiled with
 `-fstack-usage`.
+
+### `firmware-resource-check.sh`
+
+Checks the firmware binary size, statically occupied main SRAM, and largest
+project-owned stack frame against reviewed limits. It also reports the fixed
+scratch-SRAM reservation. The script reads `src/build` by default, or a build
+directory supplied as its first argument.
+
+```sh
+src/scripts/firmware-resource-check.sh
+src/scripts/firmware-resource-check.sh /path/to/build
+```
+
+The default limits can be overridden for an intentional, reviewed increase by
+setting `MAX_FLASH_BYTES`, `MAX_MAIN_SRAM_BYTES`, or
+`MAX_PROJECT_STACK_FRAME_BYTES` in the environment.

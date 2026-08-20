@@ -27,6 +27,21 @@ include_directories(
 add_executable(tests
         sampling/average.cpp
 )
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(tests PRIVATE
+            -fsanitize=address,undefined
+            -fno-sanitize-recover=undefined
+            -fno-omit-frame-pointer
+    )
+    target_link_options(tests PRIVATE
+            -fsanitize=address,undefined
+            -fno-sanitize-recover=undefined
+    )
+else ()
+    message(FATAL_ERROR "The unit tests require a compiler with AddressSanitizer and UndefinedBehaviorSanitizer support")
+endif ()
+
 target_link_libraries(tests
         GTest::gtest_main
 )

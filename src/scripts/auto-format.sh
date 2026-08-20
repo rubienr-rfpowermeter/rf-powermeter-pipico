@@ -5,6 +5,29 @@ set -euo pipefail
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 SOURCE_DIR=$( cd -- "${SCRIPT_DIR}/.." && pwd )
 MAX_SOURCE_FILE_SIZE=1M
+MODE=${1:-format}
+
+if (( $# > 1 )); then
+  echo "Usage: $0 [--check]" >&2
+  exit 2
+fi
+
+case "${MODE}" in
+  format)
+    CLANG_FORMAT_ARGS=(--style=file -i)
+    ACTION="Formatting"
+    RESULT="Formatted"
+    ;;
+  --check)
+    CLANG_FORMAT_ARGS=(--style=file --dry-run --Werror)
+    ACTION="Checking the formatting of"
+    RESULT="Formatting is correct for"
+    ;;
+  *)
+    echo "Usage: $0 [--check]" >&2
+    exit 2
+    ;;
+esac
 
 if ! command -v clang-format &> /dev/null; then
   echo "clang-format is not installed or not available in PATH." >&2
@@ -41,7 +64,7 @@ if (( ${#SOURCE_FILES[@]} == 0 )); then
   exit 1
 fi
 
-printf 'Formatting %d C/C++ source files...\n' "${#SOURCE_FILES[@]}"
+printf '%s %d C/C++ source files...\n' "${ACTION}" "${#SOURCE_FILES[@]}"
 
 PARALLEL_OUTPUT_ARGS=(--verbose)
 if [[ -t 2 ]] && ( : > /dev/tty ) 2>/dev/null; then
@@ -51,6 +74,6 @@ fi
 printf '%s\0' "${SOURCE_FILES[@]}" \
   | parallel --will-cite "${PARALLEL_OUTPUT_ARGS[@]}" --line-buffer \
       --null --no-run-if-empty --halt soon,fail=1 \
-      clang-format --style=file -i {}
+      clang-format "${CLANG_FORMAT_ARGS[@]}" {}
 
-printf 'Formatted %d C/C++ source files.\n' "${#SOURCE_FILES[@]}"
+printf '%s %d C/C++ source files.\n' "${RESULT}" "${#SOURCE_FILES[@]}"
