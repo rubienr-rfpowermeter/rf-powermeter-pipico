@@ -97,7 +97,8 @@ Recursively formats C and C++ source and header files below `src` using
 core and displays a progress bar in an interactive terminal. Non-interactive
 runs print each formatter command instead. Build directories, the `gitmodules`
 third-party tree, generated font and PIO sources, `src/lv_conf.h`, and source
-files larger than 1 MiB are excluded.
+files larger than 1 MiB are excluded. CI pins ClangFormat 22.1.8 so formatting
+does not change with the Ubuntu runner's distribution package version.
 
 ```sh
 src/scripts/auto-format.sh
