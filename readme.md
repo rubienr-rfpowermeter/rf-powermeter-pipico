@@ -23,7 +23,7 @@ input.
 
 ## Requirements
 
-- Raspberry Pi Pico SDK 2.0.0 or newer, including its submodules
+- Raspberry Pi Pico SDK 2.3.0 or newer, including its submodules
 - CMake and Ninja
 - `clang-format` and GNU Parallel for source formatting
 - Arm GNU embedded toolchain and Newlib

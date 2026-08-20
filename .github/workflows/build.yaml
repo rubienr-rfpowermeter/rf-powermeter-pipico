@@ -20,7 +20,7 @@ on:
       - ".github/workflows/build.yaml"
 
 env:
-  PICO_SDK_VERSION: 2.0.0
+  PICO_SDK_VERSION: 2.3.0
   PICO_SDK_REL_CHECKOUT_PATH: pico-sdk
   PICO_SDK_PATH: ${{github.workspace}}/pico-sdk
 
