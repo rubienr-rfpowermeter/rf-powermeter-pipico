@@ -1,0 +1,36 @@
+name: Quality Checks
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Formatting and linting
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "repository: checkout"
+        uses: actions/checkout@v6
+
+      - name: "quality: prerequisites"
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes clang-format parallel shellcheck
+
+      - name: "quality: C/C++ formatting"
+        run: src/scripts/auto-format.sh --check
+
+      - name: "quality: shell scripts"
+        run: |
+          find src/scripts src/tests/unit/scripts \
+            -type f -name '*.sh' -print0 \
+            | xargs -0 --no-run-if-empty shellcheck
+
+      - name: "quality: GitHub Actions workflows"
+        run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12

@@ -2,12 +2,11 @@
 
 set -euo pipefail
 
-SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-
 sudo apt-get update
 
 packages=(
   clang-format
+  clang-tidy
   cmake
   gdb
   gdb-multiarch
@@ -18,6 +17,7 @@ packages=(
   openocd
   parallel
   picocom
+  shellcheck
 )
 
 if apt-cache show picotool &> /dev/null; then

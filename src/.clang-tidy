@@ -1,0 +1,14 @@
+Checks: >
+  -*,
+  clang-analyzer-*,
+  bugprone-*,
+  performance-*,
+  -clang-analyzer-core.FixedAddressDereference,
+  -bugprone-easily-swappable-parameters
+WarningsAsErrors: >
+  clang-analyzer-*,
+  bugprone-*,
+  performance-*
+HeaderFilterRegex: '.*/src/(lib|modules)/.*|.*/src/main\.cpp'
+SystemHeaders: false
+FormatStyle: file

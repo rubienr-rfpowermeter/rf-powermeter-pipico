@@ -2,8 +2,6 @@
 
 set -euo pipefail
 
-SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-
 packages=(
   arm-none-eabi-gcc
   arm-none-eabi-newlib
@@ -15,6 +13,7 @@ packages=(
   #openocd
   parallel
   picocom
+  shellcheck
 )
 
 if (( EUID == 0 )); then
