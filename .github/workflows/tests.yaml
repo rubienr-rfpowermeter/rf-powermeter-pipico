@@ -2,6 +2,7 @@ name: Unit Tests
 on:
   push:
     branches:
+      - main
     paths:
       - "**"
       - "!**.md"
@@ -27,17 +28,32 @@ env:
 jobs:
   unit-tests:
     name: Unit Tests on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
+    container: ${{ fromJSON(matrix.container) }}
+    defaults:
+      run:
+        shell: bash
 
     permissions:
       checks: write
       pull-requests: write
 
     strategy:
+      fail-fast: false
       matrix:
-        os: [ ubuntu-24.04 ]
+        include:
+          - os: ubuntu-latest
+            container: "null"
+            prerequisites: src/scripts/install-prerequisites-ubuntu.sh
+          - os: archlinux-latest
+            container: '{"image":"archlinux:latest"}'
+            prerequisites: src/scripts/install-prerequisites-archlinux.sh
     
     steps:
+      - name: "container: bootstrap"
+        if: matrix.os == 'archlinux-latest'
+        run: pacman -Syu --noconfirm --needed git python
+
       - name: "repository: checkout"
         uses: actions/checkout@v4
         with:
@@ -46,7 +62,7 @@ jobs:
 
       - name: "test: prerequisites"
         working-directory: ${{env.REPO_PATH}}
-        run: src/scripts/install-tests-prerequisites-ubuntu.sh
+        run: ${{ matrix.prerequisites }}
 
       - name: "build: create build env + CMake"
         working-directory: ${{env.REPO_PATH}}

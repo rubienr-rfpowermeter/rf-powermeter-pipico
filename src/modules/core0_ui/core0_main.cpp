@@ -17,12 +17,12 @@
 
 struct SamplingResources
 {
-  TransactionBuffer *in_buffer{ nullptr };
+  TransactionBuffer *in_buffer { nullptr };
   TransactionData    sample;
 };
 
-static SamplingResources sampling{};
-static volatile uint32_t system_ticks_ms{ 0 };
+static SamplingResources sampling {};
+static volatile uint32_t system_ticks_ms { 0 };
 
 static bool ms_tick_timer_cb(__unused struct repeating_timer *t)
 {
@@ -33,8 +33,8 @@ static bool ms_tick_timer_cb(__unused struct repeating_timer *t)
 
 static void uart_post_init()
 {
-  constexpr uint8_t gpio_uart_tx{ PICO_DEFAULT_UART_TX_PIN };
-  constexpr uint8_t gpio_uart_rx{ PICO_DEFAULT_UART_RX_PIN };
+  constexpr uint8_t gpio_uart_tx { PICO_DEFAULT_UART_TX_PIN };
+  constexpr uint8_t gpio_uart_rx { PICO_DEFAULT_UART_RX_PIN };
   gpio_disable_pulls(gpio_uart_tx);
   gpio_disable_pulls(gpio_uart_rx);
   gpio_set_drive_strength(gpio_uart_tx, GPIO_DRIVE_STRENGTH_2MA);
@@ -84,7 +84,7 @@ void core0_main()
 
   // init();
 
-  constexpr uint8_t sync_signal{ 42 };
+  constexpr uint8_t sync_signal { 42 };
   printf("C0I main sending sync. signal %" PRIu8 " to other core ...\n", sync_signal);
   multicore_fifo_push_blocking(sync_signal);
   printf("C0I main sync signal %" PRIu8 " sent other core\n", sync_signal);
@@ -92,13 +92,18 @@ void core0_main()
   repeating_timer_t timer;
   add_repeating_timer_ms(1, ms_tick_timer_cb, nullptr, &timer);
 
+  constexpr uint32_t ui_update_interval_ms { 5 };
+  uint32_t           last_ui_update_ms { system_ticks_ms };
+
   while (true)
   {
-    if (0 == system_ticks_ms % 20)
+    const uint32_t current_ticks_ms { system_ticks_ms };
+    if (current_ticks_ms - last_ui_update_ms >= ui_update_interval_ms)
     {
-      sampling.sample = sampling.in_buffer->read();
+      last_ui_update_ms = current_ticks_ms;
+      sampling.in_buffer->read(sampling.sample);
       ui_update();
+      lv_task_handler();
     }
-    if (0 == system_ticks_ms % 5) { lv_task_handler(); }
   }
 }

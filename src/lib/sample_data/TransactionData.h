@@ -11,22 +11,22 @@ using AveragedSiInt8   = ResultT<si::SiInt8>;
 
 struct Temperature
 {
-  AveragedSiFloat volt{};
-  AveragedSiFloat kelvin{};
-  AveragedSiFloat celsius{};
+  AveragedSiFloat volt {};
+  AveragedSiFloat kelvin {};
+  AveragedSiFloat celsius {};
 };
 
 struct ConvertedSample
 {
-  AveragedSiFloat value_dbv{};
-  AveragedSiFloat value_linearv{};
+  AveragedSiFloat value_dbv {};
+  AveragedSiFloat value_linearv {};
 };
 
 struct TransactionData
 {
-  uint32_t               timestamp_us{ 0 };
-  Temperature            probe_temperature{};
-  rfpm::CorrectionValues correction_values{};
-  rfpm::FrequencyBand    frequency_band{};
-  ConvertedSample        converted_sample{};
+  uint32_t               timestamp_us { 0 };
+  Temperature            probe_temperature {};
+  rfpm::CorrectionValues correction_values {};
+  rfpm::FrequencyBand    frequency_band {};
+  ConvertedSample        converted_sample {};
 };

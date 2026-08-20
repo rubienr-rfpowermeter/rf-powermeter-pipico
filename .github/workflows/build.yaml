@@ -2,6 +2,7 @@ name: CMake Build
 on:
   push:
     branches:
+      - main
     paths:
       - "**"
       - "!**.md"
@@ -21,7 +22,7 @@ on:
       - ".github/workflows/build.yaml"
 
 env:
-  PICO_SDK_VERSION: 2.0.0
+  PICO_SDK_VERSION: 2.3.0
   PICO_SDK_REL_CHECKOUT_PATH: pico-sdk
   PICO_SDK_PATH: ${{github.workspace}}/pico-sdk
 
@@ -31,21 +32,37 @@ env:
 jobs:
   cmake-build:
     name: CMake build on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
+    container: ${{ fromJSON(matrix.container) }}
+    defaults:
+      run:
+        shell: bash
     strategy:
+      fail-fast: false
       matrix:
-        os: [ ubuntu-24.04 ]
+        include:
+          - os: ubuntu-latest
+            container: "null"
+            prerequisites: src/scripts/install-prerequisites-ubuntu.sh
+          - os: archlinux-latest
+            container: '{"image":"archlinux:latest"}'
+            prerequisites: src/scripts/install-prerequisites-archlinux.sh
     
     steps:
+
+      - name: "container: bootstrap"
+        if: matrix.os == 'archlinux-latest'
+        run: pacman -Syu --noconfirm --needed git python
 
       - name: "pico-sdk: cache restore"
         id: cache-picosdk-restore
         uses: actions/cache/restore@v4
         with:
           path: ${{env.PICO_SDK_PATH}}
-          key: pico-sdk-${{env.PICO_SDK_VERSION}}
+          key: pico-sdk-${{env.PICO_SDK_VERSION}}-${{matrix.os}}
 
       - name: "pico-sdk: checkout"
+        if: steps.cache-picosdk-restore.outputs.cache-hit != 'true'
         uses: actions/checkout@v4
         with:
           repository: raspberrypi/pico-sdk
@@ -55,6 +72,7 @@ jobs:
 
       - name: "pico-sdk: cache store"
         id: cache-picosdk-save
+        if: steps.cache-picosdk-restore.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: ${{env.PICO_SDK_PATH}}
@@ -68,10 +86,7 @@ jobs:
 
       - name: "build: prerequisites"
         working-directory: ${{env.REPO_PATH}}
-        run: src/scripts/install-build-prerequisites-ubuntu.sh
-        # uses: tecolicom/actions-use-apt-tools@v1
-        # with:
-        #   tools: cmake gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib
+        run: ${{ matrix.prerequisites }}
 
       - name: "build: create build env + CMake"
         working-directory: ${{env.REPO_PATH}}

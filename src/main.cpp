@@ -10,6 +10,7 @@ TransactionBuffer core1_to_core0_transaction_buffer {};
   core0_init(core1_to_core0_transaction_buffer);
   core1_init(core1_to_core0_transaction_buffer);
 
+  multicore_reset_core1();
   multicore_launch_core1(core1_main);   // produce samples
   core0_main();                         // consume samples
 }

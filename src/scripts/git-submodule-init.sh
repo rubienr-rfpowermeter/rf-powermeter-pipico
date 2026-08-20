@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+REPOSITORY_DIR=$(git -C "${SCRIPT_DIR}" rev-parse --show-toplevel) || exit 1
 
-pushd ${SCRIPT_DIR}/.. \
-&& git submodule update --init --recursive \
-&& git submodule update --recursive --recommend-shallow --single-branch --verbose \
-&& git submodule status \
-&& popd
-
+git -C "${REPOSITORY_DIR}" submodule sync --recursive \
+&& git -C "${REPOSITORY_DIR}" submodule update \
+     --init \
+     --recursive \
+     --recommend-shallow \
+     --single-branch \
+     --verbose \
+&& git -C "${REPOSITORY_DIR}" submodule status --recursive

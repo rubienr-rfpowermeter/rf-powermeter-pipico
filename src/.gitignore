@@ -1,7 +1,7 @@
 # IDE
 .swp
+.qtcreator
 
 # build artifacts
 build
 generated
-

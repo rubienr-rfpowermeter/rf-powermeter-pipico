@@ -11,11 +11,11 @@ namespace rfpm
 
 constexpr UnderlyingConversionType dbvFromVAdc(float voltFromAdc, FrequencyBand band)
 {
-  const UnderlyingConversionType slope_V{
+  const UnderlyingConversionType slope_V {
     static_cast<UnderlyingConversionType>(AD8318_BAND_SPECS[std::to_underlying<FrequencyBand>(band)].slope_mV_em1) * 0.1f * 0.001f
   };
 
-  const UnderlyingConversionType min_input_level_db{ static_cast<UnderlyingConversionType>(
+  const UnderlyingConversionType min_input_level_db { static_cast<UnderlyingConversionType>(
     AD8318_BAND_SPECS[std::to_underlying<FrequencyBand>(band)].min_input_level_dBm) };
 
   return min_input_level_db + ((voltFromAdc > AD8318_MAX_OUT_V) ? 0 :
@@ -28,7 +28,7 @@ constexpr UnderlyingConversionType dbvFromVAdc(float voltFromAdc, FrequencyBand 
 /// @refitem converted and corrected value
 constexpr UnderlyingConversionType dbvCorrectedFromDbv(UnderlyingConversionType dbvFromAdc, const CorrectionValues &correction)
 {
-  const UnderlyingConversionType v{ dbvFromAdc };
+  const UnderlyingConversionType v { dbvFromAdc };
   const UnderlyingConversionType v2 = { v * v };
   const UnderlyingConversionType v3 = { v2 * v };
   return correction.k0 + correction.k1 * v + correction.k2 * v2 + correction.k3 * v3;
@@ -39,8 +39,8 @@ constexpr UnderlyingConversionType dbvCorrectedFromDbv(UnderlyingConversionType 
 constexpr si::SiFloat toLinearV(const UnderlyingConversionType &correctedDbv)
 {
   const UnderlyingConversionType mV = powf(10.0f, correctedDbv / 10.0f);
-  constexpr si::Linearity        l{ si::Linearity::Linear };
-  constexpr si::Unit             u{ si::Unit::Volt };
+  constexpr si::Linearity        l { si::Linearity::Linear };
+  constexpr si::Unit             u { si::Unit::Volt };
 
   if (mV < 0.000000001f) return { .value = mV * 1e12f, .lin = l, .scale = si::Scale::Femto, .unit = u };
   else if (mV < 0.000001f) return { .value = mV * 1e9f, .lin = l, .scale = si::Scale::Pico, .unit = u };

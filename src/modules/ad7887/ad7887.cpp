@@ -11,14 +11,14 @@
 
 struct PwmSettings
 {
-  pwm_config cfg{};
-  uint       slice{ 0 };
+  pwm_config cfg {};
+  uint       slice { 0 };
 };
 
 struct DmaSettings
 {
-  uint32_t           channel{ UINT32_MAX };
-  dma_channel_config config{};
+  uint32_t           channel { UINT32_MAX };
+  dma_channel_config config {};
 };
 
 struct DmaPeriphery
@@ -31,13 +31,13 @@ struct DmaPeriphery
 
 struct DmaData
 {
-  ad7887::TransmissionData16b data_out{};
-  Ad7887Sample               *data_in{ nullptr };
+  ad7887::TransmissionData16b data_out {};
+  Ad7887Sample               *data_in { nullptr };
 };
 
-static PwmSettings  pwm_periphery{};
-static DmaPeriphery dma_periphery{};
-static DmaData      dma_data{};
+static PwmSettings  pwm_periphery {};
+static DmaPeriphery dma_periphery {};
+static DmaData      dma_data {};
 
 static void gpio_init()
 {
@@ -50,7 +50,7 @@ static void gpio_init()
     AD7887_GPIO_DOUT, "probe output"))
     // clang-format on
 
-    constexpr uint8_t out_gpios[]{ AD7887_GPIO_CS, AD7887_GPIO_SCLK, AD7887_GPIO_DIN };
+    constexpr uint8_t out_gpios[] { AD7887_GPIO_CS, AD7887_GPIO_SCLK, AD7887_GPIO_DIN };
 
   for (auto gpio : out_gpios)
   {
@@ -107,7 +107,7 @@ static void spi_init()
   //   25µs (hence 200x longer tha the acquisition). In the 2nd CLK-rise until V_LOW reaches V_INH=2.4V (rise time 7.5ns) the signal
   //   looks okay-ish except the last 7.5ns: analogue signal swings -27mV.
   // - To slightly reduce ringing on SPI lines introduce 150R series resistors at the TX side.
-  const uint32_t spi_baud{ spi_init(AD7887_SPI_PORT, 20 * 1000) };
+  const uint32_t spi_baud { spi_init(AD7887_SPI_PORT, 20 * 1000) };
   spi_set_format(AD7887_SPI_PORT, 16, SPI_CPOL_1, SPI_CPHA_1, SPI_MSB_FIRST);
   printf("C1I ad7887 spi_baud=%" PRIu32 "\n", spi_baud);
 
@@ -138,7 +138,7 @@ static void rx_ready_dma_init(DmaSettings &settings, Ad7887Sample &data_out)
   channel_config_set_chain_to(&settings.config, dma_periphery.pwm_wrap.channel);
   channel_config_set_high_priority(&settings.config, true);
 
-  static const uint32_t is_data_ready{ true };
+  static const uint32_t is_data_ready { true };
   dma_channel_configure(
     settings.channel,          // channel
     &settings.config,          // config
@@ -158,7 +158,7 @@ static void pwm_dma_init(DmaSettings &settings, PwmSettings &pwm_settings)
   channel_config_set_dreq(&settings.config, pwm_get_dreq(pwm_settings.slice));
   channel_config_set_high_priority(&settings.config, true);
 
-  static const uint32_t trx_dma_trigger_mask{ 1u << dma_periphery.tx.channel | 1u << dma_periphery.rx.channel };
+  static const uint32_t trx_dma_trigger_mask { 1u << dma_periphery.tx.channel | 1u << dma_periphery.rx.channel };
   dma_channel_configure(
     settings.channel,                 // channel
     &settings.config,                 // config
