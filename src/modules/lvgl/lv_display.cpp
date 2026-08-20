@@ -20,10 +20,8 @@ static LvglData lvgl_data;
 
 // About 1/10 of the display lets LVGL render one chunk while DMA transfers the
 // other without reserving two complete frame buffers.
-static constexpr size_t DRAW_BUFFER_LINE_COUNT{ DISPLAY_HEIGHT_PX >= 10 ? DISPLAY_HEIGHT_PX / 10 : 1 };
-static constexpr size_t DRAW_BUFFER_SIZE_BYTES{
-  DISPLAY_WIDTH_PX * DRAW_BUFFER_LINE_COUNT * LV_COLOR_FORMAT_GET_SIZE(LV_COLOR_FORMAT_RGB565)
-};
+static constexpr size_t DRAW_BUFFER_LINE_COUNT { DISPLAY_HEIGHT_PX >= 10 ? DISPLAY_HEIGHT_PX / 10 : 1 };
+static constexpr size_t DRAW_BUFFER_SIZE_BYTES { DISPLAY_WIDTH_PX * DRAW_BUFFER_LINE_COUNT * LV_COLOR_FORMAT_GET_SIZE(LV_COLOR_FORMAT_RGB565) };
 
 static void on_dma_finished_handler()
 {
@@ -39,15 +37,14 @@ static void display_flush_cb(lv_display_t __unused *display, const lv_area_t *ar
 {
   display_set_window(area->x1, area->y1, area->x2 + 1, area->y2 + 1);
 
-  const int32_t width{ area->x2 - area->x1 + 1 };
-  const int32_t height{ area->y2 - area->y1 + 1 };
+  const int32_t width { area->x2 - area->x1 + 1 };
+  const int32_t height { area->y2 - area->y1 + 1 };
 
   gpio_put(DISPLAY_GPIO_DC, true);
   gpio_put(DISPLAY_GPIO_CS, false);
 
-  dma_channel_hw_addr(lvgl_data.dma_periphery->tx_dma_channel)->read_addr = (uintptr_t)px_map;
-  dma_channel_hw_addr(lvgl_data.dma_periphery->tx_dma_channel)->al1_transfer_count_trig =
-    width * height * sizeof(uint16_t);
+  dma_channel_hw_addr(lvgl_data.dma_periphery->tx_dma_channel)->read_addr               = (uintptr_t)px_map;
+  dma_channel_hw_addr(lvgl_data.dma_periphery->tx_dma_channel)->al1_transfer_count_trig = width * height * sizeof(uint16_t);
 }
 
 static void lvgl_deinit()
@@ -71,11 +68,7 @@ void lvgl_init()
 
   lvgl_data.display = lv_display_create(DISPLAY_WIDTH_PX, DISPLAY_HEIGHT_PX);
   lv_display_set_color_format(lvgl_data.display, LV_COLOR_FORMAT_RGB565_SWAPPED);
-  lv_display_set_buffers(lvgl_data.display,
-                         lvgl_data.buffer_0,
-                         lvgl_data.buffer_1,
-                         DRAW_BUFFER_SIZE_BYTES,
-                         LV_DISPLAY_RENDER_MODE_PARTIAL);
+  lv_display_set_buffers(lvgl_data.display, lvgl_data.buffer_0, lvgl_data.buffer_1, DRAW_BUFFER_SIZE_BYTES, LV_DISPLAY_RENDER_MODE_PARTIAL);
   lv_display_set_flush_cb(lvgl_data.display, display_flush_cb);
 
   irq_set_exclusive_handler(DMA_IRQ_0, on_dma_finished_handler);

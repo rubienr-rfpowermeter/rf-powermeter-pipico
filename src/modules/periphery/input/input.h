@@ -17,15 +17,15 @@ struct TrackedInputState
 
 struct TrackedInputs
 {
-  TrackedInputState a{ 0x00 };       /// KEY_NEXT
-  TrackedInputState b{ 0x01 };       /// KEY_PREV
-  TrackedInputState x{ 0x02 };       /// KEY_HOME
-  TrackedInputState y{ 0x03 };       /// KEY_END
-  TrackedInputState up{ 0x11 };      /// KEY_UP
-  TrackedInputState down{ 0x12 };    /// KEY_DOWN
-  TrackedInputState left{ 0x14 };    /// KEY_LEFT
-  TrackedInputState right{ 0x13 };   /// KEY_RIGHT
-  TrackedInputState z{ 0x0a };       /// KEY_ENTER
+  TrackedInputState a { 0x00 };       /// KEY_NEXT
+  TrackedInputState b { 0x01 };       /// KEY_PREV
+  TrackedInputState x { 0x02 };       /// KEY_HOME
+  TrackedInputState y { 0x03 };       /// KEY_END
+  TrackedInputState up { 0x11 };      /// KEY_UP
+  TrackedInputState down { 0x12 };    /// KEY_DOWN
+  TrackedInputState left { 0x14 };    /// KEY_LEFT
+  TrackedInputState right { 0x13 };   /// KEY_RIGHT
+  TrackedInputState z { 0x0a };       /// KEY_ENTER
 
   uint8_t joystick_active;
   uint8_t joystick_event;

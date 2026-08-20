@@ -121,15 +121,10 @@ static void on_reboot_request_cb(__unused lv_event_t *event)
   while (true) { }
 }
 
-static void on_main_tab_changed_cb(__unused lv_event_t *event)
-{
-  ui.active_tab = lv_tabview_get_tab_active(ui.tab_view);
-}
+static void on_main_tab_changed_cb(__unused lv_event_t *event) { ui.active_tab = lv_tabview_get_tab_active(ui.tab_view); }
 
 __unused static void on_tab0_tab_changed_cb(__unused lv_event_t *event)
-{
-  ui.tabs.tab0.active_tab = lv_tabview_get_tab_active(ui.tabs.tab0.tab_view);
-}
+{ ui.tabs.tab0.active_tab = lv_tabview_get_tab_active(ui.tabs.tab0.tab_view); }
 
 static void set_label_row(lv_obj_t *label, int32_t row)
 {
@@ -210,7 +205,7 @@ static void init_tab0(__unused Tab0 &tab)
   lv_obj_set_style_text_color(tab_btns, lv_palette_lighten(LV_PALETTE_GREEN, 5), 0);
   lv_obj_set_style_border_side(tab_btns, LV_BORDER_SIDE_LEFT, (uint32_t)LV_PART_ITEMS | (uint32_t)LV_STATE_CHECKED);
 
-  tab.page0.tab =  lv_tabview_add_tab(tab.tab_view, "tvv1");
+  tab.page0.tab = lv_tabview_add_tab(tab.tab_view, "tvv1");
   init_tab0_page0(tab.page0);
 
   // tab.page1.tab = lv_tabview_add_tab(tab.tab_view, "tvv2");
@@ -234,8 +229,8 @@ static void init_tab1(Tab1 &tab)
   // lv_chart_set_update_mode(tab.chart, LV_CHART_UPDATE_MODE_CIRCULAR);
   lv_chart_set_type(tab.chart, LV_CHART_TYPE_LINE);
   lv_chart_set_update_mode(tab.chart, LV_CHART_UPDATE_MODE_SHIFT);
-  lv_obj_set_style_size(tab.chart, 0, 0, LV_PART_INDICATOR); // dots
-  lv_obj_set_style_line_width(tab.chart, 1, LV_PART_ITEMS); // line
+  lv_obj_set_style_size(tab.chart, 0, 0, LV_PART_INDICATOR);   // dots
+  lv_obj_set_style_line_width(tab.chart, 1, LV_PART_ITEMS);    // line
   lv_obj_set_size(tab.chart, 210, 240);
   lv_obj_center(tab.chart);
 
@@ -257,7 +252,7 @@ static void init_tab1(Tab1 &tab)
 
   lv_scale_set_label_show(tab.scale, true);
   lv_scale_set_mode(tab.scale, LV_SCALE_MODE_VERTICAL_RIGHT);
-  lv_scale_set_total_tick_count(tab.scale, 8+1);
+  lv_scale_set_total_tick_count(tab.scale, 8 + 1);
   lv_scale_set_major_tick_every(tab.scale, 2);
   lv_scale_set_draw_ticks_on_top(tab.scale, true);
   lv_scale_set_range(tab.scale, -70, 10);
@@ -443,8 +438,7 @@ static void update_tab2(Tab2 &tab)
   update_label_text(tab.k1_label, "k1: %6.1f %s%s%s", SiFloat { .value = ui_data.sample->correction_values.k1 });
   update_label_text(tab.k2_label, "k2: %6.1f %s%s%s", SiFloat { .value = ui_data.sample->correction_values.k2 });
   update_label_text(tab.k3_label, "k3: %6.1f %s%s%s", SiFloat { .value = ui_data.sample->correction_values.k3 });
-  update_label_text(
-    tab.frequency_band_label, "Band: %5.1f%s%s%s", frequencyBandToSi(ui_data.sample->frequency_band));
+  update_label_text(tab.frequency_band_label, "Band: %5.1f%s%s%s", frequencyBandToSi(ui_data.sample->frequency_band));
   update_label_text(tab.probe_temp_label, "Temp: %5.1f%s%s%s", ui_data.sample->probe_temperature.celsius.avg);
 }
 

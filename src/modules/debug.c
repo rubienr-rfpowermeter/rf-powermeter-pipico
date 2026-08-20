@@ -126,8 +126,7 @@ __attribute__((optimize("O0"))) void the_real_fault_handler_c(StateFrame *frame)
   if (m33_hw->cfsr & M33_CFSR_UFSR_STKOF_BITS) printf("  STKOF: stack overflow error has occurred\n");
   if (m33_hw->cfsr & M33_CFSR_UFSR_NOCP_BITS) printf("  NOCP: attempt to access a coprocessor\n");
   if (m33_hw->cfsr & M33_CFSR_UFSR_INVPC_BITS)
-    printf(
-      "  INVPC: attempted an illegal load of EXC_RETURN to the PC (either invalid context or an invalid EXC_RETURN value)\n");
+    printf("  INVPC: attempted an illegal load of EXC_RETURN to the PC (either invalid context or an invalid EXC_RETURN value)\n");
   if (m33_hw->cfsr & M33_CFSR_UFSR_INVSTATE_BITS)
     printf("  INVSTATE: attempt to execute instruction that makes illegal use of the EPSR\n");
   if (m33_hw->cfsr & M33_CFSR_UFSR_UNDEFINSTR_BITS) printf("  UNDEFINSTR: attempt to execute an undefined instruction\n");
@@ -158,17 +157,16 @@ __attribute__((optimize("O0"))) void the_real_fault_handler_c(StateFrame *frame)
 [[noreturn]]
 __attribute__((naked)) void isr_hardfault(void)
 {
-  __asm volatile(
-    "tst lr, #4                         \n"   // Bit 2 selects the stack active before the exception.
-    "ite eq                             \n"
-    "mrseq r0, msp                      \n"   // Pass the original exception frame as argument 0.
-    "mrsne r0, psp                      \n"
-    "ldr r2, =0xd0000000               \n"    // SIO CPUID register; contains 0 or 1.
-    "ldr r2, [r2]                       \n"
-    "ldr r3, =hardfault_stacks          \n"
-    "add.w r3, r3, r2, lsl #10         \n"    // Select this core's 1024-byte stack.
-    "msr msplim, r3                     \n"   // Move the guard before changing MSP.
-    "add.w r3, r3, #1024                \n"
-    "msr msp, r3                        \n"
-    "b the_real_fault_handler_c         \n");
+  __asm volatile("tst lr, #4                         \n"   // Bit 2 selects the stack active before the exception.
+                 "ite eq                             \n"
+                 "mrseq r0, msp                      \n"   // Pass the original exception frame as argument 0.
+                 "mrsne r0, psp                      \n"
+                 "ldr r2, =0xd0000000               \n"   // SIO CPUID register; contains 0 or 1.
+                 "ldr r2, [r2]                       \n"
+                 "ldr r3, =hardfault_stacks          \n"
+                 "add.w r3, r3, r2, lsl #10         \n"    // Select this core's 1024-byte stack.
+                 "msr msplim, r3                     \n"   // Move the guard before changing MSP.
+                 "add.w r3, r3, #1024                \n"
+                 "msr msp, r3                        \n"
+                 "b the_real_fault_handler_c         \n");
 }

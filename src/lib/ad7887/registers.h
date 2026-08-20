@@ -80,8 +80,8 @@ struct ControlRegister8b
 
 struct ControlRegister16b
 {
-  uint8_t           zero{ 0 };
-  ControlRegister8b controlRegister8b{};
+  uint8_t           zero { 0 };
+  ControlRegister8b controlRegister8b {};
 };
 
 union TransmissionData16b
@@ -90,7 +90,7 @@ union TransmissionData16b
 
   uint8_t            asUint8;
   uint16_t           asUint16;
-  ControlRegister16b asControlRegister16b{};
+  ControlRegister16b asControlRegister16b {};
 };
 
 /// Bit/Reception order:
@@ -107,7 +107,7 @@ struct SampleRegister16b
 union ReceptionData16b
 {
   SampleRegister16b asSampleRegister16b;
-  uint16_t          asUint16{ 0 };
+  uint16_t          asUint16 { 0 };
 };
 
 }   // namespace ad7887

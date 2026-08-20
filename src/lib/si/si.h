@@ -109,10 +109,10 @@ constexpr const char *scaleToStr(const Scale t)
 
 template <typename T> struct Value
 {
-  T         value{ std::numeric_limits<T>::quiet_NaN() };
-  Linearity lin{ Linearity::Linear };
-  Scale     scale{ Scale::TimesOne };
-  Unit      unit{ Unit::NoUnit };
+  T         value { std::numeric_limits<T>::quiet_NaN() };
+  Linearity lin { Linearity::Linear };
+  Scale     scale { Scale::TimesOne };
+  Unit      unit { Unit::NoUnit };
 };
 
 constexpr uint8_t linearityToUnderlyingType(Linearity u) { return std::to_underlying<Linearity>(u); }

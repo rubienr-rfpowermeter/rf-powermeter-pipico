@@ -18,7 +18,7 @@ template <uint8_t max_entries_count, typename item_type, typename cumulative_sum
 
   item_type put(item_type next_value)
   {
-    const item_type out_value{ values[write_index] };
+    const item_type out_value { values[write_index] };
     values[write_index] = next_value;
 
     last_value_index = write_index;
@@ -33,7 +33,7 @@ template <uint8_t max_entries_count, typename item_type, typename cumulative_sum
 
   ResultT<item_type> get() const
   {
-    return ResultT<item_type>{
+    return ResultT<item_type> {
       .value = values[last_value_index], .avg = static_cast<item_type>(cumulative_sum / entries_count), .min = min, .max = max
     };
   }
@@ -93,11 +93,11 @@ protected:
     }
   }
 
-  cumulative_sum_type cumulative_sum{ 0 };
-  item_type           values[max_entries_count]{ 0 };
-  uint8_t             write_index{ 0 };        /// points to the item the next store will operate at (oldest item: first out)
-  uint8_t             last_value_index{ 0 };   /// point to the last stored item (newest item: last in)
-  uint8_t             entries_count{ max_entries_count };
-  item_type           min{ std::numeric_limits<item_type>::max() };
-  item_type           max{ std::numeric_limits<item_type>::min() };
+  cumulative_sum_type cumulative_sum { 0 };
+  item_type           values[max_entries_count] { 0 };
+  uint8_t             write_index { 0 };        /// points to the item the next store will operate at (oldest item: first out)
+  uint8_t             last_value_index { 0 };   /// point to the last stored item (newest item: last in)
+  uint8_t             entries_count { max_entries_count };
+  item_type           min { std::numeric_limits<item_type>::max() };
+  item_type           max { std::numeric_limits<item_type>::min() };
 };
