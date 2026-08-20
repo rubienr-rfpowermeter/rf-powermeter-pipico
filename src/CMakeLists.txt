@@ -26,6 +26,25 @@ add_subdirectory(./gitmodules/lvgl)
 include_directories(./gitmodules/lvgl)
 add_definitions(-DLV_LVGL_H_INCLUDE_SIMPLE=1)
 
+set(PROJECT_AUXILIARY_FILES
+        ../readme.md
+        scripts/cmake-make.sh
+        scripts/cmake.sh
+        scripts/device-reset-openocd.sh
+        scripts/gdb-client.sh
+        scripts/gdb-server.sh
+        scripts/git-submodule-init.sh
+        scripts/install-prerequisites-archlinux.sh
+        scripts/install-prerequisites-ubuntu.sh
+        scripts/make-upload-openocd.sh
+        scripts/make.sh
+        scripts/picotool-info.sh
+        scripts/readme.md
+        scripts/serial-monitor.sh
+        scripts/stack-usage-summary.sh
+        scripts/upload-openocd.sh
+)
+
 # add executable
 add_executable(rf_probe
         lib/sample_data/AverageT.hpp
@@ -44,6 +63,7 @@ add_executable(rf_probe
         modules/rf_power_meter/KValues3rdOrder.hpp
         modules/debug.c
         main.cpp
+        ${PROJECT_AUXILIARY_FILES}
 )
 
 #pico_generate_pio_header(rf_probe
