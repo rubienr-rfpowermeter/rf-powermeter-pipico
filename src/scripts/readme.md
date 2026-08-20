@@ -104,21 +104,11 @@ program, verify, reset, and start `src/build/rf_probe.elf`.
 src/scripts/upload-openocd.sh
 ```
 
-### `device-reset.sh`
-
-Connects to the RP2350 through OpenOCD, halts and resets both cores, then exits
-without programming firmware.
-
-```sh
-src/scripts/device-reset.sh
-```
-
 ### `device-reset-openocd.sh`
 
-Legacy RP2040 reset helper. It expects
-`scripts/openocd/rp2040-cmsis-dap.cfg`, which is not present in the current
-tree, and is not the normal reset command for this RP2350 project. Prefer
-`device-reset.sh`.
+Connects to the RP2350 through a CMSIS-DAP probe and performs an RP2350 cold
+reset, which resets the complete device except for its debug port. The firmware
+then boots normally and OpenOCD exits without programming it.
 
 ```sh
 src/scripts/device-reset-openocd.sh
