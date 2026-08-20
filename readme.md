@@ -1,125 +1,215 @@
-# Pico RF-Powermeter
+# Pico RF Power Meter
 
-## Description
+Firmware for an RP2350-based RF power meter built around a Raspberry Pi Pico 2,
+a Waveshare Pico-LCD-1.3, an AD8318 RF detector, and an AD7887 ADC.
 
-RF-Powermeter with RP2350 + Pico LCD 1.3 (Waveshare).
+Core 0 runs the LVGL user interface and core 1 performs continuous sampling.
+Display transfers and ADC sampling use DMA.
 
-```
-      RF Probe              Pi Pico               Waveshare Pico LC D1.3
-   │ ┌──────────┐          ┌────────────┐        ┌──────────────────────┐
-   │ │   ┌──TEMP├──────────┤AN0     SPI1├────────┼─────Display          │
-   └─┼──AD318──┐│ → analog │            │ ⇆ SPI  │     240x240 1.3"     │
-     │ ┌AD7787─┘│          │   RP2350   │        │                      │
-     │ └────────┼──────────┤SPI0    GPIO├────────┼───┐                  │
-     └──────────┘  ⇆ SPI   └────────────┘ ← dig. │   ├ Joystick 2-Axis  │
-                                                 │   │ - 2-Axis + 1 PB  │
-                      - RP Core 0: UI (LVGL)     │   │ - 1 PB           │
-                      - RP Core 1: sampling      │   └ Keypad           │              
-                                                 │     - 4 buttons      │
-                                                 └──────────────────────┘
+```text
+ RF probe                                    Pico 2                 LCD and controls
+ ┌──────────────────────┐                  ┌────────┐  ── SPI1 ──▶  240 × 240 display
+ │ RF input ──▶ AD8318  │                  │ RP2350 │  ◀─ GPIO ───  joystick and buttons
+ │             │ analog │                  │        │
+ │             ▼        │                  │        │  core 0: UI (LVGL)
+ │            AD7887 ◀──┼──── SPI0 ───────▶│        │  core 1: sampling
+ │ TEMP feedback ───────┼─ analog / ADC0 ─▶│        │
+ └──────────────────────┘                  └────────┘
 ```
 
-## Getting Started
+The diagram includes the intended analog probe-temperature feedback. The
+current sampler carries a temperature value but does not yet acquire that ADC
+input.
 
-1. Download repository
-   ```bash
-   cd
-   git clone --recursive https://github.com/rubienr/pico-meter.git ./pico-meter
-   ``` 
+## Requirements
 
-2. Install prerequisites
-   ```bash 
-   cd pico-meter/src
-   scripts/install-prerequisites-ubuntu.sh
+- Raspberry Pi Pico SDK 2.0.0 or newer, including its submodules
+- CMake and Ninja
+- Arm GNU embedded toolchain and Newlib
+- OpenOCD with RP2350 support for debug-probe uploads
+- `picotool` for inspecting firmware metadata
+- `picocom` for the serial monitor
+
+The provided installer scripts install these dependencies on Ubuntu and Arch
+Linux. On Arch Linux, `yay` is used for the `picotool` and `openocd-git` AUR
+packages when it is available.
+
+## Getting started
+
+1. Clone the repository and initialize its pinned submodules:
+
+   ```sh
+   git clone git@github.com:rubienr/rf-powermeter-pipico.git
+   cd rf-powermeter-pipico
+   src/scripts/git-submodule-init.sh
    ```
 
-3. Set up your project to point to use the Raspberry Pi Pico SDK
-    * Either by cloning the SDK locally (most common):
-        1. Make sure the `pico-sdk` source is downloaded.
-        2. Set `PICO_SDK_PATH` to the SDK location in your environment, or pass it (`-DPICO_SDK_PATH=`) to cmake later.
+   The LVGL submodule uses an SSH URL, so the GitHub SSH key for your account
+   must be configured.
 
-4. Build Projects
-   ```bash
-   scripts/cmake-make.sh
+2. Install the build prerequisites:
+
+   Ubuntu:
+
+   ```sh
+   src/scripts/install-prerequisites-ubuntu.sh
    ```
 
-5. Upload firmware to Pico
-    1. uf2 \
-       Unplug Raspberry Pi Pico from Raspberry Pi and press `boot_sel` button and then connect the Raspberry Pi Pico
-       back to Raspberry Pi.
-       Execute following command to copy the `*.uf2` file to Pico.
-       ```bash
-       cp build/rf_meter.uf2 /media/pi/RPI-RP2/
-       ```
-    2. picoprobe
-       ```bash
-       scripts/make-upload-openocd.sh
-       ```
+   Arch Linux:
 
-* Serial monitor (picoprobe)
+   ```sh
+   src/scripts/install-prerequisites-archlinux.sh
+   ```
 
-```bash
-scripts/serial-monitor.sh
+3. Clone the Pico SDK next to the project and export its absolute path. If it is
+   already installed, only the `export` is necessary.
+
+   ```sh
+   cd ..
+   git clone --branch 2.0.0 --recurse-submodules https://github.com/raspberrypi/pico-sdk.git
+   export PICO_SDK_PATH="$PWD/pico-sdk"
+   cd rf-powermeter-pipico
+   ```
+
+4. Configure a clean Debug build and compile the firmware:
+
+   ```sh
+   src/scripts/cmake-make.sh
+   ```
+
+   `cmake-make.sh` deletes and recreates `src/build`. For later incremental
+   builds, use:
+
+   ```sh
+   src/scripts/make.sh
+   ```
+
+The main outputs are `src/build/rf_probe.elf` and
+`src/build/rf_probe.uf2`. See the [scripts documentation](src/scripts/readme.md)
+for all helper commands and their options.
+
+## Uploading firmware
+
+### CMSIS-DAP debug probe
+
+Connect a Raspberry Pi Debug Probe, or another CMSIS-DAP probe, to the SWD
+connector and run:
+
+```sh
+src/scripts/make-upload-openocd.sh
+```
+
+To upload an already compiled image without rebuilding it:
+
+```sh
+src/scripts/upload-openocd.sh
+```
+
+### BOOTSEL and UF2
+
+Hold the Pico 2's BOOTSEL button while connecting USB, then copy
+`src/build/rf_probe.uf2` to the mounted RP2350 mass-storage volume. The mount
+path depends on the operating system and desktop environment.
+
+## Serial output
+
+The firmware uses UART0 at 115200 baud: GP0 is TX and GP1 is RX. When using the
+serial bridge of a Raspberry Pi Debug Probe, monitor the default
+`/dev/ttyACM0` device with:
+
+```sh
+src/scripts/serial-monitor.sh
+```
+
+Pass a different device as the first argument when necessary:
+
+```sh
+src/scripts/serial-monitor.sh /dev/ttyACM1
+```
+
+## Debugging
+
+Start OpenOCD in one terminal and GDB in another:
+
+```sh
+src/scripts/gdb-server.sh
+```
+
+```sh
+src/scripts/gdb-client.sh
+```
+
+The GDB server listens on `localhost:3333` and the client loads
+`src/build/rf_probe.elf`.
+
+## Unit tests
+
+The platform-independent unit tests are built and run on the host. Their first
+configuration downloads GoogleTest.
+
+```sh
+src/tests/unit/scripts/run.sh
 ```
 
 ## Pinout
 
-### Pico
+References:
 
-- RP Pinout: https://datasheets.raspberrypi.com/pico/Pico-R3-A4-Pinout.pdf
-- Connect Debug Probe: https://www.raspberrypi.com/documentation/microcontrollers/debug-probe.html
+- [Raspberry Pi Pico 2 pinout](https://datasheets.raspberrypi.com/pico/Pico-2-Pinout.pdf)
+- [Raspberry Pi Debug Probe documentation](https://www.raspberrypi.com/documentation/microcontrollers/debug-probe.html)
+- [Waveshare Pico-LCD-1.3 documentation](https://www.waveshare.com/wiki/Pico-LCD-1.3)
 
-| Raspberry Pi Pico | Component |
-|-------------------|-----------|
-| GP00              | RX        |
-| GP01              | TX        |
-| GP25              | LED       |
+### UART and user LED
 
-### Pico LCD 1.3
+| Pico 2 GPIO | Function |
+|-------------|----------|
+| GP0         | UART0 TX |
+| GP1         | UART0 RX |
+| GP25        | User LED |
 
-https://www.waveshare.com/wiki/Pico-LCD-1.3
+### Waveshare Pico-LCD-1.3 display
 
-#### TFT
+The display uses SPI1 for clock and transmit data. D/C, chip select, and reset
+are ordinary GPIO signals; the backlight uses PWM.
 
-| Raspberry Pi Pico | 3.5 TFT Screen |
-|-------------------|----------------|
-| GP08 (SPI1)       | DC             |
-| GP09 (SPI1)       | CS             |
-| GP10 (SPI1)       | CLK            |
-| GP11 (SPI1)       | DIN            |
-| GP12 (SPI1)       | RST            |
-| GP13 (SPI1)       | BL             |
+| Pico 2 GPIO / function | Display signal / board label |
+|------------------------|------------------------------|
+| GP8                    | D/C (DC)                     |
+| GP9                    | Chip select (CS)             |
+| GP10 (SPI1 SCK)        | SPI1 clock (CLK)             |
+| GP11 (SPI1 TX)         | SPI1 MOSI (DIN)              |
+| GP12                   | Reset (RST)                  |
+| GP13 (PWM)             | Backlight PWM (BL)           |
 
-#### Switches
+### Buttons and joystick
 
-| Raspberry Pi Pico | Component      |
-|-------------------|----------------|
-| GP15              | Button A       |
-| GP17              | Button B       |
-| GP19              | Button X       |
-| GP20              | Button Y       |
-| GP02              | Joystick up    |
-| GP18              | Joystick down  |
-| GP16              | Joystick left  |
-| GP20              | Joystick right |
-| GP03              | Joystick ctrl  |
+| Pico 2 GPIO | Input              |
+|-------------|--------------------|
+| GP15        | Button A           |
+| GP17        | Button B           |
+| GP19        | Button X           |
+| GP21        | Button Y           |
+| GP2         | Joystick up        |
+| GP18        | Joystick down      |
+| GP16        | Joystick left      |
+| GP20        | Joystick right     |
+| GP3         | Joystick press / Z |
 
-### Power Detector
+### AD7887 ADC
 
-https://www.sv1afn.com/en/products/ad8318-digital-rf-power-detector.html
+The AD8318 detector output is digitized by the external AD7887. The firmware
+communicates with the ADC over SPI0.
 
-| Raspberry Pi Pico | Power Detector |
-|-------------------|----------------|
-| GP2 (SPI0)        | CLK            |
-| GP3 (SPI0)        | DIN            |
-| GP5 (SPI0)        | CS             |
-| GP6 (SPI0)        | DC             |
-| GP7 (SPI0)        | RST            |
-| GP13(SPI0)        | BL             |
+| Pico 2 GPIO | AD7887 signal             |
+|-------------|---------------------------|
+| GP4         | DOUT / SPI0 MISO          |
+| GP5         | Chip select               |
+| GP6         | SPI0 clock                |
+| GP7         | DIN / SPI0 MOSI           |
+| GP14        | Acquisition timing output |
 
+Additional hardware reference documents are stored in [`docs`](docs/).
 
+## License
 
-
-
-
-
+This project is licensed under the terms in [license](license).
