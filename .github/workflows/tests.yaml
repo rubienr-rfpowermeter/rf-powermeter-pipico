@@ -37,6 +37,7 @@ jobs:
       pull-requests: write
 
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
@@ -47,6 +48,10 @@ jobs:
             prerequisites: src/scripts/install-prerequisites-archlinux.sh
     
     steps:
+      - name: "container: bootstrap"
+        if: matrix.os == 'archlinux-latest'
+        run: pacman -Syu --noconfirm --needed git python
+
       - name: "repository: checkout"
         uses: actions/checkout@v4
         with:
