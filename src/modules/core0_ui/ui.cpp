@@ -210,33 +210,38 @@ static void init_tab0(__unused Tab0 &tab)
   lv_obj_set_style_text_color(tab_btns, lv_palette_lighten(LV_PALETTE_GREEN, 5), 0);
   lv_obj_set_style_border_side(tab_btns, LV_BORDER_SIDE_LEFT, (uint32_t)LV_PART_ITEMS | (uint32_t)LV_STATE_CHECKED);
 
-  tab.page0.tab =  lv_tabview_add_tab(tab.tab_view, "tab1"); // todo rr - this breaks the ui as soon the tab becomes active
-  // init_tab0_page0(tab.page0);
+  tab.page0.tab =  lv_tabview_add_tab(tab.tab_view, "tvv1");
+  init_tab0_page0(tab.page0);
 
-  // tab.page1.tab = lv_tabview_add_tab(tab.tab_view, "tab2");
+  // tab.page1.tab = lv_tabview_add_tab(tab.tab_view, "tvv2");
   //init_tab0_page1(tab.page1);
 
   // lv_obj_t *tb { lv_tabview_get_tab_bar(tab.tab_view) };
   // lv_group_remove_obj(tb);
   // lv_group_add_obj(lv_input_get_keypad_group(), tb);
 
-  // lv_obj_add_event_cb(tab.tab_view, on_tab0_tab_changed_cb, LV_EVENT_VALUE_CHANGED, nullptr);
-  // tab.active_tab = 0;
-  // lv_tabview_set_active(tab.tab_view, tab.active_tab, LV_ANIM_OFF);
+  lv_obj_add_event_cb(tab.tab_view, on_tab0_tab_changed_cb, LV_EVENT_VALUE_CHANGED, nullptr);
+  tab.active_tab = 0;
+  lv_tabview_set_active(tab.tab_view, tab.active_tab, LV_ANIM_OFF);
 }
 
 static void init_tab1(Tab1 &tab)
 {
   lv_obj_t *parent { tab.tab };
 
+  // chart
   tab.chart = lv_chart_create(parent);
+  // lv_chart_set_update_mode(tab.chart, LV_CHART_UPDATE_MODE_CIRCULAR);
+  lv_chart_set_type(tab.chart, LV_CHART_TYPE_LINE);
   lv_chart_set_update_mode(tab.chart, LV_CHART_UPDATE_MODE_SHIFT);
-  lv_obj_set_style_size(tab.chart, 0, 0, LV_PART_INDICATOR);
-  lv_obj_set_size(tab.chart, 200, 150);
+  lv_obj_set_style_size(tab.chart, 0, 0, LV_PART_INDICATOR); // dots
+  lv_obj_set_style_line_width(tab.chart, 1, LV_PART_ITEMS); // line
+  lv_obj_set_size(tab.chart, 210, 240);
   lv_obj_center(tab.chart);
 
   lv_chart_set_point_count(tab.chart, 100);
-  lv_chart_set_range(tab.chart, LV_CHART_AXIS_PRIMARY_Y, -60, 2);
+  lv_chart_set_range(tab.chart, LV_CHART_AXIS_PRIMARY_Y, -70, 10);
+  lv_chart_set_div_line_count(tab.chart, 9, 0);
   tab.series = lv_chart_add_series(tab.chart, lv_palette_main(LV_PALETTE_GREEN), LV_CHART_AXIS_PRIMARY_Y);
 
   uint32_t i;
@@ -245,6 +250,22 @@ static void init_tab1(Tab1 &tab)
 
   lv_chart_refresh(tab.chart);
 
+  // ticks
+  tab.scale = lv_scale_create(parent);
+  const int32_t pad_top { lv_obj_get_style_border_width(tab.chart, LV_PART_MAIN) + lv_obj_get_style_pad_top(tab.chart, LV_PART_MAIN) };
+  lv_obj_set_size(tab.scale, 30, 240 - 2 * pad_top);
+
+  lv_scale_set_label_show(tab.scale, true);
+  lv_scale_set_mode(tab.scale, LV_SCALE_MODE_VERTICAL_RIGHT);
+  lv_scale_set_total_tick_count(tab.scale, 8+1);
+  lv_scale_set_major_tick_every(tab.scale, 2);
+  lv_scale_set_draw_ticks_on_top(tab.scale, true);
+  lv_scale_set_range(tab.scale, -70, 10);
+  lv_obj_set_style_opa(tab.scale, LV_OPA_20, 0);
+  const int32_t pad_left { lv_obj_get_style_border_width(tab.chart, LV_PART_MAIN) + lv_obj_get_style_pad_left(tab.chart, LV_PART_MAIN) };
+  lv_obj_align_to(tab.scale, tab.chart, LV_ALIGN_LEFT_MID, -pad_left, 0);
+
+  // labels
   tab.current_value = lv_label_create(parent);
   tab.refresh_label = lv_label_create(parent);
   lv_obj_set_pos(tab.current_value, 0, 0);
@@ -345,7 +366,7 @@ static void init_widgets(UiWidgets &widgets)
   init_tab3(widgets.tabs.tab3);
 
   lv_obj_add_event_cb(widgets.tab_view, on_main_tab_changed_cb, LV_EVENT_VALUE_CHANGED, nullptr);
-  widgets.active_tab = 1;
+  widgets.active_tab = 2;
   lv_tabview_set_active(widgets.tab_view, widgets.active_tab, LV_ANIM_OFF);
 
   lv_obj_clear_flag(lv_tabview_get_content(widgets.tab_view), LV_OBJ_FLAG_SCROLLABLE);
@@ -379,7 +400,7 @@ static void update_tab0_page1(Tab0Page1 &tab)
   update_label_text(tab.avg_lin_label, LV_SYMBOL_SHUFFLE " %5.1f%s%s%s", linv.avg);
 }
 
-__unused static void update_tab0(Tab0 &tab)
+static void update_tab0(Tab0 &tab)
 {
   switch (tab.active_tab)
   {
@@ -400,6 +421,8 @@ static void update_tab1(Tab1 tab)
   lv_label_set_text(tab.current_value, ui.text_buffer);
 
   lv_chart_set_next_value(tab.chart, tab.series, static_cast<int32_t>(ui_data.sample->converted_sample.value_dbv.value.value));
+
+  /* // only in "rolling" mode
   const uint32_t p { lv_chart_get_point_count(tab.chart) };
   const uint32_t s { lv_chart_get_x_start_point(tab.chart, tab.series) };
   int32_t       *a { lv_chart_get_y_array(tab.chart, tab.series) };
@@ -407,7 +430,7 @@ static void update_tab1(Tab1 tab)
   a[(s + 1) % p] = LV_CHART_POINT_NONE;
   a[(s + 2) % p] = LV_CHART_POINT_NONE;
   a[(s + 2) % p] = LV_CHART_POINT_NONE;
-
+  */
   lv_chart_refresh(tab.chart);
 
   snprintf(ui.text_buffer, sizeof(ui.text_buffer), LV_SYMBOL_REFRESH " +%" PRIu32, (ui_data.sample->timestamp_us - ui_data.previous_timestamp_us) / 1000);
