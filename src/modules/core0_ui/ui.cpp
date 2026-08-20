@@ -265,21 +265,12 @@ static void init_tab2(Tab2 &tab)
   tab.frequency_band_label = lv_label_create(parent);
   tab.probe_temp_label     = lv_label_create(parent);
 
-  const int32_t y_offset_px { 22 };
-  const int32_t x_margin { 0 };
-  const int32_t y_margin { 0 };
-
-  const std::vector<std::tuple<lv_obj_t *, int32_t, int32_t>> todo {
-    {             tab.k0_label, x_margin, y_margin + 0 * y_offset_px },
-    {             tab.k1_label, x_margin, y_margin + 1 * y_offset_px },
-    {             tab.k2_label, x_margin, y_margin + 2 * y_offset_px },
-    {             tab.k3_label, x_margin, y_margin + 3 * y_offset_px },
-    { tab.frequency_band_label, x_margin, y_margin + 4 * y_offset_px },
-    {     tab.probe_temp_label, x_margin, y_margin + 5 * y_offset_px },
-  };
-
-  for (auto [label, x_px, y_px] : todo)
-    lv_obj_set_pos(label, x_px, y_px);
+  set_label_row(tab.k0_label, 0);
+  set_label_row(tab.k1_label, 1);
+  set_label_row(tab.k2_label, 2);
+  set_label_row(tab.k3_label, 3);
+  set_label_row(tab.frequency_band_label, 4);
+  set_label_row(tab.probe_temp_label, 5);
 
   lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
 }
@@ -289,7 +280,8 @@ static void init_tab3(Tab3 &tab)
   lv_obj_t *parent { tab.tab };
   lv_obj_center(parent);
 
-  char product_info[512] { 0 };
+  // static: move from stack to SRAM
+  static char product_info[512] { 0 };
 
   // clang-format off
   snprintf(
@@ -365,24 +357,14 @@ static void update_tab0_page0(Tab0Page0 &tab)
   const AveragedSiFloat &db_volt { ui_data.sample->converted_sample.value_dbv };
   const AveragedSiFloat &linv { ui_data.sample->converted_sample.value_linearv };
 
-  const std::vector<std::tuple<const char *, const SiFloat &, lv_obj_t *>> todo {
-    {   LV_SYMBOL_RIGHT " %6.1f %s%s%s", db_volt.value,  tab.value_db_label },
-    {    LV_SYMBOL_DOWN " %6.1f %s%s%s",   db_volt.min,    tab.min_db_label },
-    {      LV_SYMBOL_UP " %6.1f %s%s%s",   db_volt.max,    tab.max_db_label },
-    { LV_SYMBOL_SHUFFLE " %6.1f %s%s%s",   db_volt.avg,    tab.avg_db_label },
-    {   LV_SYMBOL_RIGHT " % 5.1f%s%s%s",    linv.value, tab.value_lin_label },
-    {      LV_SYMBOL_DOWN "%5.1f%s%s%s",      linv.min,   tab.min_lin_label },
-    {        LV_SYMBOL_UP "%5.1f%s%s%s",      linv.max,   tab.max_lin_label },
-    {  LV_SYMBOL_SHUFFLE " %5.1f%s%s%s",      linv.avg,   tab.avg_lin_label }
-  };
-
-  for (auto &[format, value, label] : todo)
-  {
-    snprintf(
-      ui.text_buffer, sizeof(ui.text_buffer), format, value.value, linearityToStr(value.lin), scaleToStr(value.scale),
-      unitToStr(value.unit));
-    lv_label_set_text(label, ui.text_buffer);
-  }
+  update_label_text(tab.value_db_label, LV_SYMBOL_RIGHT " %6.1f %s%s%s", db_volt.value);
+  update_label_text(tab.min_db_label, LV_SYMBOL_DOWN " %6.1f %s%s%s", db_volt.min);
+  update_label_text(tab.max_db_label, LV_SYMBOL_UP " %6.1f %s%s%s", db_volt.max);
+  update_label_text(tab.avg_db_label, LV_SYMBOL_SHUFFLE " %6.1f %s%s%s", db_volt.avg);
+  update_label_text(tab.value_lin_label, LV_SYMBOL_RIGHT " % 5.1f%s%s%s", linv.value);
+  update_label_text(tab.min_lin_label, LV_SYMBOL_DOWN "%5.1f%s%s%s", linv.min);
+  update_label_text(tab.max_lin_label, LV_SYMBOL_UP "%5.1f%s%s%s", linv.max);
+  update_label_text(tab.avg_lin_label, LV_SYMBOL_SHUFFLE " %5.1f%s%s%s", linv.avg);
 
   snprintf(ui.text_buffer, sizeof(ui.text_buffer), LV_SYMBOL_REFRESH " +%" PRIu32, (ui_data.sample->timestamp_us - ui_data.previous_timestamp_us) / 1000);
   lv_label_set_text(tab.refresh_label, ui.text_buffer);
@@ -393,18 +375,8 @@ static void update_tab0_page1(Tab0Page1 &tab)
   const AveragedSiFloat &db_volt { ui_data.sample->converted_sample.value_dbv };
   const AveragedSiFloat &linv { ui_data.sample->converted_sample.value_linearv };
 
-  const std::vector<std::tuple<const char *, const SiFloat &, lv_obj_t *>> todo {
-    { LV_SYMBOL_SHUFFLE " %6.1f %s%s%s", db_volt.avg,  tab.avg_db_label },
-    {  LV_SYMBOL_SHUFFLE " %5.1f%s%s%s",    linv.avg, tab.avg_lin_label }
-  };
-
-  for (auto &[format, value, label] : todo)
-  {
-    snprintf(
-      ui.text_buffer, sizeof(ui.text_buffer), format, value.value, linearityToStr(value.lin), scaleToStr(value.scale),
-      unitToStr(value.unit));
-    lv_label_set_text(label, ui.text_buffer);
-  }
+  update_label_text(tab.avg_db_label, LV_SYMBOL_SHUFFLE " %6.1f %s%s%s", db_volt.avg);
+  update_label_text(tab.avg_lin_label, LV_SYMBOL_SHUFFLE " %5.1f%s%s%s", linv.avg);
 }
 
 __unused static void update_tab0(Tab0 &tab)
