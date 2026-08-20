@@ -317,7 +317,7 @@ static void init_tab3(Tab3 &tab)
     "Board: '" PICO_BOARD  "' ROM V.%" PRIu8 "\n\n"
     "Display: %" PRIu16 " x %" PRIu16 " baud %" PRIu32 "M\n"
     DISPLAY_NAME "\n",
-    rp2040_rom_version(), DISPLAY_WIDTH_PX, DISPLAY_HEIGHT_PX, display_get_baud_rate() / 1000000);
+    rp2350_rom_version(), DISPLAY_WIDTH_PX, DISPLAY_HEIGHT_PX, display_get_baud_rate() / 1000000);
   // clang-format on
 
   lv_obj_t *label { lv_label_create(parent) };
