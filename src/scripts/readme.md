@@ -90,6 +90,19 @@ Builds the configured project and, if the build succeeds, uploads it with
 src/scripts/make-upload-openocd.sh
 ```
 
+### `auto-format.sh`
+
+Recursively formats C and C++ source and header files below `src` using
+`src/.clang-format`. GNU Parallel runs one formatter job per available CPU
+core and displays a progress bar in an interactive terminal. Non-interactive
+runs print each formatter command instead. Build directories, the `gitmodules`
+third-party tree, generated font and PIO sources, `src/lv_conf.h`, and source
+files larger than 1 MiB are excluded.
+
+```sh
+src/scripts/auto-format.sh
+```
+
 ## Device access and debugging
 
 These commands expect a CMSIS-DAP probe connected to the RP2350 target unless

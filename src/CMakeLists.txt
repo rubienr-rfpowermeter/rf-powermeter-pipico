@@ -31,6 +31,7 @@ set(PROJECT_AUXILIARY_FILES
         scripts/cmake-make.sh
         scripts/cmake.sh
         scripts/device-reset-openocd.sh
+        scripts/auto-format.sh
         scripts/gdb-client.sh
         scripts/gdb-server.sh
         scripts/git-submodule-init.sh

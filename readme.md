@@ -25,6 +25,7 @@ input.
 
 - Raspberry Pi Pico SDK 2.0.0 or newer, including its submodules
 - CMake and Ninja
+- `clang-format` and GNU Parallel for source formatting
 - Arm GNU embedded toolchain and Newlib
 - OpenOCD with RP2350 support for debug-probe uploads
 - `picotool` for inspecting firmware metadata

@@ -6,10 +6,12 @@ packages=(
   arm-none-eabi-gcc
   arm-none-eabi-newlib
   base-devel
+  clang
   cmake
   gdb
   ninja
   #openocd
+  parallel
   picocom
 )
 

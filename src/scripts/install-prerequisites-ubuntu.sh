@@ -5,6 +5,7 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 sudo apt-get update
 
 packages=(
+  clang-format
   cmake
   gdb
   gdb-multiarch
@@ -13,6 +14,7 @@ packages=(
   libstdc++-arm-none-eabi-newlib
   ninja-build
   openocd
+  parallel
   picocom
 )
 
