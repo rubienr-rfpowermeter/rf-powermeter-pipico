@@ -123,13 +123,11 @@ static void on_reboot_request_cb(__unused lv_event_t *event)
 
 static void on_main_tab_changed_cb(__unused lv_event_t *event)
 {
-  printf("xxx main tab\n");
   ui.active_tab = lv_tabview_get_tab_active(ui.tab_view);
 }
 
 __unused static void on_tab0_tab_changed_cb(__unused lv_event_t *event)
 {
-  printf("xxx tab0\n");
   ui.tabs.tab0.active_tab = lv_tabview_get_tab_active(ui.tabs.tab0.tab_view);
 }
 
