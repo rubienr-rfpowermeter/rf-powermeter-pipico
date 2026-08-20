@@ -113,15 +113,15 @@ without programming firmware.
 src/scripts/device-reset.sh
 ```
 
-### `devcie-reset-openocd.sh`
+### `device-reset-openocd.sh`
 
-Legacy RP2040 reset helper. The filename intentionally reflects its current
-misspelling. It expects `scripts/openocd/rp2040-cmsis-dap.cfg`, which is not
-present in the current tree, and is not the normal reset command for this
-RP2350 project. Prefer `device-reset.sh`.
+Legacy RP2040 reset helper. It expects
+`scripts/openocd/rp2040-cmsis-dap.cfg`, which is not present in the current
+tree, and is not the normal reset command for this RP2350 project. Prefer
+`device-reset.sh`.
 
 ```sh
-src/scripts/devcie-reset-openocd.sh
+src/scripts/device-reset-openocd.sh
 ```
 
 ### `gdb-server.sh`
